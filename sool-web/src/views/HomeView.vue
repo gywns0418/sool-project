@@ -5,7 +5,7 @@ import { ref } from "vue"
 const msg = ref("")
 
 const ping = async () => {
-  const { data } = await axios.get("/api/test")
+  const { data } = await axios.get("/test")
   msg.value = data
 }
 </script>

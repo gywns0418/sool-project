@@ -1,11 +1,11 @@
-package com.example.sool.api;
+package com.example.sool;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class TestController {
-        @GetMapping("/api/test")
+        @GetMapping("/test")
         public String test() {
             return "연결되었습니다";
         }
