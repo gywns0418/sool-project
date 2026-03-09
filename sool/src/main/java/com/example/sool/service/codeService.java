@@ -3,6 +3,6 @@ package com.example.sool.service;
 import org.springframework.stereotype.Service;
 
 @Service
-public class codeService {
+public class CodeService {
     
 }
