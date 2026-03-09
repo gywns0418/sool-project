@@ -2,7 +2,7 @@ package com.example.sool.dto;
 import lombok.Data;
 
 @Data
-public class tastingNoteMetricDto {
+public class TastingNoteMetricDto {
 
     private Integer noteMetricId;
     private Integer noteId;

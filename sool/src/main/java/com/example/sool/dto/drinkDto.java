@@ -6,14 +6,24 @@ import java.time.LocalDateTime;
 import lombok.Data;
 
 @Data
-public class drinkDto {
+public class DrinkDto {
 
     private Integer drinkId;
     private String categoryCode;
     private String drinkName;
+    private String drinkNameEn;
+
     private BigDecimal abv;
+    private Integer price;
+    private String country;
     private String description;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String isDeleted;
+    private LocalDateTime deletedAt;
 
+    private BigDecimal avgRating;
+    private Integer noteCount;
+    private Integer likeCount;
 }

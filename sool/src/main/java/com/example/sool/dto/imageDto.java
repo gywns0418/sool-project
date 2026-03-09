@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import lombok.Data;
 
 @Data
-public class imageDto {
+public class ImageDto {
 
     private Integer imageId;
     private Integer noteId;

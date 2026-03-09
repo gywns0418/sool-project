@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import lombok.Data;
 
 @Data
-public class commonCodeDto {
+public class CommonCodeDto {
 
     private Integer codeId;
     private String groupCode;

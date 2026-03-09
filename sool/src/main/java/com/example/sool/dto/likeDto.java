@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import lombok.Data;
 
 @Data
-public class likeDto {
+public class LikeDto {
 
     private Integer likeId;
     private Integer userId;

@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import lombok.Data;
 
 @Data
-public class tastingNoteDto {
+public class TastingNoteDto {
 
     private Integer noteId;
     private Integer userId;
