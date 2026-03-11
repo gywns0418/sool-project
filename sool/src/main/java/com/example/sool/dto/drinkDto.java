@@ -10,6 +10,8 @@ public class DrinkDto {
 
     private Integer drinkId;
     private String categoryCode;
+    private String typeCode;
+
     private String drinkName;
     private String drinkNameEn;
 

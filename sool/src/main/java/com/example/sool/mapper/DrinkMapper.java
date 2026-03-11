@@ -16,6 +16,8 @@ public interface DrinkMapper {
 
     DrinkDto findByDrinkId(Integer drinkId);
 
+    DrinkDto searchDrinkList(String keyword);
+
     int updateDrink(DrinkDto drinkDTO);
 
     int deleteDrink(Integer drinkId);

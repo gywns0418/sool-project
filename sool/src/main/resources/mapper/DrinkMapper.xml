@@ -8,52 +8,81 @@
   <insert id="insertDrink" parameterType="com.example.sool.dto.DrinkDTO">
         INSERT INTO drink (
             category_code,
+            type_code,
             drink_name,
             drink_name_en,
             abv,
             price,
             country,
             description,
-            created_at,
-            updated_at,
-            is_deleted,
-            avg_rating,
-            note_count,
-            like_count
+            created_at
         )
         VALUES (
             #{categoryCode},
+            #{typeCode},
             #{drinkName},
             #{drinkNameEn},
             #{abv},
             #{price},
             #{country},
             #{description},
-            NOW(),
-            NOW(),
-            'N',
-            0,
-            0,
-            0
+            NOW()
         )
     </insert>
 
+    <!-- 모든 정보 -->
     <select id="DrinkAll" resultType="com.example.sool.dto.DrinkDTO">
         SELECT * FROM drink
         WHERE is_deleted = 'N'
         ORDER BY drink_id DESC
     </select>
 
+    <!-- id로 정보 -->
     <select id="findByDrinkId" parameterType="int" resultType="com.example.sool.dto.DrinkDTO">
         SELECT * FROM drink
         WHERE drink_id = #{drinkId}
         AND is_deleted = 'N'
     </select>
 
+    <!-- 검색 -->
+    <select id="searchDrinkList" parameterType="String" resultType="com.example.sool.dto.DrinkDto">
+        SELECT
+            d.*
+        FROM drink d
+        <!-- 카테고리 대분류 이름 조인 -->
+        LEFT JOIN common_code cc1
+            ON d.category_code = cc1.code
+        AND cc1.group_code = 'DRINK_CATEGORY'
+        AND cc1.is_deleted = 'N'
+        AND cc1.use_yn = 'Y'
+        <!-- 카테고리 소분류 이름 조인 -->
+        LEFT JOIN common_code cc2
+            ON d.type_code = cc2.code
+        AND cc2.group_code = 'DRINK_TYPE'
+        AND cc2.is_deleted = 'N'
+        AND cc2.use_yn = 'Y'
+        <where>
+            d.is_deleted = 'N'
+            <!-- 주류 검색 -->
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    d.drink_name LIKE CONCAT('%', #{keyword}, '%')
+                    OR d.drink_name_en LIKE CONCAT('%', #{keyword}, '%')
+                    OR cc1.code_name LIKE CONCAT('%', #{keyword}, '%')
+                    OR cc2.code_name LIKE CONCAT('%', #{keyword}, '%')
+                    OR d.category_code LIKE CONCAT('%', #{keyword}, '%')
+                    OR d.type_code LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+        </where>
+        ORDER BY d.drink_id DESC
+    </select>
+
     <update id="updateDrink" parameterType="com.example.sool.dto.DrinkDTO">
         UPDATE drink
         SET
             category_code = #{categoryCode},
+            type_code = #{typeCode},
             drink_name = #{drinkName},
             drink_name_en = #{drinkNameEn},
             abv = #{abv},

@@ -3,8 +3,7 @@ import lombok.Data;
 
 @Data
 public class TastingNoteMetricDto {
-
-    private Integer noteMetricId;
+    
     private Integer noteId;
     private String metricCode;
     private Integer score;

@@ -12,9 +12,9 @@ public class CommentDto {
     private Integer userId;
     private Integer parentCommentId;
     private String content;
-    private String isDeleted;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String isDeleted;
     private LocalDateTime deletedAt;
 
 }

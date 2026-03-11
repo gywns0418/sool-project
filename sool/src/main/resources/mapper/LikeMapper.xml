@@ -5,6 +5,61 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.example.sool.mapper.LikeMapper">
+    <insert id="insertLike" parameterType="com.example.sool.dto.LikeDto">
+        INSERT INTO LIKE
+        (
+            user_id,
+            drink_id,
+            note_id,
+            created_at
+        )
+        VALUES
+        (
+            #{userId},
+            #{drinkId},
+            #{noteId},
+            NOW()
+        )
+    </insert>
 
+    <!--좋아요 삭제-->
+    <delete id="deleteLike" parameterType="com.example.sool.dto.LikeDto">
+        DELETE
+        FROM like
+        WHERE user_id = #{userId}
+        <choose>
+            <when test="noteId != null">
+                AND note_id = #{noteId}
+            </when>
+            <when test="drinkId != null">
+                AND drink_id = #{drinkId}
+            </when>
+        </choose>
+    </delete>
 
+    <!-- 마이페이지 좋아요 목록 -->
+    <select id="findByUserId" parameterType="int" resultType="com.example.sool.dto.LikeDto">
+        SELECT *
+        FROM note_like
+        WHERE user_id = #{userId}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 
+    <select id="findByUserIdAndNoteId" parameterType="int" resultType="com.example.sool.dto.LikeDto">
+        SELECT *
+        FROM note_like
+        WHERE user_id = #{userId}
+        AND note_id = #{noteId}
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="findByUserIdAndDrinkId" parameterType="int" resultType="com.example.sool.dto.LikeDto">
+        SELECT *
+        FROM note_like
+        WHERE user_id = #{userId}
+        AND drink_id = #{drinkId}
+        ORDER BY created_at DESC
+    </select>
+    -->
 </mapper>

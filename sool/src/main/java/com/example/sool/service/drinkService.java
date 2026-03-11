@@ -28,6 +28,10 @@ public class DrinkService {
         return drinkMapper.findByDrinkId(drinkId);
     }
 
+    public DrinkDto searchDrinkList(String keyword) {
+        return drinkMapper.searchDrinkList(keyword);
+    }
+
     public int updateDrink(DrinkDto drinkDTO) {
         return drinkMapper.updateDrink(drinkDTO);
     }

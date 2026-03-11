@@ -1,10 +1,53 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper
-  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.example.sool.mapper.TastingNoteMetricMapper">
 
+    <!-- 맛 점수 등록 -->
+    <insert id="insertMetric" parameterType="com.example.sool.dto.TastingNoteMetricDto">
+        INSERT INTO tasting_note_metric
+        (
+            note_id,
+            metric_code,
+            score
+        )
+        VALUES
+        (
+            #{noteId},
+            #{metricCode},
+            #{score}
+        )
+    </insert>
+
+    <!-- 특정 노트의 맛 점수 조회 -->
+    <select id="findByNoteId" parameterType="int" resultType="com.example.sool.dto.TastingNoteMetricDto">
+        SELECT *
+        FROM tasting_note_metric
+        WHERE note_id = #{noteId}
+    </select>
+
+    <!-- 점수 수정 -->
+    <update id="updateMetric" parameterType="com.example.sool.dto.TastingNoteMetricDto">
+        UPDATE tasting_note_metric
+        SET score = #{score}
+        WHERE note_id = #{noteId}
+        AND metric_code = #{metricCode}
+    </update>
+
+    <!-- 노트 전체 맛 점수 삭제 -->
+    <delete id="deleteByNoteId" parameterType="int">
+        DELETE
+        FROM tasting_note_metric
+        WHERE note_id = #{noteId}
+    </delete>
+
+    <!-- 특정 지표 조회 -->
+    <select id="findByMetricCode" parameterType="String" resultType="com.example.sool.dto.TastingNoteMetricDto">
+        SELECT *
+        FROM tasting_note_metric
+        WHERE metric_code = #{metricCode}
+    </select>
 
 </mapper>

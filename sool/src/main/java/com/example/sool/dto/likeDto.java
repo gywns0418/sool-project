@@ -7,8 +7,8 @@ import lombok.Data;
 @Data
 public class LikeDto {
 
-    private Integer likeId;
     private Integer userId;
+    private Integer drinkId;
     private Integer noteId;
     private LocalDateTime createdAt;
 
