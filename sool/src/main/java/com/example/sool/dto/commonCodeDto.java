@@ -8,13 +8,17 @@ import lombok.Data;
 public class CommonCodeDto {
 
     private Integer codeId;
+    
     private String groupCode;
     private String code;
     private String codeName;
     private String parentCode;
+
     private Integer sortSeq;
     private String useYn;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
+    private String isDeleted;
+    private LocalDateTime deletedAt;
 }

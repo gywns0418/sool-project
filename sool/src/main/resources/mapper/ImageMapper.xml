@@ -1,10 +1,65 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.example.sool.mapper.ImageMapper">
 
+    <!-- 이미지 등록 -->
+    <insert id="insertImage" parameterType="com.example.sool.dto.ImageDto">
+        INSERT INTO image (
+            user_id,
+            note_id,
+            drink_id,
+            file_key,
+            file_url,
+            created_at
+        )
+        VALUES (
+            #{user_id},
+            #{note_id},
+            #{drink_id},
+            #{file_key},
+            #{file_url},
+            NOW()
+        )
+    </insert>
+
+    <!-- 이미지 단건 조회 -->
+    <select id="selectImageById" parameterType="int" resultType="com.example.sool.dto.ImageDto">
+        SELECT *
+        FROM image
+        WHERE image_id = #{image_id}
+    </select>
+
+    <!-- 회원 이미지 조회 -->
+    <select id="selectImageListByUserId" parameterType="int" resultType="com.example.sool.dto.ImageDto">
+        SELECT *
+        FROM image
+        WHERE user_id = #{user_id}
+        ORDER BY image_id DESC
+    </select>
+
+    <!-- 노트 이미지 조회 -->
+    <select id="selectImageListByNoteId" parameterType="int" resultType="com.example.sool.dto.ImageDto">
+        SELECT *
+        FROM image
+        WHERE note_id = #{note_id}
+        ORDER BY image_id DESC
+    </select>
+
+    <!-- 주류 이미지 조회 -->
+    <select id="selectImageListByDrinkId" parameterType="int" resultType="com.example.sool.dto.ImageDto">
+        SELECT *
+        FROM image
+        WHERE drink_id = #{drink_id}
+        ORDER BY image_id DESC
+    </select>
+
+    <!-- 이미지 삭제 -->
+    <delete id="deleteImage" parameterType="int">
+        DELETE FROM image
+        WHERE image_id = #{image_id}
+    </delete>
 
 </mapper>

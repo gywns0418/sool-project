@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.sool.mapper.CommonCodeMapper">
+
+    <!-- 공통코드 그룹 등록 -->
+    <insert id="insertCodeGroup" parameterType="com.example.sool.dto.CodeGroupDto">
+        INSERT INTO code_group (
+            group_code,
+            group_name,
+            created_at
+        )
+        VALUES (
+            #{group_code},
+            #{group_name},
+            NOW()
+        )
+    </insert>
+
+    <!-- 공통코드 그룹 단건 조회 -->
+    <select id="selectCodeGroupById" parameterType="String" resultType="com.example.sool.dto.CodeGroupDto">
+        SELECT *
+        FROM code_group
+        WHERE group_code = #{group_code}
+        AND is_deleted = 'N'
+    </select>
+
+    <!-- 공통코드 그룹 전체 조회 -->
+    <select id="selectCodeGroupList" resultType="com.example.sool.dto.CodeGroupDto">
+        SELECT *
+        FROM code_group
+        WHERE is_deleted = 'N'
+        ORDER BY group_code ASC
+    </select>
+
+    <!-- 공통코드 그룹 수정 -->
+    <update id="updateCodeGroup" parameterType="com.example.sool.dto.CodeGroupDto">
+        UPDATE code_group
+        SET
+            group_name = #{group_name},
+            updated_at = NOW()
+        WHERE group_code = #{group_code}
+    </update>
+
+    <!-- 공통코드 그룹 삭제 -->
+    <update id="deleteCodeGroup" parameterType="String">
+        UPDATE code_group
+        SET
+            is_deleted = 'Y',
+            deleted_at = NOW()
+        WHERE group_code = #{group_code}
+    </update>
+
+</mapper>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.sool.mapper.CommonCodeMapper">
+
+    <!-- 공통코드 등록 -->
+    <insert id="insertCommonCode" parameterType="com.example.sool.dto.CommonCodeDto">
+        INSERT INTO common_code (
+            group_code,
+            code,
+            code_name,
+            parent_code,
+            sort_seq,
+            use_yn,
+            created_at
+        )
+        VALUES (
+            #{group_code},
+            #{code},
+            #{code_name},
+            #{parent_code},
+            #{sort_seq},
+            #{use_yn},
+            NOW()
+        )
+    </insert>
+
+    <!-- 공통코드 단건 조회 -->
+    <select id="selectCommonCodeById" parameterType="int" resultType="com.example.sool.dto.CommonCodeDto">
+        SELECT *
+        FROM common_code
+        WHERE code_id = #{code_id}
+        AND is_deleted = 'N'
+    </select>
+
+    <!-- 공통코드 전체 조회 -->
+    <select id="selectCommonCodeList" resultType="com.example.sool.dto.CommonCodeDto">
+        SELECT *
+        FROM common_code
+        WHERE is_deleted = 'N'
+        ORDER BY group_code ASC, sort_seq ASC, code_id ASC
+    </select>
+
+    <!-- 특정 공통코드 그룹 조회 -->
+    <select id="selectCommonCodeListByGroupCode" parameterType="String" resultType="com.example.sool.dto.CommonCodeDto">
+        SELECT *
+        FROM common_code
+        WHERE group_code = #{group_code}
+        AND is_deleted = 'N'
+        ORDER BY sort_seq ASC, code_id ASC
+    </select>
+
+    <!-- 공통코드 수정 -->
+    <update id="updateCommonCode" parameterType="com.example.sool.dto.CommonCodeDto">
+        UPDATE common_code
+        SET
+            group_code = #{group_code},
+            code = #{code},
+            code_name = #{code_name},
+            parent_code = #{parent_code},
+            sort_seq = #{sort_seq},
+            use_yn = #{use_yn},
+            updated_at = NOW()
+        WHERE code_id = #{code_id}
+    </update>
+
+    <!-- 공통코드 삭제 -->
+    <update id="deleteCommonCode" parameterType="int">
+        UPDATE common_code
+        SET
+            is_deleted = 'Y',
+            deleted_at = NOW()
+        WHERE code_id = #{code_id}
+    </update>
+
+</mapper>

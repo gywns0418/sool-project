@@ -9,7 +9,9 @@ public class CodeGroupDto {
 
     private String groupCode;
     private String groupName;
+    
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
+    private String isDeleted;
+    private LocalDateTime deletedAt;
 }
