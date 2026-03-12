@@ -8,12 +8,15 @@ import lombok.Data;
 public class ReportDto {
 
     private Integer reportId;
-    private Integer reporterUserId;
+    private Integer userId;
     private Integer noteId;
     private Integer commentId;
     private String reason;
     private String statusCode;
+    
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String isDeleted;
+    private LocalDateTime deletedAt;
 
 }
