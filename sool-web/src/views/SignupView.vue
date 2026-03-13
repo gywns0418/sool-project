@@ -1,37 +1,78 @@
 <template>
-  <div class="signup-page">
-    <h1>회원가입</h1>
+  <div class="page-wrap">
+    <PageNav :links="navLinks" show-search />
 
-    <form @submit.prevent="signup">
+    <div class="signup-body">
+      <div class="form-shell">
+        <div class="form-eyebrow">
+          <span class="eyebrow-line"></span>
+          <span>CREATE ACCOUNT</span>
+        </div>
+        <h1 class="form-title">회원가입</h1>
+        <p class="form-sub">Sool과 함께 나만의 술 여정을 시작하세요</p>
 
-      <div class="form-group">
-        <label>아이디</label>
-        <input v-model="loginId" type="text" required />
+        <form @submit.prevent="signup" class="form-body">
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">아이디</label>
+              <input
+                v-model="loginId"
+                type="text"
+                class="field-input"
+                placeholder="아이디"
+                required
+              />
+            </div>
+            <div class="field-group">
+              <label class="field-label">이름</label>
+              <input
+                v-model="name"
+                type="text"
+                class="field-input"
+                placeholder="이름"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">이메일</label>
+            <input
+              v-model="email"
+              type="email"
+              class="field-input"
+              placeholder="이메일 주소를 입력하세요"
+              required
+            />
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">비밀번호</label>
+            <input
+              v-model="password"
+              type="password"
+              class="field-input"
+              placeholder="비밀번호를 입력하세요"
+              required
+            />
+          </div>
+
+          <button type="submit" class="btn-submit">
+            가입하기 <span class="btn-arrow">→</span>
+          </button>
+        </form>
+
+        <p class="form-footer">
+          이미 계정이 있으신가요?
+          <router-link to="/login" class="form-link">로그인</router-link>
+        </p>
       </div>
-
-      <div class="form-group">
-        <label>이름</label>
-        <input v-model="name" type="text" required />
-      </div>
-
-      <div class="form-group">
-        <label>이메일</label>
-        <input v-model="email" type="email" required />
-      </div>
-
-      <div class="form-group">
-        <label>비밀번호</label>
-        <input v-model="password" type="password" required />
-      </div>
-
-      <button type="submit">회원가입</button>
-
-    </form>
-
+    </div>
   </div>
 </template>
 
 <script setup>
+import PageNav from '../components/common/PageNav.vue'
 import { ref } from 'vue'
 
 const loginId = ref('')
@@ -46,28 +87,138 @@ const signup = () => {
 
 <style scoped>
 .page-wrap {
-  background: var(--white);
+  background: var(--bg);
   overflow: hidden;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+  min-height: 700px;
 }
 
-.signup-page {
-  max-width: 400px;
-  margin: 60px auto;
+.signup-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 24px;
 }
 
-.form-group {
-  margin-bottom: 16px;
-}
-
-input {
+.form-shell {
   width: 100%;
-  padding: 8px;
+  max-width: 420px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 48px 44px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
 }
 
-button {
+.form-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 10px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--point);
+  margin-bottom: 14px;
+}
+.eyebrow-line {
+  display: block;
+  width: 24px;
+  height: 1px;
+  background: var(--point);
+}
+
+.form-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 36px;
+  color: var(--ink);
+  letter-spacing: -1px;
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+.form-sub {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 300;
+  margin-bottom: 32px;
+}
+
+.form-body {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.field-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sub);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.field-input {
   width: 100%;
-  padding: 10px;
+  height: 46px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0 14px;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--bg);
+  font-family: 'Pretendard', sans-serif;
+  outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+.field-input::placeholder { color: var(--muted); }
+.field-input:focus {
+  border-color: var(--point);
+  box-shadow: 0 0 0 3px rgba(200, 96, 58, 0.10);
+  background: var(--white);
 }
 
+.btn-submit {
+  margin-top: 6px;
+  width: 100%;
+  height: 48px;
+  background: var(--point);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Pretendard', sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: opacity 0.18s, transform 0.12s;
+}
+.btn-submit:hover { opacity: 0.88; }
+.btn-submit:active { transform: scale(0.98); }
+.btn-arrow { font-size: 15px; }
+
+.form-footer {
+  margin-top: 22px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+.form-link {
+  color: var(--point);
+  font-weight: 600;
+  text-decoration: none;
+  margin-left: 4px;
+}
+.form-link:hover { text-decoration: underline; }
 </style>
