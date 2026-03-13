@@ -2,6 +2,25 @@
     <div class="page-wrap">
       <PageNav :links="navLinks" show-search />
 
+          <h1>홈 화면</h1>
+      <div
+        v-for="drink in drinks"
+        :key="drink.drink_id"
+        class="drink-item"
+      >
+        <p>drinkId :{{ drink.drinkId }}</p>
+        <p>categoryCode :{{ drink.categoryCode }}</p>
+        <p>typeCode : {{ drink.typeCode }}</p>
+        <p>drinkName : {{ drink.drinkName }}</p>
+        <p>drinkNameEn : {{ drink.drinkNameEn }}</p>
+        <p>abv : {{ drink.abv }}</p>
+        <p>price : {{ drink.price }}</p>
+        <p>country : {{ drink.country }}</p>
+        <p>description : {{ drink.description }}</p>
+        <p>createdAt : {{ drink.createdAt }}</p>
+        <p>updatedAt : {{ drink.updatedAt }}</p>
+        <p>isDeleted : {{ drink.isDeleted }}</p>
+      </div>
       <section class="hero">
         <div class="hero-left">
           <div class="hero-tag">Tasting Note</div>
@@ -44,6 +63,25 @@ import CategoryStrip from '../components/sections/CategoryStrip.vue'
 import DrinkRankCard from '../components/cards/DrinkRankCard.vue'
 import RecentNoteCard from '../components/cards/RecentNoteCard.vue'
 import { categories, popularDrinks, recentNotes } from '../mock/soolData'
+
+import { ref, onMounted } from "vue"
+import { getHome } from "@/api/homeApi"
+
+const drinks = ref([])
+
+const loadHome = async () => {
+  try {
+    const res = await getHome()
+    drinks.value = res.data.drinks
+    console.log(res.data)
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+onMounted(() => {
+  loadHome()
+})
 
 const navLinks = [
   { label: '홈', to: '/', active: true }

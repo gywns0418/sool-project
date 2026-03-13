@@ -12,7 +12,7 @@ public interface DrinkMapper {
 
     int insertDrink(DrinkDto drinkDTO);
 
-    List<DrinkDto> DrinkAll();
+    List<DrinkDto> drinkAll();
 
     DrinkDto findByDrinkId(Integer drinkId);
 

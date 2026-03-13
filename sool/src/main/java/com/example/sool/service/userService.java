@@ -2,7 +2,7 @@ package com.example.sool.service;
 
 import java.util.List;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.sool.dto.UserDto;
@@ -12,15 +12,15 @@ import com.example.sool.mapper.UserMapper;
 public class UserService {
 
     private final UserMapper userMapper;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserMapper userMapper, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    public UserService(UserMapper userMapper, PasswordEncoder passwordEncoder) {
         this.userMapper = userMapper;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.passwordEncoder = passwordEncoder ;
     }
 
     public int insertUser(UserDto userDto) {
-        userDto.setPassword(bCryptPasswordEncoder.encode(userDto.getPassword()));
+        userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
         return userMapper.insertUser(userDto);
     }
 
@@ -45,7 +45,7 @@ public class UserService {
     }
 
     public int updateUserPassword(UserDto userDto) {
-        userDto.setPassword(bCryptPasswordEncoder.encode(userDto.getPassword()));
+        userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
         return userMapper.updateUserPassword(userDto);
     }
 

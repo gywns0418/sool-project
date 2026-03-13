@@ -20,8 +20,8 @@ public class DrinkService {
         return drinkMapper.insertDrink(drinkDTO);
     }
 
-    public List<DrinkDto> DrinkAll() {
-        return drinkMapper.DrinkAll();
+    public List<DrinkDto> drinkAll() {
+        return drinkMapper.drinkAll();
     }
 
     public DrinkDto findByDrinkId(Integer drinkId) {

@@ -5,7 +5,7 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.example.sool.mapper.DrinkMapper">
-  <insert id="insertDrink" parameterType="com.example.sool.dto.DrinkDTO">
+  <insert id="insertDrink" parameterType="com.example.sool.dto.DrinkDto">
         INSERT INTO drink (
             category_code,
             type_code,
@@ -31,14 +31,14 @@
     </insert>
 
     <!-- 모든 정보 -->
-    <select id="DrinkAll" resultType="com.example.sool.dto.DrinkDTO">
+    <select id="drinkAll" resultType="com.example.sool.dto.DrinkDto">
         SELECT * FROM drink
         WHERE is_deleted = 'N'
         ORDER BY drink_id DESC
     </select>
 
     <!-- id로 정보 -->
-    <select id="findByDrinkId" parameterType="int" resultType="com.example.sool.dto.DrinkDTO">
+    <select id="findByDrinkId" parameterType="int" resultType="com.example.sool.dto.DrinkDto">
         SELECT * FROM drink
         WHERE drink_id = #{drinkId}
         AND is_deleted = 'N'
@@ -76,7 +76,7 @@
         ORDER BY d.drink_id DESC
     </select>
 
-    <update id="updateDrink" parameterType="com.example.sool.dto.DrinkDTO">
+    <update id="updateDrink" parameterType="com.example.sool.dto.DrinkDto">
         UPDATE drink
         SET
             category_code = #{categoryCode},
