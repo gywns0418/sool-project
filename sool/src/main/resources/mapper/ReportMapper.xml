@@ -9,16 +9,16 @@
     <insert id="insertReport" parameterType="com.example.sool.dto.ReportDto">
         INSERT INTO report (
             user_id,
-            note_id,
-            comment_id,
+            obj_id,
+            obj_type,
             reason,
             status_code,
             created_at
         )
         VALUES (
             #{user_id},
-            #{note_id},
-            #{comment_id},
+            #{objId},
+            #{objType},
             #{reason},
             #{status_code},
             NOW()

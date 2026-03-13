@@ -19,11 +19,7 @@ public class DrinkDto {
     private Integer price;
     private String country;
     private String description;
-
-    private BigDecimal avgRating;
-    private Integer noteCount;
-    private Integer likeCount;
-
+    
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String isDeleted;

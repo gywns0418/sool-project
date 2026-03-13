@@ -8,17 +8,15 @@
     <!-- 이미지 등록 -->
     <insert id="insertImage" parameterType="com.example.sool.dto.ImageDto">
         INSERT INTO image (
-            user_id,
-            note_id,
-            drink_id,
+            obj_id,
+            obj_type,
             file_key,
             file_url,
             created_at
         )
         VALUES (
-            #{user_id},
-            #{note_id},
-            #{drink_id},
+            #{objId},
+            #{objType},
             #{file_key},
             #{file_url},
             NOW()

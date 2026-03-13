@@ -11,7 +11,12 @@ public class CommentDto {
     private Integer noteId;
     private Integer userId;
     private Integer parentCommentId;
+
+    private Integer groupId;
+    private Integer depth;
+
     private String content;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String isDeleted;

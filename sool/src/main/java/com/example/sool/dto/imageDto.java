@@ -9,10 +9,9 @@ public class ImageDto {
 
     private Integer imageId;
 
-    private Integer userId;
-    private Integer noteId;
-    private Integer drinkId;
-
+    private Integer objId;
+    private String objType;
+    
     private String fileKey;
     private String fileUrl;
     

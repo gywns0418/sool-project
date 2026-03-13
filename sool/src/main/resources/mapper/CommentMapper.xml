@@ -12,6 +12,8 @@
             note_id,
             user_id,
             parent_comment_id,
+            group_id,
+            depth,
             content,
             created_at
         )
@@ -20,6 +22,8 @@
             #{noteId},
             #{userId},
             #{parentCommentId},
+            #{groupId},
+            #{depth},
             #{content},
             NOW()
         )

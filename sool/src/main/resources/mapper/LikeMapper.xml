@@ -9,15 +9,15 @@
         INSERT INTO LIKE
         (
             user_id,
-            drink_id,
-            note_id,
+            obj_id,
+            obj_type,
             created_at
         )
         VALUES
         (
             #{userId},
-            #{drinkId},
-            #{noteId},
+            #{objId},
+            #{objType},
             NOW()
         )
     </insert>
@@ -40,26 +40,9 @@
     <!-- 마이페이지 좋아요 목록 -->
     <select id="findByUserId" parameterType="int" resultType="com.example.sool.dto.LikeDto">
         SELECT *
-        FROM note_like
+        FROM like
         WHERE user_id = #{userId}
         ORDER BY created_at DESC
     </select>
 
-    <!-- 
-    <select id="findByUserIdAndNoteId" parameterType="int" resultType="com.example.sool.dto.LikeDto">
-        SELECT *
-        FROM note_like
-        WHERE user_id = #{userId}
-        AND note_id = #{noteId}
-        ORDER BY created_at DESC
-    </select>
-
-    <select id="findByUserIdAndDrinkId" parameterType="int" resultType="com.example.sool.dto.LikeDto">
-        SELECT *
-        FROM note_like
-        WHERE user_id = #{userId}
-        AND drink_id = #{drinkId}
-        ORDER BY created_at DESC
-    </select>
-    -->
 </mapper>

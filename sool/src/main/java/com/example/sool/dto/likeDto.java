@@ -8,8 +8,10 @@ import lombok.Data;
 public class LikeDto {
 
     private Integer userId;
-    private Integer drinkId;
-    private Integer noteId;
+
+    private Integer objId;
+    private String objType;
+
     private LocalDateTime createdAt;
 
 }

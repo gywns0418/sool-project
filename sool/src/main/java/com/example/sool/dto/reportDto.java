@@ -9,8 +9,10 @@ public class ReportDto {
 
     private Integer reportId;
     private Integer userId;
-    private Integer noteId;
-    private Integer commentId;
+
+    private Integer objId;
+    private String objType;
+
     private String reason;
     private String statusCode;
     
