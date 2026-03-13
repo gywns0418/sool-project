@@ -1,58 +1,75 @@
 <template>
-    <div class="page-wrap">
-      <PageNav :links="navLinks" />
+  <div class="page-wrap">
+    <PageNav :links="navLinks" />
 
-      <div class="my-wrap">
-        <aside class="my-sidebar">
-          <div class="my-avatar">K</div>
-          <div class="my-name">김효준</div>
-          <div class="my-email">hyojun@example.com</div>
+    <div class="my-wrap">
+      <aside class="my-sidebar">
+        <div class="my-avatar">K</div>
+        <div class="my-name">김효준</div>
+        <div class="my-email">hyojun@example.com</div>
 
-          <div class="my-stats">
-            <div class="my-stat">
-              <div class="my-stat-n">{{ noteList.length }}</div>
-              <div class="my-stat-l">노트</div>
-            </div>
-            <div class="my-stat">
-              <div class="my-stat-n">61</div>
-              <div class="my-stat-l">좋아요</div>
-            </div>
+        <div class="my-stats">
+          <div class="my-stat">
+            <div class="my-stat-n">{{ noteList.length }}</div>
+            <div class="my-stat-l">노트</div>
           </div>
-
-          <div class="my-nav">
-            <div class="my-nav-item sel">내 노트</div>
-            <div class="my-nav-item">좋아요한 술</div>
-            <div class="my-nav-item">회원 정보 수정</div>
-            <div class="my-nav-item">신고 목록</div>
-            <div class="my-nav-sep"></div>
-            <div class="my-nav-item" @click="goHome">회원 탈퇴</div>
+          <div class="my-stat">
+            <div class="my-stat-n">61</div>
+            <div class="my-stat-l">좋아요</div>
           </div>
-        </aside>
+        </div>
 
-        <main class="my-main">
-          <h2 class="my-main-title">내 테이스팅 노트</h2>
-          <div class="my-notes-grid">
-            <MyNoteCard
-              v-for="note in noteList"
-              :key="note.id"
-              :item="note"
-              @edit="editNote"
-              @delete="deleteNote"
-            />
+        <div class="my-nav">
+          <div class="my-nav-item" :class="{ sel: activeTab === 'notes' }" @click="activeTab = 'notes'">
+            내 테이스팅 노트
           </div>
-        </main>
-      </div>
+          <div class="my-nav-item" :class="{ sel: activeTab === 'likes' }" @click="activeTab = 'likes'">
+            좋아요한 술
+          </div>
+          <div class="my-nav-item" :class="{ sel: activeTab === 'profile' }" @click="activeTab = 'profile'">
+            회원 정보 수정
+          </div>
+          <div class="my-nav-item" :class="{ sel: activeTab === 'reports' }" @click="activeTab = 'reports'">
+            신고 목록
+          </div>
+          <div class="my-nav-sep"></div>
+          <div class="my-nav-item" @click="goHome">회원 탈퇴</div>
+        </div>
+      </aside>
+
+      <main class="my-main">
+        <MyNotesSection
+          v-if="activeTab === 'notes'"
+          :note-list="noteList"
+          @edit="editNote"
+          @delete="deleteNote"
+        />
+
+        <MyLikedDrinksSection v-else-if="activeTab === 'likes'" />
+
+        <MyProfileSection v-else-if="activeTab === 'profile'" />
+
+        <MyReportsSection v-else-if="activeTab === 'reports'" />
+      </main>
     </div>
+  </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+
 import PageNav from '../components/common/PageNav.vue'
-import MyNoteCard from '../components/cards/MyNoteCard.vue'
+
+import MyNotesSection from '../components/mypage/MyNotesSection.vue'
+import MyLikedDrinksSection from '../components/mypage/MyLikedDrinksSection.vue'
+import MyProfileSection from '../components/mypage/MyProfileSection.vue'
+import MyReportsSection from '../components/mypage/MyReportsSection.vue'
+
 import { myNotes } from '../mock/soolData'
 
 const router = useRouter()
+const activeTab = ref('notes')
 const noteList = ref([...myNotes])
 
 const navLinks = [
@@ -61,7 +78,11 @@ const navLinks = [
 ]
 
 const goHome = () => router.push('/')
-const editNote = (item) => router.push({ path: '/notes/write', query: { edit: item.id } })
+
+const editNote = (item) => {
+  router.push({ path: '/notes/write', query: { edit: item.id } })
+}
+
 const deleteNote = (id) => {
   noteList.value = noteList.value.filter((note) => note.id !== id)
 }

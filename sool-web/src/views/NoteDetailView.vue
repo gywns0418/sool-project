@@ -21,7 +21,7 @@
           <div class="nd-photo">🍷</div>
           <div class="nd-text">잔에 따르자마자 올라오는 블랙커런트와 시가박스 향이 인상적이었다. 타닌이 부드럽고 여운이 길어 한 모금씩 천천히 즐기기 좋았다. 지금 마셔도 충분히 좋지만 몇 년 더 숙성해도 기대가 되는 와인이다.</div>
           <div class="nd-like-row">
-            <button class="like-btn" @click="liked = !liked">{{ liked ? '♥' : '♡' }} {{ 24 + (liked ? 1 : 0) }}</button>
+            <button class="like-btn" :class="{ liked: liked }" @click="liked = !liked">{{ liked ? '♥' : '♡' }} {{ 24 + (liked ? 1 : 0) }}</button>
             <button class="report-btn" @click="reported = !reported">{{ reported ? '신고 완료' : '신고' }}</button>
           </div>
         </main>
@@ -190,12 +190,19 @@ const submitComment = () => {
   align-items: center;
   gap: 6px;
   padding: 8px 18px;
-  border: 1.5px solid var(--point);
-  background: #fdf3ef;
+  border: 1.5px solid var(--border);
+  background: white;
   border-radius: 100px;
   font-size: 13px;
-  color: var(--point);
+  color: var(--muted);
   font-weight: 600;
+  cursor: pointer;
+}
+
+.like-btn.liked {
+  border: 1.5px solid var(--point);
+  background: #fdf3ef;
+  color: var(--point);
 }
 
 .report-btn {

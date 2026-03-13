@@ -102,6 +102,12 @@ const toggleLike = () => {
   background: white;
 }
 
+.like2:hover {
+  border-color: var(--point);
+  color: var(--point);
+  background: #fdf3ef;
+}
+
 .like2.liked {
   border-color: var(--point);
   color: var(--point);

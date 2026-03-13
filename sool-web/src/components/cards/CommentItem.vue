@@ -10,7 +10,12 @@
       <div class="cm-actions">
         <button class="cm-btn reply-btn" @click="showReply = !showReply">답글</button>
       </div>
-      <div v-if="showReply" class="reply-box">답글 기능은 목업 동작으로 연결해두었습니다.</div>
+      <div v-if="showReply" class="reply-box">
+        <form class="comment-inp" @submit.prevent="submitComment">
+          <input v-model="newComment" placeholder="댓글을 입력하세요" />
+          <button class="cm-send">등록</button>
+        </form>
+      </div>
     </div>
 
     <div v-if="item.replies?.length" class="replies">
@@ -134,5 +139,33 @@ defineProps({
 
 .reply:last-child {
   border-bottom: none;
+}
+
+.comment-inp {
+  margin-top: 14px;
+  display: flex;
+  gap: 6px;
+}
+
+.comment-inp input {
+  flex: 1;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0 12px;
+  font-size: 12.5px;
+  background: white;
+  color: var(--ink);
+}
+
+.cm-send {
+  height: 36px;
+  padding: 0 14px;
+  background: var(--point);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
 }
 </style>
