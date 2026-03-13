@@ -2,46 +2,23 @@
   <div class="page-wrap">
     <PageNav :links="navLinks" show-search />
 
-    <div class="signup-body">
+    <div class="login-body">
       <div class="form-shell">
         <div class="form-eyebrow">
           <span class="eyebrow-line"></span>
-          <span>CREATE ACCOUNT</span>
+          <span>SIGN IN</span>
         </div>
-        <h1 class="form-title">회원가입</h1>
-        <p class="form-sub">Sool과 함께 나만의 술 여정을 시작하세요</p>
+        <h1 class="form-title">로그인</h1>
+        <p class="form-sub">계속하려면 계정으로 로그인하세요</p>
 
-        <form @submit.prevent="signup" class="form-body">
-          <div class="field-row">
-            <div class="field-group">
-              <label class="field-label">아이디</label>
-              <input
-                v-model="loginId"
-                type="text"
-                class="field-input"
-                placeholder="아이디"
-                required
-              />
-            </div>
-            <div class="field-group">
-              <label class="field-label">이름</label>
-              <input
-                v-model="name"
-                type="text"
-                class="field-input"
-                placeholder="이름"
-                required
-              />
-            </div>
-          </div>
-
+        <form @submit.prevent="login" class="form-body">
           <div class="field-group">
-            <label class="field-label">이메일</label>
+            <label class="field-label">아이디</label>
             <input
-              v-model="email"
-              type="email"
+              v-model="loginId"
+              type="text"
               class="field-input"
-              placeholder="이메일 주소를 입력하세요"
+              placeholder="아이디를 입력하세요"
               required
             />
           </div>
@@ -58,13 +35,13 @@
           </div>
 
           <button type="submit" class="btn-submit">
-            가입하기 <span class="btn-arrow">→</span>
+            로그인하기 <span class="btn-arrow">→</span>
           </button>
         </form>
 
         <p class="form-footer">
-          이미 계정이 있으신가요?
-          <router-link to="/login" class="form-link">로그인</router-link>
+          계정이 없으신가요?
+          <router-link to="/signup" class="form-link">회원가입</router-link>
         </p>
       </div>
     </div>
@@ -72,38 +49,41 @@
 </template>
 
 <script setup>
-import PageNav from '../components/common/PageNav.vue'
+import PageNav from '../../components/common/PageNav.vue'
 import { ref } from 'vue'
 
+const navLinks = [
+  { label: '홈', to: '/', active: true }
+]
+
 const loginId = ref('')
-const name = ref('')
-const email = ref('')
 const password = ref('')
 
-const signup = () => {
-  console.log('signup', loginId.value, name.value, email.value, password.value)
+const login = () => {
+  console.log('login', loginId.value, password.value)
 }
 </script>
 
 <style scoped>
 .page-wrap {
   background: var(--bg);
-  overflow: hidden;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
   min-height: 700px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
 }
 
-.signup-body {
+.login-body {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 24px;
+  padding: 32px 24px;
 }
 
 .form-shell {
   width: 100%;
-  max-width: 420px;
+  max-width: 400px;
   background: var(--white);
   border: 1px solid var(--border);
   border-radius: 16px;
@@ -148,11 +128,6 @@ const signup = () => {
   display: flex;
   flex-direction: column;
   gap: 18px;
-}
-.field-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
 }
 .field-group {
   display: flex;

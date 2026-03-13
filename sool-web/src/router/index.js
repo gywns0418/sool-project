@@ -5,8 +5,8 @@ import DrinkDetailView from '../views/DrinkDetailView.vue'
 import NoteDetailView from '../views/NoteDetailView.vue'
 import NoteWriteView from '../views/NoteWriteView.vue'
 import MyPageView from '../views/MyPageView.vue'
-import LoginView from "../views/LoginView.vue"
-import SignupView from "../views/SignupView.vue"
+import LoginView from "../views/auth/LoginView.vue"
+import SignupView from "../views/auth/SignupView.vue"
 
 const routes = [
   { path: '/', name: 'home', component: HomeView },
