@@ -75,6 +75,10 @@
 import PageNav from '../../components/common/PageNav.vue'
 import { ref } from 'vue'
 
+const navLinks = [
+  { label: '홈', to: '/', active: true }
+]
+
 const loginId = ref('')
 const name = ref('')
 const email = ref('')

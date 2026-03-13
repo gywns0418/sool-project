@@ -1,5 +1,5 @@
-import axios from "axios"
+import api from "./apiClient"
 
 export const getHome = () => {
-  return axios.get("/api/home")
+  return api.get("/home")
 }

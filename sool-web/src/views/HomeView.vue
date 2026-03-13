@@ -6,7 +6,6 @@
       <div
         v-for="drink in drinks"
         :key="drink.drink_id"
-        class="drink-item"
       >
         <p>drinkId :{{ drink.drinkId }}</p>
         <p>categoryCode :{{ drink.categoryCode }}</p>
@@ -57,6 +56,8 @@
     </div>
 </template>
 
+
+
 <script setup>
 import PageNav from '../components/common/PageNav.vue'
 import CategoryStrip from '../components/sections/CategoryStrip.vue'
@@ -87,6 +88,8 @@ const navLinks = [
   { label: '홈', to: '/', active: true }
 ]
 </script>
+
+
 
 <style scoped>
 .page-wrap {

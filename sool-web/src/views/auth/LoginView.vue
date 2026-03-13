@@ -55,6 +55,7 @@
   </div>
 </template>
 
+
 <script setup>
 import { ref } from 'vue'
 import PageNav from '../../components/common/PageNav.vue'
@@ -70,6 +71,7 @@ const login = () => {
   console.log('login', loginId.value, password.value)
 }
 </script>
+
 
 <style scoped>
 .page-wrap {
