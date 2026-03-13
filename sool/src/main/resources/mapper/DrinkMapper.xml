@@ -37,6 +37,13 @@
         ORDER BY drink_id DESC
     </select>
 
+    <select id="drinkTop" resultType="com.example.sool.dto.DrinkDto">
+        SELECT * FROM drink
+        WHERE is_deleted = 'N'
+        ORDER BY drink_id DESC
+        LIMIT 4
+    </select>
+
     <!-- id로 정보 -->
     <select id="findByDrinkId" parameterType="int" resultType="com.example.sool.dto.DrinkDto">
         SELECT * FROM drink

@@ -67,6 +67,10 @@ public class CommonCodeService {
         return commonCodeMapper.selectCommonCodeListByGroupCode(group_code);
     }
 
+    public List<CommonCodeDto> selectCategoryList(){
+        return commonCodeMapper.selectCategoryList();
+    }
+
     //공통코드 수정
     public int updateCommonCode(CommonCodeDto commonCodeDto) {
         return commonCodeMapper.updateCommonCode(commonCodeDto);

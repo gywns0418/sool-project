@@ -22,4 +22,6 @@ public class CommentDto {
     private String isDeleted;
     private LocalDateTime deletedAt;
 
+    private Integer drinkCount;  //z카테고리 별 술 계산
+
 }

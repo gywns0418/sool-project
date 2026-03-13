@@ -31,6 +31,8 @@ public interface CommonCodeMapper {
 
     List<CommonCodeDto> selectCommonCodeListByGroupCode(String group_code);
 
+    List<CommonCodeDto> selectCategoryList();
+
     int updateCommonCode(CommonCodeDto commonCodeDto);
 
     int deleteCommonCode(int code_id);

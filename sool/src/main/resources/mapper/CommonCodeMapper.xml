@@ -54,10 +54,17 @@
 
     <!-- 공통코드 카테고리 가져오기 -->
     <select id="selectCategoryList" resultType="com.example.sool.dto.CommonCodeDto">
-        SELECT code,code_name
-        FROM common_code
-        WHERE is_deleted = 'N'
-        AND group_code = 'DRINK_CATEGORY'
+        SELECT 
+            cc.code,
+            cc.code_name,
+            COUNT(d.drink_id) AS drinkCount
+        FROM common_code cc
+        LEFT JOIN drink d
+            ON cc.code = d.category_code
+            AND d.is_deleted = 'N'
+        WHERE cc.is_deleted = 'N'
+            AND group_code = 'DRINK_CATEGORY'
+        GROUP BY cc.code, cc.code_name, cc.sort_seq
         ORDER BY sort_seq ASC
     </select>
 
