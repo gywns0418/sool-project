@@ -5,7 +5,102 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.example.sool.mapper.DrinkMapper">
-  <insert id="insertDrink" parameterType="com.example.sool.dto.DrinkDto">
+    <!-- 인기술 top4 -->
+    <select id="drinkTop" resultType="com.example.sool.dto.DrinkDto">
+        SELECT
+            d.*,
+            COUNT(l.obj_id) AS likeCount
+        FROM drink d
+        LEFT JOIN `like` l
+            ON d.drink_id = l.obj_id
+            AND l.obj_type = 'DRINK'
+        WHERE d.is_deleted = 'N'
+        GROUP BY d.drink_id
+        ORDER BY likeCount DESC, d.created_at DESC
+        LIMIT 4
+    </select>
+
+    <!-- 검색 -->
+    <select id="searchDrinkList" parameterType="com.example.sool.dto.DrinkSearchDto"
+        resultType="com.example.sool.dto.DrinkDto">
+        SELECT
+            d.*,
+            cc1.code_name AS categoryName,
+            cc2.code_name AS typeName
+
+        FROM drink d
+
+        LEFT JOIN common_code cc1
+            ON d.category_code = cc1.code
+            AND cc1.group_code = 'DRINK_CATEGORY'
+            AND cc1.use_yn = 'Y'
+
+        LEFT JOIN common_code cc2
+            ON d.type_code = cc2.code
+            AND cc2.group_code = 'DRINK_TYPE'
+            AND cc2.use_yn = 'Y'
+
+        <if test="keyword != null and keyword != ''">
+            INNER JOIN (
+
+                SELECT d1.drink_id
+                FROM drink d1
+                WHERE d1.is_deleted = 'N'
+                AND d1.drink_name LIKE CONCAT(#{keyword}, '%')
+
+                UNION
+
+                SELECT d2.drink_id
+                FROM drink d2
+                WHERE d2.is_deleted = 'N'
+                AND d2.drink_name_en LIKE CONCAT(#{keyword}, '%')
+
+                UNION
+
+                <!-- 카테고리 대분류 -->
+                SELECT d3.drink_id
+                FROM drink d3
+                INNER JOIN common_code c1
+                    ON d3.category_code = c1.code
+                    AND c1.group_code = 'DRINK_CATEGORY'
+                    AND c1.use_yn = 'Y'
+                WHERE d3.is_deleted = 'N'
+                AND c1.code_name LIKE CONCAT(#{keyword}, '%')
+
+                UNION
+
+                <!-- 카테고리 소분류 -->
+                SELECT d4.drink_id
+                FROM drink d4
+                INNER JOIN common_code c2
+                    ON d4.type_code = c2.code
+                    AND c2.group_code = 'DRINK_TYPE'
+                    AND c2.use_yn = 'Y'
+                WHERE d4.is_deleted = 'N'
+                AND c2.code_name LIKE CONCAT(#{keyword}, '%')
+
+            ) s
+            ON d.drink_id = s.drink_id
+        </if>
+
+        <where>
+            d.is_deleted = 'N'
+
+            <if test="categoryCode != null and categoryCode != ''">
+                AND d.category_code = #{categoryCode}
+            </if>
+
+            <if test="typeCode != null and typeCode != ''">
+                AND d.type_code = #{typeCode}
+            </if>
+
+        </where>
+        ORDER BY d.drink_id DESC
+        LIMIT #{size}
+        OFFSET #{offset}
+    </select>
+
+    <insert id="insertDrink" parameterType="com.example.sool.dto.DrinkDto">
         INSERT INTO drink (
             category_code,
             type_code,
@@ -37,20 +132,7 @@
         ORDER BY drink_id DESC
     </select>
 
-    <!-- 인기술 top4 -->
-    <select id="drinkTop" resultType="com.example.sool.dto.DrinkDto">
-        SELECT
-            d.*,
-            COUNT(l.obj_id) AS like_count
-        FROM drink d
-        LEFT JOIN `like` l
-            ON d.drink_id = l.obj_id
-            AND l.obj_type = 'DRINK'
-        WHERE d.is_deleted = 'N'
-        GROUP BY d.drink_id
-        ORDER BY like_count DESC
-        LIMIT 4
-    </select>
+
 
     <!-- id로 정보 -->
     <select id="findByDrinkId" parameterType="int" resultType="com.example.sool.dto.DrinkDto">
@@ -59,37 +141,7 @@
         AND is_deleted = 'N'
     </select>
 
-    <!-- 검색 -->
-    <select id="searchDrinkList" parameterType="String" resultType="com.example.sool.dto.DrinkDto">
-        SELECT
-            d.*
-        FROM drink d
-        <!-- 카테고리 대분류 이름 조인 -->
-        LEFT JOIN common_code cc1
-            ON d.category_code = cc1.code
-        AND cc1.group_code = 'DRINK_CATEGORY'
-        AND cc1.is_deleted = 'N'
-        AND cc1.use_yn = 'Y'
-        <!-- 카테고리 소분류 이름 조인 -->
-        LEFT JOIN common_code cc2
-            ON d.type_code = cc2.code
-        AND cc2.group_code = 'DRINK_TYPE'
-        AND cc2.is_deleted = 'N'
-        AND cc2.use_yn = 'Y'
-        <where>
-            d.is_deleted = 'N'
-            <!-- 주류 검색 -->
-            <if test="keyword != null and keyword != ''">
-                AND (
-                    d.drink_name LIKE CONCAT(#{keyword}, '%')
-                    OR d.drink_name_en LIKE CONCAT(#{keyword}, '%')
-                    OR cc1.code_name LIKE CONCAT(#{keyword}, '%')
-                    OR cc2.code_name LIKE CONCAT(#{keyword}, '%')
-                )
-            </if>
-        </where>
-        ORDER BY d.drink_id DESC
-    </select>
+
 
     <update id="updateDrink" parameterType="com.example.sool.dto.DrinkDto">
         UPDATE drink

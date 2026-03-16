@@ -1,9 +1,9 @@
 export const categories = [
-  { id: 1, emoji: '🍷', name: '와인', count: '124종' },
-  { id: 2, emoji: '🥃', name: '위스키', count: '98종' },
-  { id: 3, emoji: '🍺', name: '맥주', count: '86종' },
-  { id: 4, emoji: '🍶', name: '전통주', count: '54종' },
-  { id: 5, emoji: '🍸', name: '칵테일', count: '38종' }
+  { id: 1, emoji: '🍷', name: 'WINE'},
+  { id: 2, emoji: '🥃', name: 'WHISKY'},
+  { id: 3, emoji: '🍺', name: 'BEER'},
+  { id: 4, emoji: '🍶', name: 'TRADITIONAL'},
+  { id: 5, emoji: '🍸', name: 'COCKTAIL'}
 ]
 
 export const popularDrinks = [

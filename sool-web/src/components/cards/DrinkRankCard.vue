@@ -1,25 +1,43 @@
 <template>
-  <router-link class="drink-card" :to="`/drinks/${item.id}`">
+  <router-link class="drink-card" :to="`/drinks/${displayItem.drinkId}`">
     <div class="drink-thumb">
-      {{ item.emoji }}
-      <div class="drink-rank" :class="{ gold: item.gold }">{{ item.rank }}</div>
+      {{ displayItem.emoji }}
+      <div class="drink-rank" :class="{ gold: rank === 1 }">
+        {{ rank }}
+      </div>
     </div>
+
     <div class="drink-info">
-      <div class="drink-cat">{{ item.category }}</div>
-      <div class="drink-name">{{ item.name }}</div>
+      <div class="drink-cat">{{ displayItem.typeCode }}</div>
+      <div class="drink-name">{{ displayItem.drinkName }}</div>
       <div class="drink-meta">
-        <span class="drink-stars">{{ item.rating }}</span>
-        <span class="drink-like">♡ {{ item.likes }}</span>
+        <span class="drink-like">♥ {{ displayItem.likeCount }}</span>
       </div>
     </div>
   </router-link>
 </template>
 
 <script setup>
-defineProps({
+import { computed } from "vue"
+import { categories } from "@/mock/soolData"
+
+const props = defineProps({
   item: {
     type: Object,
     required: true
+  },
+  rank: {
+    type: Number,
+    default: 1
+  }
+})
+
+const displayItem = computed(() => {
+  const emojiData = categories.find(e => e.name === props.item.categoryCode)
+
+  return {
+    ...props.item,
+    emoji: emojiData ? emojiData.emoji : "🍹"
   }
 })
 </script>
@@ -101,13 +119,10 @@ defineProps({
   justify-content: space-between;
 }
 
-.drink-stars {
-  font-size: 12px;
-  color: var(--yellow);
-}
-
 .drink-like {
   font-size: 11.5px;
-  color: var(--muted);
+  color: #d62828;
+  border-color: #d62828;
+  margin-left: auto;
 }
 </style>

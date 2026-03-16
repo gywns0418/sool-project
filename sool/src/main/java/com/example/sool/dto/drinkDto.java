@@ -26,6 +26,9 @@ public class DrinkDto {
     private LocalDateTime deletedAt;
 
     //인기술 top4 좋아요 수 기반
-    private Integer like_count;
+    private Integer likeCount;
+
+    private String categoryName;
+    private String typeName;   
 
 }

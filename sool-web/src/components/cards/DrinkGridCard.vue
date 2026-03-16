@@ -1,22 +1,34 @@
 <template>
-  <router-link class="drink-card2" :to="`/drinks/${item.id}`">
-    <div class="thumb2">{{ item.emoji }}</div>
+  <router-link class="drink-card2" :to="`/drinks/${item.drinkId}`">
+    
+    <div class="thumb2">{{ emoji }}</div>
+
     <div class="info2">
-      <div class="cat2">{{ item.category }}</div>
-      <div class="name2">{{ item.name }}</div>
-      <div class="abv2">{{ item.meta }}</div>
+      <div class="cat2">{{ item.typeName || item.typeCode }}</div>
+
+      <div class="name2">{{ item.drinkName }}</div>
+
+      <div class="abv2">{{ item.abv }}%</div>
+
       <div class="meta2">
-        <span class="stars2">{{ item.rating }}</span>
-        <button class="like2" :class="{ liked }" @click.prevent="toggleLike">
+        <span class="stars2">★{{ item.avgRating ?? '-' }}</span>
+
+        <button
+          class="like2"
+          :class="{ liked }"
+          @click.prevent="toggleLike"
+        >
           {{ liked ? '♥' : '♡' }} {{ likeCount }}
         </button>
       </div>
     </div>
+
   </router-link>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from "vue"
+import { categories } from "@/mock/soolData"
 
 const props = defineProps({
   item: {
@@ -25,13 +37,18 @@ const props = defineProps({
   }
 })
 
-const liked = ref(!!props.item.liked)
-const likeCount = ref(props.item.likes)
+const liked = ref(false)
+const likeCount = ref(props.item.likeCount ?? 0)
 
 const toggleLike = () => {
   liked.value = !liked.value
   likeCount.value += liked.value ? 1 : -1
 }
+
+const emoji = computed(() => {
+  const data = categories.find(e => e.name === props.item.categoryCode)
+  return data ? data.emoji : "🍹"
+})
 </script>
 
 <style scoped>

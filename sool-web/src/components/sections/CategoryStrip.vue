@@ -3,26 +3,51 @@
     <h3>카테고리로 빠르게 탐색</h3>
     <div class="cat-pills">
       <router-link
-        v-for="category in items"
-        :key="category.id"
+        v-for="item in categoryListWithEmoji"
+        :key="item.code"
         class="cat-pill"
-        :to="{ path: '/drinks', query: { category: category.name } }"
+        :to="{ path: '/drinks', query: { category: item.code } }"
       >
-        <span class="cat-emoji">{{ category.emoji }}</span>
-        {{ category.name }}
-        <span class="cat-count">{{ category.count }}</span>
+        <span class="cat-emoji">{{ item.emoji }}</span>
+        {{ item.codeName }}
+        <span class="cat-count">{{ item.drinkCount }}</span>
       </router-link>
     </div>
   </div>
 </template>
 
 <script setup>
-defineProps({
-  items: {
-    type: Array,
-    default: () => []
-  }
+import { ref, onMounted, computed } from "vue"
+import { getHome } from "@/api/homeApi"
+import { categories } from "@/mock/soolData"
+
+const catelist = ref([])
+
+const categoryListWithEmoji = computed(() => {
+  return catelist.value.map(item => {
+    const emojiData = categories.find(e => e.name === item.code)
+
+    return {
+      ...item,
+      emoji: emojiData ? emojiData.emoji : "🍹"//매치가 안될경우 기본값
+    }
+  })
 })
+
+const loadCate = async () => {
+  try {
+    const res = await getHome()
+    catelist.value = res.data.catelist
+    console.log(res.data)
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+onMounted(() => {
+  loadCate()
+})
+
 </script>
 
 <style scoped>

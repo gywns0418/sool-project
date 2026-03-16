@@ -43,11 +43,11 @@
         ORDER BY group_code ASC, sort_seq ASC, code_id ASC
     </select>
 
-    <!-- 특정 공통코드 그룹 조회 -->
-    <select id="selectCommonCodeListByGroupCode" parameterType="String" resultType="com.example.sool.dto.CommonCodeDto">
+    <!-- 주류 카테고리 리스트 조회 -->
+    <select id="getDrinkCategoryList"  resultType="com.example.sool.dto.CommonCodeDto">
         SELECT *
         FROM common_code
-        WHERE group_code = #{group_code}
+        WHERE group_code = 'DRINK_CATEGORY'
         AND is_deleted = 'N'
         ORDER BY sort_seq ASC, code_id ASC
     </select>

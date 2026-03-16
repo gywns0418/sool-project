@@ -1,133 +1,244 @@
 <template>
-    <div class="page-wrap">
-      <PageNav :links="navLinks" />
+  <div class="page-wrap">
+    <PageNav :links="navLinks" />
 
-      <div class="list-body">
-        <aside class="filter-panel">
-          <h4>카테고리</h4>
-          <div class="filter-cats">
-            <button
-              v-for="category in categoryOptions"
-              :key="category.name"
-              class="filter-cat-item"
-              :class="{ sel: selectedCategory === category.name }"
-              @click="selectedCategory = category.name"
-            >
-              {{ category.label }} <span class="filter-count">{{ category.count }}</span>
-            </button>
-          </div>
+    <div class="list-body">
+      <aside class="filter-panel">
+        <h4>카테고리</h4>
+        <div class="filter-cats">
+          <button
+            v-for="category in categoryOptions"
+            :key="category.code"
+            class="filter-cat-item"
+            :class="{ sel: selectedCategory === category.code }"
+            @click="changeCategory(category.code)"
+          >
+            {{ category.label }}
+            <span class="filter-count">{{ category.drinkCount }}</span>
+          </button>
+        </div>
 
-          <h4>도수 (%)</h4>
-          <div class="range-row">
-            <input v-model="minAbv" class="range-inp" />
-            <span class="range-sep">—</span>
-            <input v-model="maxAbv" class="range-inp" />
-          </div>
+        <h4>도수 (%)</h4>
+        <div class="range-row">
+          <input v-model="minAbv" class="range-inp" />
+          <span class="range-sep">—</span>
+          <input v-model="maxAbv" class="range-inp" />
+        </div>
 
-          <h4>가격대 (원)</h4>
-          <div class="range-row">
-            <input value="0" class="range-inp" />
-            <span class="range-sep">—</span>
-            <input value="500,000" class="range-inp" />
-          </div>
-        </aside>
+        <h4>가격대 (원)</h4> 
+        <div class="range-row"> 
+          <input value="0" class="range-inp" /> 
+          <span class="range-sep">—</span> 
+          <input value="500,000" class="range-inp" /> 
+        </div>
+      </aside>
 
-        <section class="list-main">
-          <div class="list-top">
-            <h2>{{ titleLabel }} <span class="sub-count">{{ filteredDrinks.length }}개</span></h2>
-            <div class="list-controls">
-              <form @submit.prevent class="list-search-form">
-                <input v-model="searchKeyword" class="search-inp" placeholder="술 이름 검색" />
-              </form>
-              <select v-model="sortBy" class="sort-select">
-                <option value="latest">최신순</option>
-                <option value="rating">별점 높은순</option>
-                <option value="likes">좋아요순</option>
-              </select>
-            </div>
-          </div>
+      <section class="list-main">
+        <div class="list-top">
+          <h2>{{ titleLabel }} <span class="sub-count">{{ totalCount }}개</span></h2>
 
-          <div class="drinks-grid">
-            <DrinkGridCard v-for="drink in filteredDrinks" :key="drink.id" :item="drink" />
+          <div class="list-controls">
+            <form @submit.prevent="applySearch" class="list-search-form">
+              <input v-model="searchKeyword" 
+              class="search-inp" 
+              placeholder="술 이름 검색" />
+            </form>
+
+            <select v-model="sortBy" class="sort-select" @change="changeSort">
+              <option value="latest">최신순</option>
+              <option value="likes">좋아요순</option>
+              <option value="name">이름순</option>
+            </select>
           </div>
-        </section>
-      </div>
+        </div>
+
+        <div class="drinks-grid">
+          <DrinkGridCard
+            v-for="drink in drinkList"
+            :key="drink.drinkId"
+            :item="drink"
+          />
+        </div>
+
+        <div v-if="drinkList.length === 0" class="empty-box">
+          검색 결과가 없습니다.
+        </div>
+
+        <div class="pagination" v-if="totalPage > 1">
+          <button class="page-btn" :disabled="page === 1" @click="movePage(page - 1)">이전</button>
+
+          <button
+            v-for="pageNum in visiblePages"
+            :key="pageNum"
+            class="page-btn"
+            :class="{ active: page === pageNum }"
+            @click="movePage(pageNum)"
+          >
+            {{ pageNum }}
+          </button>
+
+          <button class="page-btn" :disabled="page === totalPage" @click="movePage(page + 1)">다음</button>
+        </div>
+      </section>
     </div>
+  </div>
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import PageNav from '../components/common/PageNav.vue'
-import DrinkGridCard from '../components/cards/DrinkGridCard.vue'
-import { drinkGrid } from '../mock/soolData'
+import { computed, ref, watch } from "vue"
+import { useRoute, useRouter } from "vue-router"
+import PageNav from "../components/common/PageNav.vue"
+import DrinkGridCard from "../components/cards/DrinkGridCard.vue"
+import { getDrinkList, getDrinkCategoryList } from "@/api/drinkApi"
+import { categories } from "@/mock/soolData"
 
 const navLinks = [
-  { label: '홈', to: '/' },
-  { label: '술 목록', to: '/drinks', active: true }
+  { label: "홈", to: "/" },
+  { label: "술 목록", to: "/drinks", active: true }
 ]
 
 const route = useRoute()
 const router = useRouter()
-const selectedCategory = ref('전체')
-const searchKeyword = ref('')
-const sortBy = ref('latest')
-const minAbv = ref('0')
-const maxAbv = ref('60')
 
-const categoryOptions = [
-  { name: '전체', label: '전체', count: 382 },
-  { name: '와인', label: '🍷 와인', count: 124 },
-  { name: '위스키', label: '🥃 위스키', count: 98 },
-  { name: '맥주', label: '🍺 맥주', count: 86 },
-  { name: '전통주', label: '🍶 전통주', count: 54 },
-  { name: '기타', label: '🍸 기타', count: 20 }
-]
+const drinkList = ref([])
+const categoryOptions = ref([])
+const totalCount = ref(0)
+const totalPage = ref(1)
+
+const selectedCategory = ref("")
+const searchKeyword = ref("")
+const sortBy = ref("latest")
+const minAbv = ref("0")
+const maxAbv = ref("60")
+const page = ref(1)
+const size = ref(12)
+
+const makeCategoryLabel = (item) => {
+  if (!item.code) return item.codeName
+  const emojiData = categories.find(e => e.name === item.code)
+  return emojiData ? `${emojiData.emoji} ${item.codeName}` : item.codeName
+}
+
+const loadCategoryList = async () => {
+  try {
+    const res = await getDrinkCategoryList()
+    const list = res.data || []
+    
+    categoryOptions.value = [
+      {
+        code: "",
+        codeName: "전체",
+        label: "전체",
+        drinkCount: list.reduce((sum, item) => sum + (item.drinkCount || 0), 0)
+      },
+      ...list.map(item => ({
+        ...item,
+        label: makeCategoryLabel(item)
+      }))
+    ]
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const loadDrinkList = async () => {
+  try {
+    const params = {
+      keyword: searchKeyword.value.trim() || null,
+      categoryCode: selectedCategory.value || null,
+      minAbv: minAbv.value || null,
+      maxAbv: maxAbv.value || null,
+      sort: sortBy.value,
+      page: page.value,
+      size: size.value
+    }
+
+    console.log("요청 params =", params)
+
+    const res = await getDrinkList(params)
+
+    drinkList.value = Array.isArray(res.data) ? res.data : (res.data.list || [])
+    totalCount.value = Array.isArray(res.data) ? res.data.length : (res.data.totalCount || 0)
+    totalPage.value = Array.isArray(res.data) ? 1 : (res.data.totalPage || 1)
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const syncFromRoute = () => {
+  selectedCategory.value = typeof route.query.categoryCode === "string" ? route.query.categoryCode : ""
+  searchKeyword.value = typeof route.query.keyword === "string" ? route.query.keyword : ""
+  sortBy.value = typeof route.query.sort === "string" ? route.query.sort : "latest"
+  minAbv.value = typeof route.query.minAbv === "string" ? route.query.minAbv : "0"
+  maxAbv.value = typeof route.query.maxAbv === "string" ? route.query.maxAbv : "60"
+  page.value = route.query.page ? Number(route.query.page) : 1
+}
+
+const updateRoute = () => {
+  const query = {}
+
+  if (selectedCategory.value) query.categoryCode = selectedCategory.value
+  if (searchKeyword.value.trim()) query.keyword = searchKeyword.value.trim()
+  if (sortBy.value && sortBy.value !== "latest") query.sort = sortBy.value
+  if (minAbv.value && minAbv.value !== "0") query.minAbv = minAbv.value
+  if (maxAbv.value && maxAbv.value !== "60") query.maxAbv = maxAbv.value
+  if (page.value > 1) query.page = page.value
+
+  router.replace({ path: "/drinks", query })
+}
+
+const changeCategory = (code) => {
+  selectedCategory.value = code
+  page.value = 1
+  updateRoute()
+}
+
+const applySearch = () => {
+  page.value = 1
+  updateRoute()
+  
+  searchKeyword="" //검색후 초기화
+}
+
+const changeSort = () => {
+  page.value = 1
+  updateRoute()
+}
+
+const movePage = (pageNum) => {
+  if (pageNum < 1 || pageNum > totalPage.value) return
+  page.value = pageNum
+  updateRoute()
+}
 
 watch(
   () => route.query,
-  (query) => {
-    searchKeyword.value = typeof query.q === 'string' ? query.q : ''
-    selectedCategory.value = typeof query.category === 'string' ? query.category : '전체'
+  async () => {
+    syncFromRoute()
+    await loadDrinkList()
   },
   { immediate: true }
 )
 
-watch([searchKeyword, selectedCategory], ([q, category]) => {
-  const nextQuery = {}
-  if (q.trim()) nextQuery.q = q.trim()
-  if (category && category !== '전체') nextQuery.category = category
-  router.replace({ path: '/drinks', query: nextQuery })
+loadCategoryList()
+
+const titleLabel = computed(() => {
+  if (!selectedCategory.value) return "전체 주류"
+  const found = categoryOptions.value.find(item => item.code === selectedCategory.value)
+  return found ? found.codeName : "전체 주류"
 })
 
-const parseRating = (rating) => Number((rating.match(/(\d+(?:\.\d+)?)/) || [0])[1])
-const parseCountryCategory = (drink) => {
-  const map = {
-    와인: ['와인', '샴페인', '화이트', '로제'],
-    위스키: ['몰트', '위스키'],
-    맥주: ['에일', '맥주', '라거'],
-    전통주: ['전통주'],
-    기타: ['칵테일', '기타']
+const visiblePages = computed(() => {
+  const start = Math.max(1, page.value - 2)
+  const end = Math.min(totalPage.value, start + 4)
+  const pages = []
+
+  for (let i = start; i <= end; i++) {
+    pages.push(i)
   }
-  return Object.entries(map).find(([, keywords]) => keywords.some((word) => drink.category.includes(word)))?.[0] || '기타'
-}
-const parseAbv = (meta) => Number(meta.split('%')[0])
 
-const filteredDrinks = computed(() => {
-  let items = [...drinkGrid].filter((drink) => {
-    const matchedCategory = selectedCategory.value === '전체' || parseCountryCategory(drink) === selectedCategory.value
-    const matchedKeyword = !searchKeyword.value.trim() || drink.name.toLowerCase().includes(searchKeyword.value.trim().toLowerCase())
-    const abv = parseAbv(drink.meta)
-    const matchedAbv = abv >= Number(minAbv.value || 0) && abv <= Number(maxAbv.value || 100)
-    return matchedCategory && matchedKeyword && matchedAbv
-  })
-
-  if (sortBy.value === 'rating') items.sort((a, b) => parseRating(b.rating) - parseRating(a.rating))
-  if (sortBy.value === 'likes') items.sort((a, b) => b.likes - a.likes)
-  return items
+  return pages
 })
-
-const titleLabel = computed(() => (selectedCategory.value === '전체' ? '전체 술' : selectedCategory.value))
 </script>
 
 <style scoped>
@@ -267,5 +378,41 @@ const titleLabel = computed(() => (selectedCategory.value === '전체' ? '전체
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 14px;
+}
+
+.empty-box {
+  padding: 40px 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.pagination {
+  margin-top: 28px;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.page-btn {
+  min-width: 34px;
+  height: 34px;
+  border: 1px solid var(--border);
+  background: var(--white);
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.page-btn.active {
+  background: #fdf3ef;
+  border-color: var(--point);
+  color: var(--point);
+  font-weight: 600;
+}
+
+.page-btn:disabled {
+  cursor: default;
+  opacity: 0.5;
 }
 </style>

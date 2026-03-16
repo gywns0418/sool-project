@@ -47,6 +47,17 @@ public class CommonCodeService {
 
     //공통 코드
 
+    //홈 카테고리로 빠르게 탐색
+    public List<CommonCodeDto> selectCategoryList(){
+        return commonCodeMapper.selectCategoryList();
+    }
+
+    //주류 카테고리 리스트 조회
+    public List<CommonCodeDto> getDrinkCategoryList() {
+        return commonCodeMapper.getDrinkCategoryList();
+    }
+
+
     //공통코드 등록
     public int insertCommonCode(CommonCodeDto commonCodeDto) {
         return commonCodeMapper.insertCommonCode(commonCodeDto);
@@ -62,14 +73,9 @@ public class CommonCodeService {
         return commonCodeMapper.selectCommonCodeList();
     }
 
-    //특정 공통코드 그룹 조회
-    public List<CommonCodeDto> selectCommonCodeListByGroupCode(String group_code) {
-        return commonCodeMapper.selectCommonCodeListByGroupCode(group_code);
-    }
 
-    public List<CommonCodeDto> selectCategoryList(){
-        return commonCodeMapper.selectCategoryList();
-    }
+
+
 
     //공통코드 수정
     public int updateCommonCode(CommonCodeDto commonCodeDto) {

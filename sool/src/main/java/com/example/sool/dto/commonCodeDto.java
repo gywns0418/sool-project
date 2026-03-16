@@ -21,4 +21,6 @@ public class CommonCodeDto {
     private LocalDateTime updatedAt;
     private String isDeleted;
     private LocalDateTime deletedAt;
+
+    private Integer drinkCount;  //카테고리 별 술 계산
 }

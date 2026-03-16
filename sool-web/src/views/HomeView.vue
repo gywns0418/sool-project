@@ -7,18 +7,6 @@
         v-for="drink in drinks"
         :key="drink.drink_id"
       >
-        <p>drinkId :{{ drink.drinkId }}</p>
-        <p>categoryCode :{{ drink.categoryCode }}</p>
-        <p>typeCode : {{ drink.typeCode }}</p>
-        <p>drinkName : {{ drink.drinkName }}</p>
-        <p>drinkNameEn : {{ drink.drinkNameEn }}</p>
-        <p>abv : {{ drink.abv }}</p>
-        <p>price : {{ drink.price }}</p>
-        <p>country : {{ drink.country }}</p>
-        <p>description : {{ drink.description }}</p>
-        <p>createdAt : {{ drink.createdAt }}</p>
-        <p>updatedAt : {{ drink.updatedAt }}</p>
-        <p>isDeleted : {{ drink.isDeleted }}</p>
       </div>
       <section class="hero">
         <div class="hero-left">
@@ -38,7 +26,12 @@
           <div class="section-title">이번 주 인기 술 ✦</div>
         </div>
         <div class="drinks-row">
-          <DrinkRankCard v-for="drink in popularDrinks" :key="drink.id" :item="drink" />
+          <DrinkRankCard
+            v-for="(drink, index) in popularDrinks"
+            :key="drink.drinkId"
+            :item="drink"
+            :rank="index + 1"
+          />
         </div>
       </section>
 
@@ -63,17 +56,19 @@ import PageNav from '../components/common/PageNav.vue'
 import CategoryStrip from '../components/sections/CategoryStrip.vue'
 import DrinkRankCard from '../components/cards/DrinkRankCard.vue'
 import RecentNoteCard from '../components/cards/RecentNoteCard.vue'
-import { categories, popularDrinks, recentNotes } from '../mock/soolData'
+import { categories, recentNotes } from '../mock/soolData'
 
 import { ref, onMounted } from "vue"
 import { getHome } from "@/api/homeApi"
 
 const drinks = ref([])
+const popularDrinks = ref([])
 
 const loadHome = async () => {
   try {
     const res = await getHome()
     drinks.value = res.data.drinks
+    popularDrinks.value = res.data.drinkTop
     console.log(res.data)
   } catch (error) {
     console.log(error)

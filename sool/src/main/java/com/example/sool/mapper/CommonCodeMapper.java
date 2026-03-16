@@ -23,15 +23,22 @@ public interface CommonCodeMapper {
 
 
     //공통 코드
+
+    //홈 카레고리 빠르게 탐색
+    List<CommonCodeDto> selectCategoryList();
+
+    //주류 카테고리 리스트 조회
+    List<CommonCodeDto> getDrinkCategoryList();
+
     int insertCommonCode(CommonCodeDto commonCodeDto);
 
     CommonCodeDto selectCommonCodeById(int code_id);
     
     List<CommonCodeDto> selectCommonCodeList();
 
-    List<CommonCodeDto> selectCommonCodeListByGroupCode(String group_code);
+    
 
-    List<CommonCodeDto> selectCategoryList();
+
 
     int updateCommonCode(CommonCodeDto commonCodeDto);
 

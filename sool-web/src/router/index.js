@@ -11,7 +11,7 @@ import SignupView from "../views/auth/SignupView.vue"
 const routes = [
   { path: '/', name: 'home', component: HomeView },
   { path: '/drinks', name: 'drink-list', component: DrinkListView },
-  { path: '/drinks/:id', name: 'drink-detail', component: DrinkDetailView },
+  { path: '/drinks/:drinkId', name: 'drink-detail', component: DrinkDetailView },
   { path: '/notes/:id', name: 'note-detail', component: NoteDetailView },
   { path: '/notes/write', name: 'note-write', component: NoteWriteView },
   { path: '/mypage', name: 'mypage', component: MyPageView },

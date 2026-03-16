@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.example.sool.dto.DrinkDto;
+import com.example.sool.dto.DrinkSearchDto;
 import com.example.sool.mapper.DrinkMapper;
 
 @Service
@@ -16,6 +17,17 @@ public class DrinkService {
         this.drinkMapper = drinkMapper;
     }
 
+
+    //인기술 top4
+    public List<DrinkDto> drinkTop() {
+        return drinkMapper.drinkTop();
+    }
+
+    //검색
+    public List<DrinkDto> searchDrinkList(DrinkSearchDto drinkSearchDto) {
+        return drinkMapper.searchDrinkList(drinkSearchDto);
+    }
+
     public int insertDrink(DrinkDto drinkDTO) {
         return drinkMapper.insertDrink(drinkDTO);
     }
@@ -24,18 +36,11 @@ public class DrinkService {
         return drinkMapper.drinkAll();
     }
 
-    //인기술 top4
-    public List<DrinkDto> drinkTop() {
-        return drinkMapper.drinkTop();
-    }
-
     public DrinkDto findByDrinkId(Integer drinkId) {
         return drinkMapper.findByDrinkId(drinkId);
     }
 
-    public DrinkDto searchDrinkList(String keyword) {
-        return drinkMapper.searchDrinkList(keyword);
-    }
+
 
     public int updateDrink(DrinkDto drinkDTO) {
         return drinkMapper.updateDrink(drinkDTO);
