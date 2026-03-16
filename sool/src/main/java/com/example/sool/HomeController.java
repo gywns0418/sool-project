@@ -9,8 +9,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.sool.dto.CommonCodeDto;
 import com.example.sool.dto.DrinkDto;
+import com.example.sool.dto.TastingNoteDto;
 import com.example.sool.service.CommonCodeService;
 import com.example.sool.service.DrinkService;
+import com.example.sool.service.TastingNoteService;
 
 
 @RestController
@@ -18,10 +20,14 @@ public class HomeController {
 
     private final DrinkService drinkService;
     private final CommonCodeService commonCodeService;
+    private final TastingNoteService tastingNoteService;
 
-    public HomeController(DrinkService drinkService,CommonCodeService commonCodeService) {
+    public HomeController(DrinkService drinkService,CommonCodeService commonCodeService,
+                            TastingNoteService tastingNoteService) {
         this.drinkService = drinkService;
         this.commonCodeService = commonCodeService;
+        this.tastingNoteService = tastingNoteService;
+
     }
 
     @GetMapping("/api/home")
@@ -31,9 +37,13 @@ public class HomeController {
 
         List<DrinkDto> drinks = drinkService.drinkAll();
         List<CommonCodeDto> catelist = commonCodeService.selectCategoryList();
+        List<DrinkDto> drinkTop = drinkService.drinkTop();
+        List<TastingNoteDto> recentNote = tastingNoteService.recentNote();
 
         map.put("drinks", drinks);
         map.put("catelist", catelist);
+        map.put("drinkTop", drinkTop);
+        map.put("recentNote", recentNote);
         
         return map;
     }

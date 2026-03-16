@@ -46,6 +46,39 @@
         ORDER BY created_at DESC
     </select>
 
+    <!-- 최근 노트 3개 조회 -->
+    <select id="recentNote" resultType="com.example.sool.dto.TastingNoteDto">
+        SELECT
+            tn.note_id,
+            tn.user_id,
+            tn.drink_id,
+            tn.title,
+            tn.rating,
+            tn.content,
+            tn.created_at,
+            u.name AS user_name,
+            d.drink_name,
+            cc.code_name AS type_name
+        FROM tasting_note tn
+
+        LEFT JOIN user u
+            ON tn.user_id = u.user_id
+            AND u.is_deleted = 'N'
+
+        LEFT JOIN drink d
+            ON tn.drink_id = d.drink_id
+            AND d.is_deleted = 'N'
+
+        LEFT JOIN common_code cc
+            ON d.type_code = cc.code
+            AND cc.group_code = 'DRINK_TYPE'
+            AND cc.use_yn = 'Y'
+
+        WHERE tn.is_deleted = 'N'
+        ORDER BY tn.created_at DESC
+        LIMIT 3
+    </select>
+
     <!-- 별점높은순 정렬 -->
     <select id="orderByRatingDesc" parameterType="int" resultType="com.example.sool.dto.TastingNoteDto">
         SELECT *

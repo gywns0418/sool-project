@@ -52,7 +52,7 @@
         ORDER BY sort_seq ASC, code_id ASC
     </select>
 
-    <!-- 공통코드 카테고리 가져오기 -->
+    <!-- 메인 카테고리 가져오기 -->
     <select id="selectCategoryList" resultType="com.example.sool.dto.CommonCodeDto">
         SELECT 
             cc.code,

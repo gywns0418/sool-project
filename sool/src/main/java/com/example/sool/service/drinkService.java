@@ -24,6 +24,11 @@ public class DrinkService {
         return drinkMapper.drinkAll();
     }
 
+    //인기술 top4
+    public List<DrinkDto> drinkTop() {
+        return drinkMapper.drinkTop();
+    }
+
     public DrinkDto findByDrinkId(Integer drinkId) {
         return drinkMapper.findByDrinkId(drinkId);
     }

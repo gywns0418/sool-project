@@ -37,10 +37,18 @@
         ORDER BY drink_id DESC
     </select>
 
+    <!-- 인기술 top4 -->
     <select id="drinkTop" resultType="com.example.sool.dto.DrinkDto">
-        SELECT * FROM drink
-        WHERE is_deleted = 'N'
-        ORDER BY drink_id DESC
+        SELECT
+            d.*,
+            COUNT(l.obj_id) AS like_count
+        FROM drink d
+        LEFT JOIN `like` l
+            ON d.drink_id = l.obj_id
+            AND l.obj_type = 'DRINK'
+        WHERE d.is_deleted = 'N'
+        GROUP BY d.drink_id
+        ORDER BY like_count DESC
         LIMIT 4
     </select>
 

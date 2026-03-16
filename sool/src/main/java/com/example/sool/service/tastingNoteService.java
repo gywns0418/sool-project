@@ -34,6 +34,11 @@ public class TastingNoteService {
         return tastingNoteMapper.findNoteAll(drinkId);
     }
 
+    //최근 노트 3개 조회
+    public List<TastingNoteDto> recentNote(){
+        return tastingNoteMapper.recentNote();
+    }
+
     public List<TastingNoteDto> orderByRatingDesc(Integer drinkId){
         return tastingNoteMapper.orderByRatingDesc(drinkId);
     }

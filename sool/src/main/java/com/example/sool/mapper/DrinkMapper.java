@@ -14,6 +14,9 @@ public interface DrinkMapper {
 
     List<DrinkDto> drinkAll();
 
+    //인기술 top4
+    List<DrinkDto> drinkTop();
+
     DrinkDto findByDrinkId(Integer drinkId);
 
     DrinkDto searchDrinkList(String keyword);
