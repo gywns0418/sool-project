@@ -17,7 +17,6 @@ public class TastingNoteDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String isDeleted;
-    private LocalDateTime deletedAt;
 
     //홈 최근 테이스팅 노트 
     private String user_name;

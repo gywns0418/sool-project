@@ -20,6 +20,5 @@ public class CommentDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String isDeleted;
-    private LocalDateTime deletedAt;
 
 }
