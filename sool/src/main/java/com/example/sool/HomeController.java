@@ -35,13 +35,11 @@ public class HomeController {
 
         Map<String,Object> map = new HashMap<>();
 
-        List<DrinkDto> drinks = drinkService.drinkAll();
-        List<CommonCodeDto> catelist = commonCodeService.selectCategoryList();
+        List<CommonCodeDto> cateList = commonCodeService.selectCategoryList();
         List<DrinkDto> drinkTop = drinkService.drinkTop();
         List<TastingNoteDto> recentNote = tastingNoteService.recentNote();
 
-        map.put("drinks", drinks);
-        map.put("catelist", catelist);
+        map.put("cateList", cateList);
         map.put("drinkTop", drinkTop);
         map.put("recentNote", recentNote);
         

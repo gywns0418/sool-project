@@ -10,44 +10,33 @@
       >
         <span class="cat-emoji">{{ item.emoji }}</span>
         {{ item.codeName }}
-        <span class="cat-count">{{ item.drinkCount }}</span>
+        <span class="cat-count">{{ item.drinkCount }}종</span>
       </router-link>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue"
-import { getHome } from "@/api/homeApi"
+import { computed } from "vue"
 import { categories } from "@/mock/soolData"
 
-const catelist = ref([])
+const props = defineProps({
+  items: {
+    type: Array,
+    default: () => []
+  }
+})
 
 const categoryListWithEmoji = computed(() => {
-  return catelist.value.map(item => {
+  return props.items.map(item => {
     const emojiData = categories.find(e => e.name === item.code)
 
     return {
       ...item,
-      emoji: emojiData ? emojiData.emoji : "🍹"//매치가 안될경우 기본값
+      emoji: emojiData ? emojiData.emoji : "🍹"
     }
   })
 })
-
-const loadCate = async () => {
-  try {
-    const res = await getHome()
-    catelist.value = res.data.catelist
-    console.log(res.data)
-  } catch (error) {
-    console.log(error)
-  }
-}
-
-onMounted(() => {
-  loadCate()
-})
-
 </script>
 
 <style scoped>

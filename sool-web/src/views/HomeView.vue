@@ -1,13 +1,6 @@
 <template>
     <div class="page-wrap">
       <PageNav :links="navLinks" show-search />
-
-          <h1>홈 화면</h1>
-      <div
-        v-for="drink in drinks"
-        :key="drink.drink_id"
-      >
-      </div>
       <section class="hero">
         <div class="hero-left">
           <div class="hero-tag">Tasting Note</div>
@@ -19,7 +12,7 @@
         </div>
       </section>
 
-      <CategoryStrip :items="categories" />
+      <CategoryStrip :items="categoryList" />
 
       <section class="popular">
         <div class="section-head">
@@ -56,6 +49,7 @@ import PageNav from '../components/common/PageNav.vue'
 import CategoryStrip from '../components/sections/CategoryStrip.vue'
 import DrinkRankCard from '../components/cards/DrinkRankCard.vue'
 import RecentNoteCard from '../components/cards/RecentNoteCard.vue'
+
 import { categories, recentNotes } from '../mock/soolData'
 
 import { ref, onMounted } from "vue"
@@ -63,12 +57,14 @@ import { getHome } from "@/api/homeApi"
 
 const drinks = ref([])
 const popularDrinks = ref([])
+const categoryList = ref([])
 
 const loadHome = async () => {
   try {
     const res = await getHome()
     drinks.value = res.data.drinks
-    popularDrinks.value = res.data.drinkTop
+    popularDrinks.value = res.data.drinkTop || []
+    categoryList.value = res.data.cateList || []
     console.log(res.data)
   } catch (error) {
     console.log(error)

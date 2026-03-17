@@ -11,10 +11,13 @@
             d.*,
             COUNT(l.obj_id) AS likeCount
         FROM drink d
+
         LEFT JOIN `like` l
             ON d.drink_id = l.obj_id
             AND l.obj_type = 'DRINK'
+
         WHERE d.is_deleted = 'N'
+        
         GROUP BY d.drink_id
         ORDER BY likeCount DESC, d.created_at DESC
         LIMIT 4
@@ -29,16 +32,28 @@
             cc2.code_name AS typeName
 
         FROM drink d
-
+        <!-- 카테고리 대분류 한글 이름 -->
         LEFT JOIN common_code cc1
             ON d.category_code = cc1.code
             AND cc1.group_code = 'DRINK_CATEGORY'
             AND cc1.use_yn = 'Y'
 
+        <!-- 카테고리 소분류 한글 이름 -->
         LEFT JOIN common_code cc2
             ON d.type_code = cc2.code
             AND cc2.group_code = 'DRINK_TYPE'
             AND cc2.use_yn = 'Y'
+
+        <!-- 좋아요 수 정렬 -->
+        LEFT JOIN (
+            SELECT
+                obj_id,
+                COUNT(*) AS likeCount
+            FROM `like`
+            WHERE obj_type = 'DRINK'
+            GROUP BY obj_id
+        ) lc 
+        ON d.drink_id = lc.obj_id
 
         <if test="keyword != null and keyword != ''">
             INNER JOIN (
@@ -46,14 +61,14 @@
                 SELECT d1.drink_id
                 FROM drink d1
                 WHERE d1.is_deleted = 'N'
-                AND d1.drink_name LIKE CONCAT(#{keyword}, '%')
+                AND d1.drink_name LIKE CONCAT('%', #{keyword}, '%')
 
                 UNION
 
                 SELECT d2.drink_id
                 FROM drink d2
                 WHERE d2.is_deleted = 'N'
-                AND d2.drink_name_en LIKE CONCAT(#{keyword}, '%')
+                AND d2.drink_name_en LIKE CONCAT('%', #{keyword}, '%')
 
                 UNION
 
@@ -82,22 +97,140 @@
             ) s
             ON d.drink_id = s.drink_id
         </if>
+        WHERE d.is_deleted = 'N'
 
-        <where>
-            d.is_deleted = 'N'
+        <choose>
+            <when test="sort == 'like'">
+                ORDER BY IFNULL(lc.likeCount, 0) DESC, d.drink_id DESC
+            </when>
+            <when test="sort == 'name'">
+                ORDER BY d.drink_name ASC
+            </when>
+            <otherwise>
+                ORDER BY d.drink_id DESC
+            </otherwise>
+        </choose>
 
-            <if test="categoryCode != null and categoryCode != ''">
-                AND d.category_code = #{categoryCode}
-            </if>
-
-            <if test="typeCode != null and typeCode != ''">
-                AND d.type_code = #{typeCode}
-            </if>
-
-        </where>
-        ORDER BY d.drink_id DESC
         LIMIT #{size}
         OFFSET #{offset}
+    </select>
+
+    <!-- 검색 총 갯수 -->
+    <select id="searchDrinkCount" parameterType="com.example.sool.dto.DrinkSearchDto" resultType="int">
+        SELECT COUNT(*)
+        FROM drink d
+        <if test="keyword != null and keyword != ''">
+            INNER JOIN (
+
+                SELECT d1.drink_id
+                FROM drink d1
+                WHERE d1.is_deleted = 'N'
+                AND d1.drink_name LIKE CONCAT('%', #{keyword}, '%')
+
+                UNION
+
+                SELECT d2.drink_id
+                FROM drink d2
+                WHERE d2.is_deleted = 'N'
+                AND d2.drink_name_en LIKE CONCAT('%', #{keyword}, '%')
+
+                UNION
+
+                SELECT d3.drink_id
+                FROM drink d3
+                INNER JOIN common_code c1
+                    ON d3.category_code = c1.code
+                    AND c1.group_code = 'DRINK_CATEGORY'
+                    AND c1.use_yn = 'Y'
+                WHERE d3.is_deleted = 'N'
+                AND c1.code_name LIKE CONCAT(#{keyword}, '%')
+
+                UNION
+
+                SELECT d4.drink_id
+                FROM drink d4
+                INNER JOIN common_code c2
+                    ON d4.type_code = c2.code
+                    AND c2.group_code = 'DRINK_TYPE'
+                    AND c2.use_yn = 'Y'
+                WHERE d4.is_deleted = 'N'
+                AND c2.code_name LIKE CONCAT(#{keyword}, '%')
+
+            ) s
+            ON d.drink_id = s.drink_id
+        </if>
+
+        WHERE d.is_deleted = 'N'
+
+    </select>
+
+    <!-- 카테고리 필터 -->
+    <select id="getFilterList" parameterType="com.example.sool.dto.DrinkSearchDto"
+        resultType="com.example.sool.dto.DrinkDto">
+        SELECT
+            d.*,
+            cc1.code_name AS categoryName,
+            cc2.code_name AS typeName
+        FROM drink d
+        LEFT JOIN common_code cc1
+            ON d.category_code = cc1.code
+            AND cc1.group_code = 'DRINK_CATEGORY'
+            AND cc1.use_yn = 'Y'
+        LEFT JOIN common_code cc2
+            ON d.type_code = cc2.code
+            AND cc2.group_code = 'DRINK_TYPE'
+            AND cc2.use_yn = 'Y'
+
+        LEFT JOIN (
+            SELECT
+                obj_id,
+                COUNT(*) AS likeCount
+            FROM `like`
+            WHERE obj_type = 'DRINK'
+            GROUP BY obj_id
+        ) lc 
+        ON d.drink_id = lc.obj_id
+
+        WHERE d.is_deleted = 'N'
+        <if test="categoryCode != null and categoryCode != ''">
+            AND d.category_code = #{categoryCode}
+        </if>
+        
+        AND d.abv BETWEEN #{abvLow} AND #{abvHigh}
+        AND d.price BETWEEN #{priceLow} AND #{priceHigh}
+
+
+        <choose>
+            <when test="sort == 'like'">
+                ORDER BY IFNULL(lc.likeCount, 0) DESC, d.drink_id DESC
+            </when>
+            <when test="sort == 'name'">
+                ORDER BY d.drink_name ASC
+            </when>
+            <otherwise>
+                ORDER BY d.drink_id DESC
+            </otherwise>
+        </choose>
+
+        LIMIT #{size}
+        OFFSET #{offset}
+    </select>
+
+    <!--카테고리 필터 갯수-->
+    <select id="getFilterCount" parameterType="com.example.sool.dto.DrinkSearchDto"
+    resultType="int">
+
+        SELECT COUNT(*)
+        FROM drink 
+        WHERE is_deleted = 'N'
+
+        <if test="categoryCode != null and categoryCode != ''">
+            AND category_code = #{categoryCode}
+        </if>
+
+        AND abv BETWEEN #{abvLow} AND #{abvHigh}   
+        AND price BETWEEN #{priceLow} AND #{priceHigh}
+
     </select>
 
     <insert id="insertDrink" parameterType="com.example.sool.dto.DrinkDto">

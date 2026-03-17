@@ -13,24 +13,27 @@
             :class="{ sel: selectedCategory === category.code }"
             @click="changeCategory(category.code)"
           >
-            {{ category.label }}
+            <span class="filter-label">{{ category.label }}</span>
             <span class="filter-count">{{ category.drinkCount }}</span>
           </button>
         </div>
 
         <h4>도수 (%)</h4>
         <div class="range-row">
-          <input v-model="minAbv" class="range-inp" />
+          <input v-model="abvLow" type="number" min="0" class="range-inp" @change="applyFilter" />
           <span class="range-sep">—</span>
-          <input v-model="maxAbv" class="range-inp" />
+          <input v-model="abvHigh" type="number" min="0" class="range-inp" @change="applyFilter" />
         </div>
 
-        <h4>가격대 (원)</h4> 
-        <div class="range-row"> 
-          <input value="0" class="range-inp" /> 
-          <span class="range-sep">—</span> 
-          <input value="500,000" class="range-inp" /> 
+        <h4>가격대 (원)</h4>
+        <div class="range-row">
+          <input v-model="priceLow" type="number" min="0" class="range-inp" @change="applyFilter" />
+          <span class="range-sep">—</span>
+          <input v-model="priceHigh" type="number" min="0" class="range-inp" @change="applyFilter" />
         </div>
+
+        <button class="filter-apply-btn" @click="applyFilter">필터 적용</button>
+        <button class="filter-reset-btn" @click="resetFilter">초기화</button>
       </aside>
 
       <section class="list-main">
@@ -39,28 +42,30 @@
 
           <div class="list-controls">
             <form @submit.prevent="applySearch" class="list-search-form">
-              <input v-model="searchKeyword" 
-              class="search-inp" 
-              placeholder="술 이름 검색" />
+              <input
+                v-model="searchKeyword"
+                class="search-inp"
+                placeholder="주류 이름, 영문명, 카테고리 검색"
+              />
             </form>
 
             <select v-model="sortBy" class="sort-select" @change="changeSort">
               <option value="latest">최신순</option>
-              <option value="likes">좋아요순</option>
+              <option value="like">좋아요순</option>
               <option value="name">이름순</option>
             </select>
           </div>
         </div>
 
-        <div class="drinks-grid">
+        <div class="drinks-grid" v-if="drinkList.length > 0">
           <DrinkGridCard
             v-for="drink in drinkList"
-            :key="drink.drinkId"
+            :key="drink.drinkId || drink.drink_id"
             :item="drink"
           />
         </div>
 
-        <div v-if="drinkList.length === 0" class="empty-box">
+        <div v-else class="empty-box">
           검색 결과가 없습니다.
         </div>
 
@@ -94,7 +99,7 @@ import { categories } from "@/mock/soolData"
 
 const navLinks = [
   { label: "홈", to: "/" },
-  { label: "술 목록", to: "/drinks", active: true }
+  { label: "주류 목록", to: "/drinks", active: true }
 ]
 
 const route = useRoute()
@@ -108,8 +113,12 @@ const totalPage = ref(1)
 const selectedCategory = ref("")
 const searchKeyword = ref("")
 const sortBy = ref("latest")
-const minAbv = ref("0")
-const maxAbv = ref("60")
+
+const abvLow = ref("0")
+const abvHigh = ref("60")
+const priceLow = ref("0")
+const priceHigh = ref("500000")
+
 const page = ref(1)
 const size = ref(12)
 
@@ -119,11 +128,28 @@ const makeCategoryLabel = (item) => {
   return emojiData ? `${emojiData.emoji} ${item.codeName}` : item.codeName
 }
 
+const normalizeRange = () => {
+  const lowAbv = Number(abvLow.value || 0)
+  const highAbv = Number(abvHigh.value || 0)
+  const lowPrice = Number(priceLow.value || 0)
+  const highPrice = Number(priceHigh.value || 0)
+
+  if (lowAbv > highAbv) {
+    abvLow.value = String(highAbv)
+    abvHigh.value = String(lowAbv)
+  }
+
+  if (lowPrice > highPrice) {
+    priceLow.value = String(highPrice)
+    priceHigh.value = String(lowPrice)
+  }
+}
+
 const loadCategoryList = async () => {
   try {
     const res = await getDrinkCategoryList()
     const list = res.data || []
-    
+
     categoryOptions.value = [
       {
         code: "",
@@ -143,23 +169,31 @@ const loadCategoryList = async () => {
 
 const loadDrinkList = async () => {
   try {
+    normalizeRange()
+
     const params = {
-      keyword: searchKeyword.value.trim() || null,
-      categoryCode: selectedCategory.value || null,
-      minAbv: minAbv.value || null,
-      maxAbv: maxAbv.value || null,
-      sort: sortBy.value,
       page: page.value,
-      size: size.value
+      size: size.value,
+      sort: sortBy.value
     }
 
-    console.log("요청 params =", params)
+    const keyword = searchKeyword.value.trim()
+
+    if (keyword) {
+      params.keyword = keyword
+    } else {
+      params.categoryCode = selectedCategory.value || null
+      params.abvLow = Number(abvLow.value)
+      params.abvHigh = Number(abvHigh.value)
+      params.priceLow = Number(priceLow.value)
+      params.priceHigh = Number(priceHigh.value)
+    }
 
     const res = await getDrinkList(params)
 
-    drinkList.value = Array.isArray(res.data) ? res.data : (res.data.list || [])
-    totalCount.value = Array.isArray(res.data) ? res.data.length : (res.data.totalCount || 0)
-    totalPage.value = Array.isArray(res.data) ? 1 : (res.data.totalPage || 1)
+    drinkList.value = res.data.list || []
+    totalCount.value = res.data.totalCount || 0
+    totalPage.value = res.data.totalPage || 1
   } catch (error) {
     console.log(error)
   }
@@ -169,19 +203,30 @@ const syncFromRoute = () => {
   selectedCategory.value = typeof route.query.categoryCode === "string" ? route.query.categoryCode : ""
   searchKeyword.value = typeof route.query.keyword === "string" ? route.query.keyword : ""
   sortBy.value = typeof route.query.sort === "string" ? route.query.sort : "latest"
-  minAbv.value = typeof route.query.minAbv === "string" ? route.query.minAbv : "0"
-  maxAbv.value = typeof route.query.maxAbv === "string" ? route.query.maxAbv : "60"
+  abvLow.value = typeof route.query.abvLow === "string" ? route.query.abvLow : "0"
+  abvHigh.value = typeof route.query.abvHigh === "string" ? route.query.abvHigh : "60"
+  priceLow.value = typeof route.query.priceLow === "string" ? route.query.priceLow : "0"
+  priceHigh.value = typeof route.query.priceHigh === "string" ? route.query.priceHigh : "500000"
   page.value = route.query.page ? Number(route.query.page) : 1
 }
 
 const updateRoute = () => {
-  const query = {}
+  normalizeRange()
 
-  if (selectedCategory.value) query.categoryCode = selectedCategory.value
-  if (searchKeyword.value.trim()) query.keyword = searchKeyword.value.trim()
+  const query = {}
+  const keyword = searchKeyword.value.trim()
+
+  if (keyword) {
+    query.keyword = keyword
+  } else {
+    if (selectedCategory.value) query.categoryCode = selectedCategory.value
+    if (abvLow.value !== "0") query.abvLow = abvLow.value
+    if (abvHigh.value !== "60") query.abvHigh = abvHigh.value
+    if (priceLow.value !== "0") query.priceLow = priceLow.value
+    if (priceHigh.value !== "500000") query.priceHigh = priceHigh.value
+  }
+
   if (sortBy.value && sortBy.value !== "latest") query.sort = sortBy.value
-  if (minAbv.value && minAbv.value !== "0") query.minAbv = minAbv.value
-  if (maxAbv.value && maxAbv.value !== "60") query.maxAbv = maxAbv.value
   if (page.value > 1) query.page = page.value
 
   router.replace({ path: "/drinks", query })
@@ -189,15 +234,33 @@ const updateRoute = () => {
 
 const changeCategory = (code) => {
   selectedCategory.value = code
+  searchKeyword.value = ""
   page.value = 1
   updateRoute()
 }
 
 const applySearch = () => {
+  selectedCategory.value = ""
   page.value = 1
   updateRoute()
-  
-  searchKeyword="" //검색후 초기화
+}
+
+const applyFilter = () => {
+  searchKeyword.value = ""
+  page.value = 1
+  updateRoute()
+}
+
+const resetFilter = () => {
+  selectedCategory.value = ""
+  searchKeyword.value = ""
+  sortBy.value = "latest"
+  abvLow.value = "0"
+  abvHigh.value = "60"
+  priceLow.value = "0"
+  priceHigh.value = "500000"
+  page.value = 1
+  updateRoute()
 }
 
 const changeSort = () => {
@@ -223,7 +286,14 @@ watch(
 loadCategoryList()
 
 const titleLabel = computed(() => {
-  if (!selectedCategory.value) return "전체 주류"
+  if (searchKeyword.value.trim()) {
+    return "검색 결과"
+  }
+
+  if (!selectedCategory.value) {
+    return "전체 주류"
+  }
+
   const found = categoryOptions.value.find(item => item.code === selectedCategory.value)
   return found ? found.codeName : "전체 주류"
 })
@@ -284,6 +354,7 @@ const visiblePages = computed(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
   padding: 8px 10px;
   border-radius: 7px;
   font-size: 13px;
@@ -300,6 +371,10 @@ const visiblePages = computed(() => {
   font-weight: 600;
 }
 
+.filter-label {
+  flex: 1;
+}
+
 .filter-count {
   font-size: 11px;
   color: var(--muted);
@@ -309,7 +384,7 @@ const visiblePages = computed(() => {
   display: flex;
   gap: 6px;
   align-items: center;
-  margin-bottom: 6px;
+  margin-bottom: 10px;
 }
 
 .range-inp {
@@ -326,6 +401,30 @@ const visiblePages = computed(() => {
 .range-sep {
   font-size: 12px;
   color: var(--muted);
+}
+
+.filter-apply-btn,
+.filter-reset-btn {
+  width: 100%;
+  height: 34px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.filter-apply-btn {
+  margin-top: 8px;
+  border: 1px solid var(--point);
+  background: #fdf3ef;
+  color: var(--point);
+  font-weight: 600;
+}
+
+.filter-reset-btn {
+  margin-top: 8px;
+  border: 1px solid var(--border);
+  background: var(--white);
+  color: var(--sub);
 }
 
 .list-main {
@@ -371,7 +470,7 @@ const visiblePages = computed(() => {
 }
 
 .search-inp {
-  width: 180px;
+  width: 220px;
 }
 
 .drinks-grid {

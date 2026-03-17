@@ -28,6 +28,21 @@ public class DrinkService {
         return drinkMapper.searchDrinkList(drinkSearchDto);
     }
 
+    //검색 총 갯수
+    public int searchDrinkCount(DrinkSearchDto drinkSearchDto) {
+        return drinkMapper.searchDrinkCount(drinkSearchDto);
+    }
+
+    //필터(카테고리, 도수, 가격)
+    public List<DrinkDto> getFilterList(DrinkSearchDto drinkSearchDto) {
+        return drinkMapper.getFilterList(drinkSearchDto);
+    }
+
+    //필터 총 갯수
+    public int getFilterCount(DrinkSearchDto drinkSearchDto) {
+        return drinkMapper.getFilterCount(drinkSearchDto);
+    }
+
     public int insertDrink(DrinkDto drinkDTO) {
         return drinkMapper.insertDrink(drinkDTO);
     }
@@ -39,8 +54,6 @@ public class DrinkService {
     public DrinkDto findByDrinkId(Integer drinkId) {
         return drinkMapper.findByDrinkId(drinkId);
     }
-
-
 
     public int updateDrink(DrinkDto drinkDTO) {
         return drinkMapper.updateDrink(drinkDTO);

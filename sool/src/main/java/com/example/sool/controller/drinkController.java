@@ -1,6 +1,8 @@
 package com.example.sool.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,15 +25,39 @@ public class DrinkController {
     }
 
     @GetMapping("/api/drinks")
-    public List<DrinkDto> getDrinkList(DrinkSearchDto dto){
-        
-        System.out.println("keyword = " + dto.getKeyword());
-        return drinkService.searchDrinkList(dto);
+    public Map<String, Object> getDrinkList(DrinkSearchDto dto){
+
+        System.out.println("dto = " + dto);
+
+        List<DrinkDto> list;
+        int totalCount;
+
+        if (dto.getKeyword() != null && !dto.getKeyword().trim().isEmpty()) {
+            //검색어 있는 경우
+            list = drinkService.searchDrinkList(dto);
+            totalCount = drinkService.searchDrinkCount(dto);
+        } else {
+            //없는 경우 필터
+            list = drinkService.getFilterList(dto);
+            totalCount = drinkService.getFilterCount(dto);
+        }
+
+        //페이지수 올림 처리
+        int totalPage = (int) Math.ceil((double) totalCount / dto.getSize());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("list", list);
+        result.put("totalCount", totalCount);
+        result.put("page", dto.getPage());
+        result.put("size", dto.getSize());
+        result.put("totalPage", totalPage);
+
+        return result;
     }
 
     @GetMapping("/api/drinks/categories")
-    public List<CommonCodeDto> getDrinkCategoryList() {
+    public List<CommonCodeDto> selectCategoryList() {
 
-        return commonCodeService.getDrinkCategoryList();
+        return commonCodeService.selectCategoryList();
     }
 }

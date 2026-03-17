@@ -8,8 +8,15 @@ public class DrinkSearchDto {
     private String keyword;
 
     private String categoryCode;
-    private String typeCode;
 
+    private Integer abvLow;
+    private Integer abvHigh;
+    
+    private Integer priceLow;
+    private Integer priceHigh;
+
+    private String sort;
+    
     private Integer page = 1;
     private Integer size = 12;
 
