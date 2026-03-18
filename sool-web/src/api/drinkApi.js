@@ -7,3 +7,7 @@ export const getDrinkList = (params) => {
 export const getDrinkCategoryList = () => {
   return api.get("/drinks/categories")
 }
+
+export const getDrinkDetail = (drinkId)=>{
+  return api.get(`/drinks/${drinkId}`)
+}

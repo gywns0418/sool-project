@@ -24,8 +24,12 @@ public class DrinkDto {
     private LocalDateTime updatedAt;
     private String isDeleted;
 
-    //인기술 top4 좋아요 수 기반
-    private Integer likeCount;
+    //추가
+
+    
+    private Integer likeCount; //좋아요 수
+    private Integer noteCount; //노트 수
+    private Double avgRating; //평균 별점
 
     private String categoryName;
     private String typeName;   

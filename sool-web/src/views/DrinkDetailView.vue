@@ -1,64 +1,207 @@
 <template>
-    <div class="page-wrap">
-      <PageNav :links="navLinks" />
+  <div class="page-wrap">
+    <PageNav :links="navLinks" />
 
-      <div class="detail-wrap">
-        <div class="detail-header">
-          <div class="detail-img">🍷</div>
-          <div class="detail-info">
-            <div class="detail-cat">레드 와인</div>
-            <h1 class="detail-name">Château Margaux 2018</h1>
-            <div class="detail-origin">프랑스 · 보르도 · Margaux AOC</div>
-            <div class="detail-chips">
-              <span class="chip">13.5%</span>
-              <span class="chip">₩ 420,000</span>
-              <span class="chip rating">★ 4.9</span>
-              <span class="chip">노트 48개</span>
-            </div>
-            <p class="detail-desc">마고 와인의 정수라 불리는 2018년 빈티지. 블랙 커런트와 삼나무 향이 복잡하게 어우러지며, 실크처럼 부드러운 타닌과 긴 여운이 특징입니다.</p>
-            <div class="detail-actions">
-              <router-link to="/notes/write" class="btn-primary">테이스팅 노트 작성</router-link>
-              <button class="btn-ghost like-btn" :class="{ active: liked }" @click="liked = !liked">{{ liked ? '♥' : '♡' }} 좋아요 {{ likeCount }}</button>
-            </div>
-          </div>
+    <div class="detail-wrap">
+      <div class="detail-header">
+        <div class="detail-img">
+          <img v-if="drink?.imageUrl" :src="drink.imageUrl" alt="주류 이미지" />
+          <div v-else class="detail-placeholder">🍷</div>
         </div>
 
-        <div class="flavor-section">
-          <FlavorBars title="평균 맛 프로파일" :items="flavorProfile" />
-          <FlavorBars title="별점 분포" :items="ratingDistribution" yellow />
+        <div class="detail-info">
+          <div class="detail-cat">
+            {{ drink?.categoryCode || '-' }} - {{ drink?.typeCode || '-' }}
+          </div>
+
+          <h1 class="detail-name">
+            {{ drink?.drinkName || '-' }}
+          </h1>
+          <h1 class="detail-name">
+            {{ drink?.drinkNameEn || '-' }}
+          </h1>
+
+          <div class="detail-origin">
+            {{ drink?.country || '-' }}
+          </div>
+
+          <div class="detail-chips">
+            <span class="chip">{{ drink?.abv ?? '-' }}%</span>
+            <span class="chip">{{ formatPrice(drink?.price) }}</span>
+            <span class="chip rating">★ {{ drink?.avgRating ?? 0 }}</span>
+            <span class="chip">노트 {{ drink?.noteCount ?? 0 }}개</span>
+          </div>
+
+          <p class="detail-desc">
+            {{ drink?.description || '설명이 없습니다.' }}
+          </p>
+
+          <div class="detail-actions">
+            <router-link
+              v-if="authStore.isLogin"
+              :to="`/notes/write?drinkId=${drink?.drink_id || ''}`"
+              class="btn-primary"
+            >
+              테이스팅 노트 작성
+            </router-link>
+
+            <router-link
+              v-else
+              :to="`/login?redirect=${route.fullPath}`"
+              class="btn-primary"
+            >
+              로그인하고 노트 작성하기
+            </router-link>
+
+            <button
+              class="btn-ghost like-btn"
+              :class="{ active: liked }"
+              :disabled="likeLoading"
+              @click="toggleLike"
+            >
+              {{ liked ? '♥' : '♡' }} 좋아요 {{ drink?.likeCount ?? 0 }}
+            </button>
+          </div>
         </div>
       </div>
 
-      <section class="notes-section">
-        <div class="notes-head">
-          <h3>테이스팅 노트</h3>
-          <select class="sort-select">
-            <option>최신순</option>
-            <option>별점 높은순</option>
-          </select>
-        </div>
-        <NoteListCard v-for="note in detailNotes" :key="note.id" :item="note" />
-      </section>
+      <div class="flavor-section">
+        <FlavorBars title="평균 맛 프로파일" :items="flavorProfile" />
+      </div>
     </div>
+
+    <section class="notes-section">
+      <div class="notes-head">
+        <h3>테이스팅 노트</h3>
+        <select class="sort-select">
+          <option>최신순</option>
+          <option>별점 높은순</option>
+        </select>
+      </div>
+
+      <NoteListCard
+        v-for="note in detailNotes"
+        :key="note.id"
+        :item="note"
+      />
+    </section>
+  </div>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
-import { useRoute } from 'vue-router'
-import PageNav from '../components/common/PageNav.vue'
-import FlavorBars from '../components/sections/FlavorBars.vue'
-import NoteListCard from '../components/cards/NoteListCard.vue'
-import { detailNotes, flavorProfile, ratingDistribution } from '../mock/soolData'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from "@/stores/authStore"
+import PageNav from '@/components/common/PageNav.vue'
+import FlavorBars from '@/components/sections/FlavorBars.vue'
+import NoteListCard from '@/components/cards/NoteListCard.vue'
+import { getDrinkDetail } from '@/api/drinkApi'
+import { getDrinkLike, insertDrinkLike, deleteDrinkLike } from '@/api/likeApi'
+import { detailNotes, flavorProfile } from '@/mock/soolData'
 
 const route = useRoute()
+const router = useRouter()
+const authStore = useAuthStore()
+
 const liked = ref(false)
-const likeCount = computed(() => 128 + (liked.value ? 1 : 0))
+const likeLoading = ref(false)
+const drink = ref(null)
 
 const navLinks = computed(() => [
   { label: '홈', to: '/' },
-  { label: '술 목록', to: '/drinks' },
-  { label: `술 상세 #${route.params.id || 1}`, to: route.fullPath, active: true }
+  { label: '주류 목록', to: '/drinks' },
+  {
+    label: drink.value?.drinkNameEn || `주류 상세 #${route.params.id}`,
+    to: route.fullPath,
+    active: true
+  }
 ])
+
+const formatPrice = (price) => {
+  if (price == null || price === '') return '-'
+  return `₩ ${Number(price).toLocaleString()}`
+}
+
+const fetchDrinkDetail = async () => {
+  const drinkId = route.params.id
+
+  if (!drinkId) return
+
+  try {
+    const res = await getDrinkDetail(drinkId)
+    drink.value = res.data
+  } catch (e) {
+    console.log('주류 상세 조회 실패', e)
+    drink.value = null
+  }
+}
+
+const fetchLikeStatus = async () => {
+  const drinkId = route.params.id
+
+  if (!drinkId) return
+
+  try {
+    const res = await getDrinkLike(drinkId)
+    liked.value = !!res.data.liked
+  } catch (e) {
+    liked.value = false
+  }
+}
+
+const toggleLike = async () => {
+  const drinkId = route.params.id
+
+  if (!drinkId || likeLoading.value) return
+
+  if (!authStore.isLogin) {
+    router.push({
+      path: '/login',
+      query: { redirect: route.fullPath }
+    })
+    return
+  }
+
+  likeLoading.value = true
+
+  try {
+    if (liked.value) {
+      await deleteDrinkLike(drinkId)
+    } else {
+      await insertDrinkLike(drinkId)
+    }
+
+    await fetchDrinkDetail()
+    await fetchLikeStatus()
+  } catch (e) {
+    console.log('좋아요 처리 실패', e)
+  } finally {
+    likeLoading.value = false
+  }
+}
+
+const initPage = async () => {
+  await fetchDrinkDetail()
+  await fetchLikeStatus()
+}
+
+onMounted(() => {
+  initPage()
+})
+
+watch(
+  () => route.params.id,
+  () => {
+    initPage()
+  }
+)
+
+watch(
+  () => authStore.isLogin,
+  () => {
+    fetchLikeStatus()
+  }
+)
 </script>
 
 <style scoped>
@@ -75,7 +218,7 @@ const navLinks = computed(() => [
 
 .detail-header {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 220px 1fr;
   gap: 40px;
   align-items: flex-start;
   padding-bottom: 36px;
@@ -84,8 +227,21 @@ const navLinks = computed(() => [
 }
 
 .detail-img {
-  width: 160px;
-  height: 200px;
+  width: 220px;
+}
+
+.detail-img img {
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  display: block;
+}
+
+.detail-placeholder {
+  width: 100%;
+  height: 280px;
   background: var(--surface);
   border-radius: 12px;
   border: 1px solid var(--border);
@@ -165,6 +321,7 @@ const navLinks = computed(() => [
   justify-content: center;
   border-radius: 8px;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .btn-primary {
@@ -173,6 +330,7 @@ const navLinks = computed(() => [
   font-weight: 600;
   color: white;
   background: var(--point);
+  border: none;
 }
 
 .btn-ghost {
@@ -198,9 +356,14 @@ const navLinks = computed(() => [
   border-color: #d62828;
 }
 
+.like-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .flavor-section {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 40px;
   padding-bottom: 36px;
   border-bottom: 1px solid var(--border);

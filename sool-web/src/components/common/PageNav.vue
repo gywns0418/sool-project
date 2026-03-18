@@ -7,8 +7,17 @@
       </li>
     </ul>
     <div class="nav-right">
-      <button class="btn-ghost" @click="router.push('/mypage')">마이페이지</button>
-      <button class="btn-fill" @click="router.push('/notes/write')">노트 작성</button>
+      <template v-if="authStore.isLogin">
+        <div class="nav-point"></div>
+        <span class="nav-name">{{ authStore.user?.name }}님</span>
+        <button class="btn-ghost" @click="router.push('/mypage')">마이페이지</button>
+        <button class="btn-fill" @click="logout">로그아웃</button>
+      </template>
+
+      <template v-else>
+        <router-link class="btn-ghost" to="/login">로그인</router-link>
+        <router-link class="btn-fill" to="/signup">회원가입</router-link>
+      </template>
     </div>
   </nav>
 </template>
@@ -16,6 +25,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/authStore'
 
 const props = defineProps({
   links: {
@@ -26,6 +36,7 @@ const props = defineProps({
 
 const route = useRoute()
 const router = useRouter()
+const authStore = useAuthStore()
 
 const currentPath = computed(() => route.path)
 
@@ -34,6 +45,11 @@ const isActive = (link) => {
   if (!link.to) return false
   if (link.to === '/') return currentPath.value === '/'
   return currentPath.value.startsWith(link.to)
+}
+
+const logout = async () => {
+  await authStore.logout()
+  router.replace('/')
 }
 
 </script>
@@ -109,5 +125,13 @@ const isActive = (link) => {
   border: none;
   border-radius: 6px;
   cursor: pointer;
+}
+
+.nav-point{
+  width:8px;height:8px;border-radius:50%;background:var(--point2);
+}
+
+.nav-name{
+  font-size:12.5px;color:var(--sub);
 }
 </style>

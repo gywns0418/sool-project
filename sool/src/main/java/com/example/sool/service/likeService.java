@@ -1,5 +1,7 @@
 package com.example.sool.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.example.sool.dto.LikeDto;
@@ -17,11 +19,15 @@ public class LikeService {
         return likeMapper.insertLike(likeDto);
     }
 
+    public int existsLike(LikeDto likeDto){
+        return likeMapper.existsLike(likeDto);
+    }
+
     public int deleteLike(LikeDto likeDto){
         return likeMapper.deleteLike(likeDto);
     }
 
-    public LikeDto findByUserId(Integer userId){
+    public List<LikeDto> findByUserId(Integer userId){
         return likeMapper.findByUserId(userId);
     }
 }

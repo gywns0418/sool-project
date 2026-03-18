@@ -233,6 +233,49 @@
 
     </select>
 
+    <!-- id로 정보(주류 디테일) -->
+    <select id="findByDrinkId" parameterType="int" resultType="com.example.sool.dto.DrinkDto">
+        SELECT 
+            d.*,
+            cc1.code_name AS categoryName,
+            cc2.code_name AS typeName,
+            <!--주류당 노트 수-->
+            (
+                SELECT COUNT(*)
+                FROM tasting_note tn
+                WHERE tn.drink_id = d.drink_id
+                AND tn.is_deleted = 'N'
+            ) AS noteCount,
+            <!--주류당 평균 별점-->
+            (
+                SELECT ROUND(AVG(tn.rating), 1)
+                FROM tasting_note tn
+                WHERE tn.drink_id = d.drink_id
+                AND tn.is_deleted = 'N'
+            ) AS avgRating,
+            <!--해당 주류의 좋아요 수-->
+            (
+                SELECT COUNT(*)
+                FROM `like` l
+                WHERE l.obj_type = 'DRINK'
+                AND l.obj_id = d.drink_id
+            ) AS likeCount
+        FROM drink d
+
+        LEFT JOIN common_code cc1
+            ON d.category_code = cc1.code
+            AND cc1.group_code = 'DRINK_CATEGORY'
+            AND cc1.use_yn = 'Y'
+        LEFT JOIN common_code cc2
+            ON d.type_code = cc2.code
+            AND cc2.group_code = 'DRINK_TYPE'
+            AND cc2.use_yn = 'Y'
+
+        WHERE d.drink_id = #{drinkId}
+        AND d.is_deleted = 'N'
+    </select>
+
+
     <insert id="insertDrink" parameterType="com.example.sool.dto.DrinkDto">
         INSERT INTO drink (
             category_code,
@@ -267,13 +310,7 @@
 
 
 
-    <!-- id로 정보 -->
-    <select id="findByDrinkId" parameterType="int" resultType="com.example.sool.dto.DrinkDto">
-        SELECT * FROM drink
-        WHERE drink_id = #{drinkId}
-        AND is_deleted = 'N'
-    </select>
-
+    
 
 
     <update id="updateDrink" parameterType="com.example.sool.dto.DrinkDto">

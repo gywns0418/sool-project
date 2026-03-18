@@ -22,19 +22,20 @@
         )
     </insert>
 
+    <select id="existsLike" parameterType="com.example.sool.dto.LikeDto" resultType="int">
+        SELECT count(*)
+        FROM `like`
+        WHERE user_id = #{userId}
+        AND obj_id = #{objId}
+        AND obj_type = #{objType}
+    </select>
+
     <!--좋아요 삭제-->
     <delete id="deleteLike" parameterType="com.example.sool.dto.LikeDto">
-        DELETE
-        FROM like
+        DELETE FROM `like`
         WHERE user_id = #{userId}
-        <choose>
-            <when test="noteId != null">
-                AND note_id = #{noteId}
-            </when>
-            <when test="drinkId != null">
-                AND drink_id = #{drinkId}
-            </when>
-        </choose>
+          AND obj_id = #{objId}
+          AND obj_type = #{objType}
     </delete>
 
     <!-- 마이페이지 좋아요 목록 -->

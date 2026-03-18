@@ -9,11 +9,11 @@ import com.example.sool.dto.UserDto;
 @Mapper
 public interface UserMapper {
 
+    UserDto findByLoginId(String loginId);
+
     int insertUser(UserDto userDto);
 
     UserDto selectUserById(int userId);
-
-    UserDto selectUserByLoginId(String loginId);
 
     UserDto selectUserByEmail(String email);
 

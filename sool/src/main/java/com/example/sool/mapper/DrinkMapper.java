@@ -25,11 +25,14 @@ public interface DrinkMapper {
     //필터 총 갯수
     int getFilterCount(DrinkSearchDto drinkSearchDto);
 
+    //주류 디테일 이동
+    DrinkDto findByDrinkId(Integer drinkId);
+
     int insertDrink(DrinkDto drinkDTO);
 
     List<DrinkDto> drinkAll();
 
-    DrinkDto findByDrinkId(Integer drinkId);
+    
 
     int updateDrink(DrinkDto drinkDTO);
 

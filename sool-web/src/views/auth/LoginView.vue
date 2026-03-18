@@ -16,11 +16,12 @@
           <div class="field-group">
             <label class="field-label">아이디</label>
             <input
-              v-model="loginId"
+              v-model.trim="loginId"
               type="text"
               class="field-input"
               placeholder="아이디를 입력하세요"
               required
+              :disabled="loading"
             />
           </div>
 
@@ -32,11 +33,16 @@
               class="field-input"
               placeholder="비밀번호를 입력하세요"
               required
+              :disabled="loading"
+              @keydown.enter="login"
             />
           </div>
 
-          <button type="submit" class="btn-submit">
-            로그인하기 <span class="btn-arrow">→</span>
+          <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
+
+          <button type="submit" class="btn-submit" :disabled="loading">
+            {{ loading ? '로그인 중...' : '로그인하기' }}
+            <span v-if="!loading" class="btn-arrow">→</span>
           </button>
         </form>
 
@@ -55,23 +61,44 @@
   </div>
 </template>
 
-
 <script setup>
-import { ref } from 'vue'
-import PageNav from '../../components/common/PageNav.vue'
+import { ref } from "vue"
+import { useRouter, useRoute } from "vue-router"
+import { useAuthStore } from "@/stores/authStore"
+import PageNav from "@/components/common/PageNav.vue"
+
+const router = useRouter()
+const route = useRoute()
+const authStore = useAuthStore()
 
 const navLinks = [
-  { label: '홈', to: '/', active: true }
+  { label: "홈", to: "/" }
 ]
 
-const loginId = ref('')
-const password = ref('')
+const loginId = ref("")
+const password = ref("")
+const loading = ref(false)
+const errorMessage = ref("")
 
-const login = () => {
-  console.log('login', loginId.value, password.value)
+const login = async () => {
+  if (loading.value) return
+
+  errorMessage.value = ""
+  loading.value = true
+
+  try {
+    await authStore.login(loginId.value, password.value)
+
+    const redirect = route.query.redirect || "/"
+    router.replace(redirect)
+  } catch (error) {
+    errorMessage.value =
+      error.response?.data?.message || "로그인에 실패했습니다."
+  } finally {
+    loading.value = false
+  }
 }
 </script>
-
 
 <style scoped>
 .page-wrap {
@@ -178,6 +205,11 @@ const login = () => {
   background: var(--white);
 }
 
+.field-input:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .btn-submit {
   margin-top: 6px;
   width: 100%;
@@ -203,6 +235,12 @@ const login = () => {
 
 .btn-submit:active {
   transform: scale(0.98);
+}
+
+.btn-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .btn-arrow {
@@ -241,12 +279,18 @@ const login = () => {
 
 .form-link {
   color: var(--point);
-  font-weight: 600;
   text-decoration: none;
+  font-weight: 600;
   margin-left: 4px;
 }
 
 .form-link:hover {
   text-decoration: underline;
+}
+
+.error-text {
+  margin-top: -4px;
+  font-size: 13px;
+  color: #d93025;
 }
 </style>

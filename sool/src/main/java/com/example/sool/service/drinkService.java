@@ -43,6 +43,11 @@ public class DrinkService {
         return drinkMapper.getFilterCount(drinkSearchDto);
     }
 
+    //주류 디테일 이동
+    public DrinkDto findByDrinkId(Integer drinkId) {
+        return drinkMapper.findByDrinkId(drinkId);
+    }
+
     public int insertDrink(DrinkDto drinkDTO) {
         return drinkMapper.insertDrink(drinkDTO);
     }
@@ -51,9 +56,7 @@ public class DrinkService {
         return drinkMapper.drinkAll();
     }
 
-    public DrinkDto findByDrinkId(Integer drinkId) {
-        return drinkMapper.findByDrinkId(drinkId);
-    }
+
 
     public int updateDrink(DrinkDto drinkDTO) {
         return drinkMapper.updateDrink(drinkDTO);

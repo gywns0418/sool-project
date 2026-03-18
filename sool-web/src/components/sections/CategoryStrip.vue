@@ -6,7 +6,7 @@
         v-for="item in categoryListWithEmoji"
         :key="item.code"
         class="cat-pill"
-        :to="{ path: '/drinks', query: { category: item.code } }"
+        :to="{ path: '/drinks', query: { categoryCode: item.code } }"
       >
         <span class="cat-emoji">{{ item.emoji }}</span>
         {{ item.codeName }}

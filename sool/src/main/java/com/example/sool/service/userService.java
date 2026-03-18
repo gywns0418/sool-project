@@ -19,6 +19,10 @@ public class UserService {
         this.passwordEncoder = passwordEncoder ;
     }
 
+    public UserDto findByLoginId(String login_id) {
+        return userMapper.findByLoginId(login_id);
+    }
+
     public int insertUser(UserDto userDto) {
         userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
         return userMapper.insertUser(userDto);
@@ -28,9 +32,7 @@ public class UserService {
         return userMapper.selectUserById(user_id);
     }
 
-    public UserDto selectUserByLoginId(String login_id) {
-        return userMapper.selectUserByLoginId(login_id);
-    }
+
 
     public UserDto selectUserByEmail(String email) {
         return userMapper.selectUserByEmail(email);

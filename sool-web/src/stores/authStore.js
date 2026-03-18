@@ -1,12 +1,57 @@
-import { ref, computed } from 'vue'
-import { defineStore } from 'pinia'
+import { defineStore } from "pinia"
+import api from "@/api/apiClient"
 
-export const useCounterStore = defineStore('counter', () => {
-  const count = ref(0)
-  const doubleCount = computed(() => count.value * 2)
-  function increment() {
-    count.value++
+export const useAuthStore = defineStore("auth", {
+  state: () => ({
+    user: null,
+    initialized: false
+  }),
+
+  getters: {
+    isLogin: (state) => !!state.user
+  },
+
+  actions: {
+    setUser(user) {
+      this.user = user
+    },
+
+    clearUser() {
+      this.user = null
+    },
+
+    async login(loginId, password) {
+      try {
+        const res = await api.post("/auth/login", {
+          loginId,
+          password
+        })
+
+        this.user = res.data
+        return res.data
+      } catch (error) {
+        this.user = null
+        throw error
+      }
+    },
+
+    async logout() {
+      try {
+        await api.post("/auth/logout")
+      } finally {
+        this.user = null
+      }
+    },
+
+    async fetchMe() {
+      try {
+        const res = await api.get("/auth/me")
+        this.user = res.data
+      } catch (error) {
+        this.user = null
+      } finally {
+        this.initialized = true
+      }
+    }
   }
-
-  return { count, doubleCount, increment }
 })

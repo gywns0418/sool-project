@@ -19,7 +19,7 @@ public class TastingNoteDto {
     private String isDeleted;
 
     //홈 최근 테이스팅 노트 
-    private String user_name;
-    private String drink_name;
-    private String type_name;
+    private String userName;
+    private String drinkName;
+    private String typeName;
 }

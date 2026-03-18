@@ -20,16 +20,50 @@
 
         <h4>도수 (%)</h4>
         <div class="range-row">
-          <input v-model="abvLow" type="number" min="0" class="range-inp" @change="applyFilter" />
+          <input
+            v-model="abvLow"
+            type="number"
+            min="0"
+            class="range-inp"
+            @keydown="preventMinusInput"
+            @input="sanitizeNumberInput('abvLow')"
+            @change="applyFilter"
+          />
+
           <span class="range-sep">—</span>
-          <input v-model="abvHigh" type="number" min="0" class="range-inp" @change="applyFilter" />
+
+          <input
+            v-model="abvHigh"
+            type="number"
+            min="0"
+            class="range-inp"
+            @keydown="preventMinusInput"
+            @input="sanitizeNumberInput('abvHigh')"
+            @change="applyFilter"
+          />
         </div>
 
         <h4>가격대 (원)</h4>
         <div class="range-row">
-          <input v-model="priceLow" type="number" min="0" class="range-inp" @change="applyFilter" />
+          <input
+            v-model="priceLow"
+            type="number"
+            min="0"
+            class="range-inp"
+            @keydown="preventMinusInput"
+            @input="sanitizeNumberInput('priceLow')"
+            @change="applyFilter"
+          />
           <span class="range-sep">—</span>
-          <input v-model="priceHigh" type="number" min="0" class="range-inp" @change="applyFilter" />
+          <input
+            v-model="priceHigh"
+            type="number"
+            min="0"
+            class="range-inp"
+            @keydown="preventMinusInput"
+            @input="sanitizeNumberInput('priceHigh')"
+            @change="applyFilter"
+          />
         </div>
 
         <button class="filter-apply-btn" @click="applyFilter">필터 적용</button>
@@ -145,6 +179,35 @@ const normalizeRange = () => {
   }
 }
 
+const preventMinusInput = (e) => {
+  if (e.key === "-" || e.key === "e" || e.key === "E") {
+    e.preventDefault()
+    alert("0보다 작은 값은 입력할 수 없습니다.")
+  }
+}
+
+const sanitizeNumberInput = (field) => {
+  if (field === "abvLow" && Number(abvLow.value) < 0) {
+    abvLow.value = "0"
+    alert("0보다 작은 값은 입력할 수 없습니다.")
+  }
+
+  if (field === "abvHigh" && Number(abvHigh.value) < 0) {
+    abvHigh.value = "0"
+    alert("0보다 작은 값은 입력할 수 없습니다.")
+  }
+
+  if (field === "priceLow" && Number(priceLow.value) < 0) {
+    priceLow.value = "0"
+    alert("0보다 작은 값은 입력할 수 없습니다.")
+  }
+
+  if (field === "priceHigh" && Number(priceHigh.value) < 0) {
+    priceHigh.value = "0"
+    alert("0보다 작은 값은 입력할 수 없습니다.")
+  }
+}
+
 const loadCategoryList = async () => {
   try {
     const res = await getDrinkCategoryList()
@@ -220,14 +283,25 @@ const updateRoute = () => {
     query.keyword = keyword
   } else {
     if (selectedCategory.value) query.categoryCode = selectedCategory.value
-    if (abvLow.value !== "0") query.abvLow = abvLow.value
-    if (abvHigh.value !== "60") query.abvHigh = abvHigh.value
-    if (priceLow.value !== "0") query.priceLow = priceLow.value
-    if (priceHigh.value !== "500000") query.priceHigh = priceHigh.value
+
+    if (abvLow.value && abvLow.value !== "0")
+      query.abvLow = abvLow.value
+
+    if (abvHigh.value && abvHigh.value !== "60")
+      query.abvHigh = abvHigh.value
+
+    if (priceLow.value && priceLow.value !== "0")
+      query.priceLow = priceLow.value
+
+    if (priceHigh.value && priceHigh.value !== "500000")
+      query.priceHigh = priceHigh.value
   }
 
-  if (sortBy.value && sortBy.value !== "latest") query.sort = sortBy.value
-  if (page.value > 1) query.page = page.value
+  if (sortBy.value && sortBy.value !== "latest")
+    query.sort = sortBy.value
+
+  if (page.value > 1)
+    query.page = page.value
 
   router.replace({ path: "/drinks", query })
 }

@@ -36,9 +36,6 @@
           <RecentNoteCard v-for="note in recentNotes" :key="note.id" :item="note" />
         </div>
       </section>
-
-      <router-link to="/login" class="btn-primary">로그인</router-link>
-      <router-link to="/signup" class="btn-primary">signup</router-link>
     </div>
 </template>
 

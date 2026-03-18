@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.sool.dto.CommonCodeDto;
@@ -14,6 +16,7 @@ import com.example.sool.service.CommonCodeService;
 import com.example.sool.service.DrinkService;
 
 @RestController
+@RequestMapping("/api/drinks")
 public class DrinkController {
 
     private final DrinkService drinkService;
@@ -24,7 +27,7 @@ public class DrinkController {
         this.commonCodeService = commonCodeService;
     }
 
-    @GetMapping("/api/drinks")
+    @GetMapping("")
     public Map<String, Object> getDrinkList(DrinkSearchDto dto){
 
         System.out.println("dto = " + dto);
@@ -55,9 +58,14 @@ public class DrinkController {
         return result;
     }
 
-    @GetMapping("/api/drinks/categories")
+    @GetMapping("/categories")
     public List<CommonCodeDto> selectCategoryList() {
 
         return commonCodeService.selectCategoryList();
+    }
+
+    @GetMapping("/{drinkId}")
+    public DrinkDto getDrinkDetail(@PathVariable Integer drinkId){
+        return drinkService.findByDrinkId(drinkId);
     }
 }
