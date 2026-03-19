@@ -1,31 +1,59 @@
 <template>
-  <router-link class="feed-card" :to="`/notes/${item.id}`">
+  <router-link class="feed-card" :to="`/notes/${displayItem.noteId}`">
     <div class="feed-card-top">
-      <div class="feed-drink-thumb">{{ item.emoji }}</div>
+      <div class="feed-drink-thumb">{{ displayItem.emoji }}</div>
       <div class="feed-drink-info">
-        <div class="feed-drink-cat">{{ item.category }}</div>
-        <div class="feed-drink-name">{{ item.drinkName }}</div>
+        <div class="feed-drink-cat">{{ displayItem.typeName }}</div>
+        <div class="feed-drink-name">{{ displayItem.drinkName }}</div>
       </div>
     </div>
-    <div class="feed-stars">{{ item.stars }}</div>
-    <div class="feed-text">{{ item.text }}</div>
+    <div class="feed-stars">{{ getStars(displayItem.rating) }}</div>
+    <div class="feed-drink-name">{{ displayItem.title }}</div>
+    <div class="feed-text">{{ displayItem.content }}</div>
     <div class="feed-footer">
       <div class="feed-author">
-        <div class="feed-avatar" :class="item.avatarClass">{{ item.authorInitial }}</div>
-        <span class="feed-name">{{ item.author }}</span>
+        <div class="nav-point"></div>
+        <span class="feed-name">{{ displayItem.userName }}</span>
       </div>
-      <span class="feed-date">{{ item.date }}</span>
+      <span class="feed-date">{{ formatDate(displayItem.createdAt) }}</span>
     </div>
   </router-link>
 </template>
 
 <script setup>
-defineProps({
+import { computed } from "vue"
+import { categories } from '../../mock/soolData'
+
+const props = defineProps({
   item: {
     type: Object,
     required: true
   }
 })
+
+const displayItem = computed(() => {
+  const emojiData = categories.find(e => e.name === props.item.categoryCode)
+
+  return {
+    ...props.item,
+    emoji: emojiData ? emojiData.emoji : "🍹"
+  }
+})
+
+function getStars(rating) {
+  const maxStars = 5
+  return '★'.repeat(rating) + '☆'.repeat(maxStars - rating)
+}
+
+function formatDate(dateStr) {
+  const date = new Date(dateStr)
+
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+
+  return `${year}.${month}.${day}`
+}
 </script>
 
 <style scoped>
@@ -139,5 +167,9 @@ defineProps({
 .feed-date {
   font-size: 10.5px;
   color: var(--muted);
+}
+
+.nav-point{
+  width:8px;height:8px;border-radius:50%;background:var(--point2);
 }
 </style>

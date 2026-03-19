@@ -19,8 +19,8 @@ public class UserService {
         this.passwordEncoder = passwordEncoder ;
     }
 
-    public UserDto findByLoginId(String login_id) {
-        return userMapper.findByLoginId(login_id);
+    public UserDto findByLoginId(String loginId) {
+        return userMapper.findByLoginId(loginId);
     }
 
     public int insertUser(UserDto userDto) {
@@ -28,8 +28,8 @@ public class UserService {
         return userMapper.insertUser(userDto);
     }
 
-    public UserDto selectUserById(int user_id) {
-        return userMapper.selectUserById(user_id);
+    public UserDto selectUserById(int userId) {
+        return userMapper.selectUserById(userId);
     }
 
 
@@ -51,7 +51,7 @@ public class UserService {
         return userMapper.updateUserPassword(userDto);
     }
 
-    public int deleteUser(int user_id) {
-        return userMapper.deleteUser(user_id);
+    public int deleteUser(int userId) {
+        return userMapper.deleteUser(userId);
     }
 }

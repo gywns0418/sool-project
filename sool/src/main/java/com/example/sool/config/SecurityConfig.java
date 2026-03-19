@@ -62,9 +62,7 @@ public class SecurityConfig {
 
                 // 인증 없이 접근 가능
                 .requestMatchers(
-                    "/api/auth/login",
-                    "/api/auth/signup",
-                    "/api/auth/me"
+                    "/api/auth/**"
                 ).permitAll()
 
                 // 조회는 비회원도 가능
@@ -77,11 +75,11 @@ public class SecurityConfig {
 
                 // 로그인한 USER 권한만 가능
                 .requestMatchers(
-                    "/api/auth/logout",
                     "/api/notes/**",
                     "/api/comments/**",
                     "/api/likes/**",
-                    "/api/mypage/**"
+                    "/api/mypage/**",
+                    "/api/drinks/*/like"
                 ).hasRole("USER")
 
                 // 그 외 요청은 인증 필요

@@ -1,6 +1,8 @@
 package com.example.sool.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
@@ -21,7 +23,21 @@ public class TastingNoteService {
     }
 
     //테이스팅 노트
-    
+
+    //최근 노트 3개 조회
+    public List<TastingNoteDto> recentNote(){
+        return tastingNoteMapper.recentNote();
+    }
+
+    public List<TastingNoteDto> findNoteAll(Integer drinkId, String sort){
+        
+            Map<String, Object> param = new HashMap<>();
+            param.put("drinkId", drinkId);
+            param.put("sort", sort);
+
+        return tastingNoteMapper.findNoteAll(param);
+    }
+
     public int insertTastingNote(TastingNoteDto tastingNoteDto){
         return tastingNoteMapper.insertTastingNote(tastingNoteDto);
     }
@@ -30,18 +46,7 @@ public class TastingNoteService {
         return tastingNoteMapper.findByNoteId(noteId);
     }
 
-    public List<TastingNoteDto> findNoteAll(Integer drinkId){
-        return tastingNoteMapper.findNoteAll(drinkId);
-    }
 
-    //최근 노트 3개 조회
-    public List<TastingNoteDto> recentNote(){
-        return tastingNoteMapper.recentNote();
-    }
-
-    public List<TastingNoteDto> orderByRatingDesc(Integer drinkId){
-        return tastingNoteMapper.orderByRatingDesc(drinkId);
-    }
 
     public int updateTastingNote(TastingNoteDto tastingNoteDto){
         return tastingNoteMapper.updateTastingNote(tastingNoteDto);

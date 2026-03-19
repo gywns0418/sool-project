@@ -1,0 +1,185 @@
+package com.example.sool.service;
+
+import java.time.Duration;
+import java.util.Random;
+
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.example.sool.dto.UserDto;
+
+@Service
+public class AuthService {
+
+    private static final Duration CODE_TTL = Duration.ofMinutes(3);
+    private static final Duration COOLDOWN_TTL = Duration.ofSeconds(10);
+    private static final Duration VERIFIED_TTL = Duration.ofMinutes(10);
+
+    private final UserService userService;
+    private final EmailService emailService;
+    private final StringRedisTemplate redisTemplate;
+
+    public AuthService(
+            UserService userService,
+            EmailService emailService,
+            StringRedisTemplate redisTemplate
+    ) {
+        this.userService = userService;
+        this.emailService = emailService;
+        this.redisTemplate = redisTemplate;
+    }
+
+    public boolean isLoginIdAvailable(String loginId) {
+        validateLoginId(loginId);
+        return userService.findByLoginId(loginId) == null;
+    }
+
+    private void sendCode(String email) {
+
+        String code = createAuthCode();
+
+        redisTemplate.opsForValue().set(getCodeKey(email), code, CODE_TTL);
+        redisTemplate.opsForValue().set(getCooldownKey(email), "Y", COOLDOWN_TTL);
+
+        emailService.sendAuthCode(email, code);
+    }
+
+    public void sendEmailCode(String loginId, String name, String email) {
+
+        validateLoginId(loginId);
+        validateName(name);
+        validateEmail(email);
+
+        if (userService.findByLoginId(loginId) != null) {
+            throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
+        }
+
+        if (userService.selectUserByEmail(email) != null) {
+            throw new IllegalArgumentException("이미 가입된 이메일입니다.");
+        }
+
+        String cooldownKey = getCooldownKey(email);
+
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(cooldownKey))) {
+            throw new IllegalArgumentException("인증번호는 잠시 후 다시 요청해주세요.");
+        }
+
+        sendCode(email);
+    }
+
+    public void resendEmailCode(String email) {
+        validateEmail(email);
+
+        String cooldownKey = getCooldownKey(email);
+
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(cooldownKey))) {
+            throw new IllegalArgumentException("인증번호는 잠시 후 다시 요청해주세요.");
+        }
+
+        sendCode(email);
+    }
+
+
+
+    public boolean verifyEmailCode(String email, String code) {
+        validateEmail(email);
+
+        if (code == null || code.isBlank()) {
+            throw new IllegalArgumentException("인증번호를 입력하세요.");
+        }
+
+        String savedCode = redisTemplate.opsForValue().get(getCodeKey(email));
+
+        if (savedCode == null) {
+            throw new IllegalArgumentException("인증번호가 만료되었거나 존재하지 않습니다.");
+        }
+
+        if (!savedCode.equals(code)) {
+            return false;
+        }
+
+        redisTemplate.delete(getCodeKey(email));
+        redisTemplate.opsForValue().set(getVerifiedKey(email), "Y", VERIFIED_TTL);
+
+        return true;
+    }
+
+    @Transactional
+    public int signUp(UserDto userDto) {
+        validateUserDto(userDto);
+
+        if (userService.findByLoginId(userDto.getLoginId()) != null) {
+            throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
+        }
+
+        if (userService.selectUserByEmail(userDto.getEmail()) != null) {
+            throw new IllegalArgumentException("이미 가입된 이메일입니다.");
+        }
+
+        String verified = redisTemplate.opsForValue().get(getVerifiedKey(userDto.getEmail()));
+        if (!"Y".equals(verified)) {
+            throw new IllegalArgumentException("이메일 인증이 완료되지 않았습니다.");
+        }
+
+        userDto.setRoleCode("USER");
+
+        int result = userService.insertUser(userDto);
+
+        redisTemplate.delete(getCodeKey(userDto.getEmail()));
+        redisTemplate.delete(getCooldownKey(userDto.getEmail()));
+        redisTemplate.delete(getVerifiedKey(userDto.getEmail()));
+
+        return result;
+    }
+
+    private void validateUserDto(UserDto userDto) {
+        if (userDto == null) {
+            throw new IllegalArgumentException("회원정보가 없습니다.");
+        }
+
+        validateLoginId(userDto.getLoginId());
+        validateName(userDto.getName());
+        validateEmail(userDto.getEmail());
+
+        if (userDto.getPassword() == null || userDto.getPassword().isBlank()) {
+            throw new IllegalArgumentException("비밀번호를 입력하세요.");
+        }
+    }
+
+    private void validateLoginId(String loginId) {
+        if (loginId == null || loginId.isBlank()) {
+            throw new IllegalArgumentException("아이디를 입력하세요.");
+        }
+    }
+
+    private void validateName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("이름을 입력하세요.");
+        }
+    }
+
+    private void validateEmail(String email) {
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("이메일을 입력하세요.");
+        }
+    }
+
+    private String createAuthCode() {
+        Random random = new Random();
+        int number = 100000 + random.nextInt(900000);
+        return String.valueOf(number);
+    }
+
+    private String getCodeKey(String email) {
+        return "email:code:" + email;
+    }
+
+    private String getCooldownKey(String email) {
+        return "email:cooldown:" + email;
+    }
+
+    private String getVerifiedKey(String email) {
+        return "email:verified:" + email;
+    }
+}

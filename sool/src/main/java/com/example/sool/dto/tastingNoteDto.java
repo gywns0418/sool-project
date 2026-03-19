@@ -20,6 +20,9 @@ public class TastingNoteDto {
 
     //홈 최근 테이스팅 노트 
     private String userName;
+    
     private String drinkName;
+    private String categoryCode;
+
     private String typeName;
 }

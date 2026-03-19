@@ -11,3 +11,15 @@ export const insertDrinkLike = (drinkId) => {
 export const deleteDrinkLike = (drinkId) => {
   return api.delete(`/drinks/${drinkId}/like`)
 }
+
+export const getNoteLike = (noteId) => {
+  return api.get(`/notes/${noteId}/like`)
+}
+
+export const insertNoteLike = (noteId) => {
+  return api.post(`/notes/${noteId}/like`)
+}
+
+export const deleteNoteLike = (noteId) => {
+  return api.delete(`/notes/${noteId}/like`)
+}

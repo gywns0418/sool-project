@@ -6,7 +6,7 @@
 
 <mapper namespace="com.example.sool.mapper.LikeMapper">
     <insert id="insertLike" parameterType="com.example.sool.dto.LikeDto">
-        INSERT INTO LIKE
+        INSERT INTO `like`
         (
             user_id,
             obj_id,
@@ -41,7 +41,7 @@
     <!-- 마이페이지 좋아요 목록 -->
     <select id="findByUserId" parameterType="int" resultType="com.example.sool.dto.LikeDto">
         SELECT *
-        FROM like
+        FROM `like`
         WHERE user_id = #{userId}
         ORDER BY created_at DESC
     </select>

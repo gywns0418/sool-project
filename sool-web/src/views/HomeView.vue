@@ -33,7 +33,7 @@
           <div class="section-title">최근 테이스팅 노트</div>
         </div>
         <div class="note-feed">
-          <RecentNoteCard v-for="note in recentNotes" :key="note.id" :item="note" />
+          <RecentNoteCard v-for="note in recentNote" :key="note.id" :item="note" />
         </div>
       </section>
     </div>
@@ -55,6 +55,7 @@ import { getHome } from "@/api/homeApi"
 const drinks = ref([])
 const popularDrinks = ref([])
 const categoryList = ref([])
+const recentNote = ref([])
 
 const loadHome = async () => {
   try {
@@ -62,6 +63,7 @@ const loadHome = async () => {
     drinks.value = res.data.drinks
     popularDrinks.value = res.data.drinkTop || []
     categoryList.value = res.data.cateList || []
+    recentNote.value = res.data.recentNote || []
     console.log(res.data)
   } catch (error) {
     console.log(error)

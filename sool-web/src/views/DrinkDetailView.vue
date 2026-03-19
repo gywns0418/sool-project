@@ -76,6 +76,7 @@
         <select class="sort-select">
           <option>최신순</option>
           <option>별점 높은순</option>
+          <option>별점 낮은순</option>
         </select>
       </div>
 
@@ -155,6 +156,8 @@ const toggleLike = async () => {
   if (!drinkId || likeLoading.value) return
 
   if (!authStore.isLogin) {
+    alert('로그인을 먼저 해주세요.')
+    
     router.push({
       path: '/login',
       query: { redirect: route.fullPath }

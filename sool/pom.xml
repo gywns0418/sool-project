@@ -85,6 +85,18 @@
 			<version>4.0.1</version>
 			<scope>test</scope>
 		</dependency>
+
+		<!-- redis -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-redis</artifactId>
+		</dependency>
+		<!-- 메일 -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<build>
