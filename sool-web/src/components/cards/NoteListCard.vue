@@ -4,16 +4,16 @@
       <div class="note-author">
         <div class="avatar" :class="item.avatarClass">{{ item.authorInitial }}</div>
         <div>
-          <div class="author-name">{{ item.author }}</div>
-          <div class="note-date">{{ item.date }}</div>
+          <div class="author-name">{{ item.userName }}</div>
+          <div class="note-date">{{ formatDate(item.createdAt) }}</div>
         </div>
       </div>
-      <div class="note-stars">{{ item.stars }}</div>
-      <div class="note-text">{{ item.text }}</div>
+      <div class="note-stars">{{ getStars(item.rating) }}</div>
+      <div class="note-text">{{ item.content }}</div>
     </div>
     <div class="note-side">
       <div class="note-img">{{ item.emoji }}</div>
-      <button class="note-like" :class="{ liked }" @click.prevent="toggleLike">{{ liked ? '♥' : '♡' }} {{ likeCount }}</button>
+      <button class="note-like" :class="{ liked }" @click.prevent="toggleLike">{{ liked ? '♥' : '♡' }} {{ likeCount || 0}}</button>
     </div>
   </router-link>
 </template>
@@ -27,6 +27,21 @@ const props = defineProps({
     required: true
   }
 })
+
+function getStars(rating) {
+  const maxStars = 5
+  return '★'.repeat(rating) + '☆'.repeat(maxStars - rating)
+}
+
+function formatDate(dateStr) {
+  const date = new Date(dateStr)
+
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+
+  return `${year}.${month}.${day}`
+}
 
 const liked = ref(false)
 const likeCount = ref(props.item.likes)

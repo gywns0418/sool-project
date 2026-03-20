@@ -23,6 +23,8 @@ public class TastingNoteDto {
     
     private String drinkName;
     private String categoryCode;
-
     private String typeName;
+
+    //목록
+    private int likeCount;
 }

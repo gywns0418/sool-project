@@ -1,10 +1,10 @@
 package com.example.sool.mapper;
 
 import java.util.List;
-import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 
+import com.example.sool.dto.NoteSearchDto;
 import com.example.sool.dto.TastingNoteDto;
 
 @Mapper
@@ -14,7 +14,10 @@ public interface TastingNoteMapper {
 
     TastingNoteDto findByNoteId(Integer noteId);
 
-    List<TastingNoteDto> findNoteAll(Map<String, Object> param);
+    //주류 디테일 노트 목록 
+    List<TastingNoteDto> findNoteByDrinkId(NoteSearchDto noteSearchDto);
+
+    int countNoteByDrinkId(NoteSearchDto noteSearchDto);
 
 
     //최근 노트 3개 조회

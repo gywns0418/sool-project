@@ -80,7 +80,7 @@ const navLinks = [
 const goHome = () => router.push('/')
 
 const editNote = (item) => {
-  router.push({ path: '/notes/write', query: { edit: item.id } })
+  router.push({ path: '/notes/write', query: { noteId: item.id } })
 }
 
 const deleteNote = (id) => {

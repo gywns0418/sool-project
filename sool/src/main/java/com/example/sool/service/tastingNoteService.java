@@ -1,11 +1,10 @@
 package com.example.sool.service;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.example.sool.dto.NoteSearchDto;
 import com.example.sool.dto.TastingNoteDto;
 import com.example.sool.dto.TastingNoteMetricDto;
 import com.example.sool.mapper.TastingNoteMapper;
@@ -29,13 +28,13 @@ public class TastingNoteService {
         return tastingNoteMapper.recentNote();
     }
 
-    public List<TastingNoteDto> findNoteAll(Integer drinkId, String sort){
-        
-            Map<String, Object> param = new HashMap<>();
-            param.put("drinkId", drinkId);
-            param.put("sort", sort);
+    //주류 디테일 노트 목록
+    public List<TastingNoteDto> findNoteByDrinkId(NoteSearchDto noteSearchDto){ 
+        return tastingNoteMapper.findNoteByDrinkId(noteSearchDto);
+    }
 
-        return tastingNoteMapper.findNoteAll(param);
+    public int countNoteByDrinkId(NoteSearchDto noteSearchDto){
+        return tastingNoteMapper.countNoteByDrinkId(noteSearchDto);
     }
 
     public int insertTastingNote(TastingNoteDto tastingNoteDto){

@@ -6,15 +6,14 @@
       <main class="nd-main">
         <div v-if="loading" class="state-box">불러오는 중입니다.</div>
         <div v-else-if="!noteDetail" class="state-box">노트 정보를 찾을 수 없습니다.</div>
+
         <template v-else>
           <div class="nd-top">
-            <div>
-              <div class="nd-author-row">
-                <div class="avatar">{{ authorInitial }}</div>
-                <div>
-                  <div class="nd-author-name">{{ authorName }}</div>
-                  <div class="nd-date">{{ formattedDate }}</div>
-                </div>
+            <div class="nd-author-row">
+              <div class="avatar">{{ authorInitial }}</div>
+              <div>
+                <div class="nd-author-name">{{ authorName }}</div>
+                <div class="nd-date">{{ formattedDate }}</div>
               </div>
             </div>
           </div>
@@ -38,6 +37,7 @@
             >
               {{ liked ? '♥' : '♡' }} {{ likeCount }}
             </button>
+
             <button
               class="report-btn"
               :disabled="reportLoading || reported"
@@ -51,7 +51,11 @@
 
       <aside class="nd-side">
         <div class="nd-flavor-title">맛 프로파일</div>
-        <div v-if="flavorList.length === 0" class="empty-text">등록된 맛 프로파일이 없습니다.</div>
+
+        <div v-if="flavorList.length === 0" class="empty-text">
+          등록된 맛 프로파일이 없습니다.
+        </div>
+
         <div v-for="item in flavorList" :key="item.label" class="nd-flavor-row">
           <span class="nfl">{{ item.label }}</span>
           <div class="nfb">
@@ -62,9 +66,17 @@
 
         <div class="nd-comments">
           <h4>댓글</h4>
+
           <div v-if="commentLoading" class="empty-text">댓글을 불러오는 중입니다.</div>
           <div v-else-if="commentList.length === 0" class="empty-text">아직 댓글이 없습니다.</div>
-          <CommentItem v-else v-for="comment in commentList" :key="comment.id" :item="comment" />
+
+          <CommentItem
+            v-else
+            v-for="comment in commentList"
+            :key="comment.id"
+            :item="comment"
+          />
+
           <form class="comment-inp" @submit.prevent="submitComment">
             <input v-model="newComment" placeholder="댓글을 입력하세요" />
             <button class="cm-send" :disabled="commentSubmitLoading">등록</button>
@@ -80,7 +92,15 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import PageNav from '../components/common/PageNav.vue'
 import CommentItem from '../components/cards/CommentItem.vue'
-import api from '@/api/apiClient'
+import {
+  getNoteDetail,
+  getNoteFlavors,
+  getNoteComments,
+  createNoteComment,
+  likeNote,
+  unlikeNote,
+  reportNoteApi
+} from '@/api/noteApi'
 
 const route = useRoute()
 
@@ -98,7 +118,7 @@ const reported = ref(false)
 const likeCount = ref(0)
 const newComment = ref('')
 
-const noteId = computed(() => Number(route.params.id))
+const noteId = computed(() => Number(route.params.noteId || route.params.id))
 
 const navLinks = computed(() => [
   { label: '홈', to: '/' },
@@ -108,6 +128,7 @@ const navLinks = computed(() => [
 const authorName = computed(() => {
   return (
     noteDetail.value?.userName ||
+    noteDetail.value?.name ||
     noteDetail.value?.authorName ||
     noteDetail.value?.loginId ||
     noteDetail.value?.writerName ||
@@ -119,7 +140,9 @@ const authorInitial = computed(() => {
   return String(authorName.value).trim().charAt(0) || '?'
 })
 
-const formattedDate = computed(() => formatDate(noteDetail.value?.createdAt || noteDetail.value?.created_at))
+const formattedDate = computed(() => {
+  return formatDate(noteDetail.value?.createdAt || noteDetail.value?.created_at)
+})
 
 const drinkLabel = computed(() => {
   const drinkName =
@@ -133,11 +156,22 @@ const drinkLabel = computed(() => {
 })
 
 const noteImageUrl = computed(() => {
-  return noteDetail.value?.imageUrl || noteDetail.value?.image_path || noteDetail.value?.photoUrl || ''
+  return (
+    noteDetail.value?.imageUrl ||
+    noteDetail.value?.image_path ||
+    noteDetail.value?.photoUrl ||
+    noteDetail.value?.noteImage ||
+    ''
+  )
 })
 
 const noteContent = computed(() => {
-  return noteDetail.value?.content || noteDetail.value?.noteContent || noteDetail.value?.review || ''
+  return (
+    noteDetail.value?.content ||
+    noteDetail.value?.noteContent ||
+    noteDetail.value?.review ||
+    ''
+  )
 })
 
 const starText = computed(() => {
@@ -148,12 +182,14 @@ const starText = computed(() => {
 
 function formatDate(value) {
   if (!value) return ''
+
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return String(value)
 
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
+
   return `${year}. ${month}. ${day}`
 }
 
@@ -192,14 +228,17 @@ function mapComment(comment) {
   }
 }
 
-async function fetchNoteDetail() {
+async function fetchNoteDetailData() {
   loading.value = true
+
   try {
-    const { data } = await api.get(`/notes/${noteId.value}`)
+    const { data } = await getNoteDetail(noteId.value)
     noteDetail.value = data
-    liked.value = Boolean(data.liked)
-    reported.value = Boolean(data.reported)
-    likeCount.value = Number(data.likeCount ?? data.like_count ?? 0)
+    liked.value = Boolean(data?.liked)
+    reported.value = Boolean(data?.reported)
+    likeCount.value = Number(data?.likeCount ?? data?.like_count ?? 0)
+  } catch (error) {
+    noteDetail.value = null
   } finally {
     loading.value = false
   }
@@ -207,19 +246,22 @@ async function fetchNoteDetail() {
 
 async function fetchFlavorList() {
   try {
-    const { data } = await api.get(`/notes/${noteId.value}/flavors`)
+    const { data } = await getNoteFlavors(noteId.value)
     flavorList.value = mapFlavorList(Array.isArray(data) ? data : data?.list || [])
-  } catch {
+  } catch (error) {
     flavorList.value = []
   }
 }
 
 async function fetchComments() {
   commentLoading.value = true
+
   try {
-    const { data } = await api.get(`/notes/${noteId.value}/comments`)
+    const { data } = await getNoteComments(noteId.value)
     const list = Array.isArray(data) ? data : data?.list || []
     commentList.value = list.map(mapComment)
+  } catch (error) {
+    commentList.value = []
   } finally {
     commentLoading.value = false
   }
@@ -227,20 +269,21 @@ async function fetchComments() {
 
 async function fetchAll() {
   if (!noteId.value) return
-  await Promise.all([fetchNoteDetail(), fetchFlavorList(), fetchComments()])
+  await Promise.all([fetchNoteDetailData(), fetchFlavorList(), fetchComments()])
 }
 
 async function toggleLike() {
   if (!noteDetail.value || likeLoading.value) return
 
   likeLoading.value = true
+
   try {
     if (liked.value) {
-      await api.delete(`/notes/${noteId.value}/like`)
+      await unlikeNote(noteId.value)
       liked.value = false
       likeCount.value = Math.max(0, likeCount.value - 1)
     } else {
-      await api.post(`/notes/${noteId.value}/like`)
+      await likeNote(noteId.value)
       liked.value = true
       likeCount.value += 1
     }
@@ -253,8 +296,9 @@ async function reportNote() {
   if (!noteDetail.value || reportLoading.value || reported.value) return
 
   reportLoading.value = true
+
   try {
-    await api.post(`/notes/${noteId.value}/report`)
+    await reportNoteApi(noteId.value)
     reported.value = true
   } finally {
     reportLoading.value = false
@@ -266,8 +310,9 @@ async function submitComment() {
   if (!content || commentSubmitLoading.value) return
 
   commentSubmitLoading.value = true
+
   try {
-    await api.post(`/notes/${noteId.value}/comments`, { content })
+    await createNoteComment(noteId.value, { content })
     newComment.value = ''
     await fetchComments()
   } finally {
@@ -275,8 +320,23 @@ async function submitComment() {
   }
 }
 
-watch(() => route.params.id, fetchAll)
-onMounted(fetchAll)
+watch(
+  () => route.params.id,
+  () => {
+    fetchAll()
+  }
+)
+
+watch(
+  () => route.params.noteId,
+  () => {
+    fetchAll()
+  }
+)
+
+onMounted(() => {
+  fetchAll()
+})
 </script>
 
 <style scoped>
@@ -367,18 +427,6 @@ onMounted(fetchAll)
   margin-bottom: 20px;
 }
 
-.nd-photo-img-wrap {
-  padding: 0;
-  overflow: hidden;
-}
-
-.nd-photo-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
 .nd-text {
   font-size: 14.5px;
   color: var(--sub);
@@ -411,13 +459,6 @@ onMounted(fetchAll)
   border: 1.5px solid var(--point);
   background: #fdf3ef;
   color: var(--point);
-}
-
-.like-btn:disabled,
-.report-btn:disabled,
-.cm-send:disabled {
-  opacity: 0.6;
-  cursor: default;
 }
 
 .report-btn {
@@ -507,22 +548,5 @@ onMounted(fetchAll)
   border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
-}
-
-.state-box,
-.empty-text {
-  font-size: 13px;
-  color: var(--muted);
-}
-
-@media (max-width: 1024px) {
-  .nd-wrap {
-    grid-template-columns: 1fr;
-  }
-
-  .nd-main {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
 }
 </style>

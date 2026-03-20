@@ -29,7 +29,7 @@
             <span class="chip">{{ drink?.abv ?? '-' }}%</span>
             <span class="chip">{{ formatPrice(drink?.price) }}</span>
             <span class="chip rating">★ {{ drink?.avgRating ?? 0 }}</span>
-            <span class="chip">노트 {{ drink?.noteCount ?? 0 }}개</span>
+            <span class="chip">노트 {{ totalCount }}개</span>
           </div>
 
           <p class="detail-desc">
@@ -39,7 +39,7 @@
           <div class="detail-actions">
             <router-link
               v-if="authStore.isLogin"
-              :to="`/notes/write?drinkId=${drink?.drink_id || ''}`"
+              :to="`/drinks/${route.params.id}/notes/write`"
               class="btn-primary"
             >
               테이스팅 노트 작성
@@ -73,18 +73,24 @@
     <section class="notes-section">
       <div class="notes-head">
         <h3>테이스팅 노트</h3>
-        <select class="sort-select">
-          <option>최신순</option>
-          <option>별점 높은순</option>
-          <option>별점 낮은순</option>
+        <select v-model="sortBy" class="sort-select">
+          <option value="latest">최신순</option>
+          <option value="ratingDesc">별점 높은순</option>
+          <option value="ratingAsc">별점 낮은순</option>
         </select>
       </div>
 
-      <NoteListCard
-        v-for="note in detailNotes"
-        :key="note.id"
-        :item="note"
-      />
+      <div v-if="noteList.length > 0" class="note-list">
+        <NoteListCard
+          v-for="note in noteList"
+          :key="note.noteId"
+          :item="note"
+        />
+      </div>
+
+      <div v-else class="empty-note">
+        아직 등록된 테이스팅 노트가 없습니다.
+      </div>
     </section>
   </div>
 </template>
@@ -92,13 +98,14 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useAuthStore } from "@/stores/authStore"
+import { useAuthStore } from '@/stores/authStore'
 import PageNav from '@/components/common/PageNav.vue'
 import FlavorBars from '@/components/sections/FlavorBars.vue'
 import NoteListCard from '@/components/cards/NoteListCard.vue'
 import { getDrinkDetail } from '@/api/drinkApi'
 import { getDrinkLike, insertDrinkLike, deleteDrinkLike } from '@/api/likeApi'
-import { detailNotes, flavorProfile } from '@/mock/soolData'
+import { getNoteList } from '@/api/noteApi'
+import { flavorProfile } from '@/mock/soolData'
 
 const route = useRoute()
 const router = useRouter()
@@ -107,6 +114,13 @@ const authStore = useAuthStore()
 const liked = ref(false)
 const likeLoading = ref(false)
 const drink = ref(null)
+
+const noteList = ref([])
+const totalCount = ref(0)
+const page = ref(1)
+const size = ref(12)
+const totalPage = ref(0)
+const sortBy = ref('latest')
 
 const navLinks = computed(() => [
   { label: '홈', to: '/' },
@@ -125,7 +139,6 @@ const formatPrice = (price) => {
 
 const fetchDrinkDetail = async () => {
   const drinkId = route.params.id
-
   if (!drinkId) return
 
   try {
@@ -139,7 +152,6 @@ const fetchDrinkDetail = async () => {
 
 const fetchLikeStatus = async () => {
   const drinkId = route.params.id
-
   if (!drinkId) return
 
   try {
@@ -150,6 +162,30 @@ const fetchLikeStatus = async () => {
   }
 }
 
+const fetchTastingNote = async () => {
+  const drinkId = route.params.id
+  if (!drinkId) return
+
+  try {
+    const res = await getNoteList(drinkId, {
+      page: page.value,
+      size: size.value,
+      sort: sortBy.value
+    })
+
+    noteList.value = Array.isArray(res.data.list) ? res.data.list : []
+    totalCount.value = res.data.totalCount ?? 0
+    totalPage.value = res.data.totalPage ?? 0
+    page.value = res.data.page ?? 1
+    size.value = res.data.size ?? 12
+  } catch (e) {
+    console.log('테이스팅 노트 조회 실패', e)
+    noteList.value = []
+    totalCount.value = 0
+    totalPage.value = 0
+  }
+}
+
 const toggleLike = async () => {
   const drinkId = route.params.id
 
@@ -157,7 +193,6 @@ const toggleLike = async () => {
 
   if (!authStore.isLogin) {
     alert('로그인을 먼저 해주세요.')
-    
     router.push({
       path: '/login',
       query: { redirect: route.fullPath }
@@ -184,8 +219,10 @@ const toggleLike = async () => {
 }
 
 const initPage = async () => {
+  page.value = 1
   await fetchDrinkDetail()
   await fetchLikeStatus()
+  await fetchTastingNote()
 }
 
 onMounted(() => {
@@ -205,6 +242,11 @@ watch(
     fetchLikeStatus()
   }
 )
+
+watch(sortBy, async () => {
+  page.value = 1
+  await fetchTastingNote()
+})
 </script>
 
 <style scoped>
@@ -399,5 +441,21 @@ watch(
   font-size: 12.5px;
   color: var(--sub);
   background: var(--white);
+}
+
+.note-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.empty-note {
+  padding: 40px 0;
+  text-align: center;
+  font-size: 14px;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
 }
 </style>

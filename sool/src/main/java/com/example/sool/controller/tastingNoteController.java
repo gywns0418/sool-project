@@ -1,13 +1,15 @@
 package com.example.sool.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.sool.dto.NoteSearchDto;
 import com.example.sool.dto.TastingNoteDto;
 import com.example.sool.service.TastingNoteService;
 
@@ -22,10 +24,25 @@ public class TastingNoteController {
     }
 
     @GetMapping("/drinks/{drinkId}/notes")
-    public List<TastingNoteDto> findNoteAll(
+    public Map<String, Object> findNoteAll(
             @PathVariable Integer drinkId,
-            @RequestParam(required = false) String sort
+            NoteSearchDto dto
     ) {
-        return tastingNoteService.findNoteAll(drinkId, sort);
+
+        dto.setDrinkId(drinkId);
+
+        List<TastingNoteDto> list = tastingNoteService.findNoteByDrinkId(dto);
+        int totalCount = tastingNoteService.countNoteByDrinkId(dto);
+
+        int totalPage = (int) Math.ceil((double) totalCount / dto.getSize());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("list", list);
+        result.put("totalCount", totalCount);
+        result.put("page", dto.getPage());
+        result.put("size", dto.getSize());
+        result.put("totalPage", totalPage);
+
+        return result;
     }
 }
