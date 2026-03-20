@@ -12,7 +12,7 @@
       <div class="note-text">{{ item.content }}</div>
     </div>
     <div class="note-side">
-      <div class="note-img">{{ item.emoji }}</div>
+      <div class="note-img">{{ item.emoji || '🍷'}}</div>
       <button class="note-like" :class="{ liked }" @click.prevent="toggleLike">{{ liked ? '♥' : '♡' }} {{ likeCount || 0}}</button>
     </div>
   </router-link>
