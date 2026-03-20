@@ -28,6 +28,7 @@ public class DrinkDto {
 
     
     private Integer likeCount; //좋아요 수
+    private boolean liked; //좋아요 표시
     private Integer noteCount; //노트 수
     private Double avgRating; //평균 별점
 

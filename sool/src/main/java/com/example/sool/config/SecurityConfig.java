@@ -39,7 +39,7 @@ public class SecurityConfig {
             // Vue 프론트 요청 허용
             .cors(Customizer.withDefaults())
 
-            // 현재는 세션 기반 REST API 방식이라 csrf 비활성화
+            // 세션 기반 REST API 방식이라 csrf 비활성화
             .csrf(csrf -> csrf.disable())
 
             // 스프링 기본 로그인 페이지 사용 안 함

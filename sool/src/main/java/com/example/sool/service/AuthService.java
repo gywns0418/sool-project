@@ -30,10 +30,13 @@ public class AuthService {
         this.redisTemplate = redisTemplate;
     }
 
+    //아이디 값 존재 확인
     public boolean isLoginIdAvailable(String loginId) {
+        
         validateLoginId(loginId);
         return userService.findByLoginId(loginId) == null;
     }
+    
 
     private void sendCode(String email) {
 
@@ -80,6 +83,27 @@ public class AuthService {
         sendCode(email);
     }
 
+    public void sendPasswordEmailCode(String loginId, String email) {
+
+        validateLoginId(loginId);
+        validateEmail(email);
+
+        if (userService.findByLoginId(loginId) == null) {
+            throw new IllegalArgumentException("없는 아이디입니다.");
+        }
+
+        if (userService.selectUserByEmail(email) == null) {
+            throw new IllegalArgumentException("없는 이메일입니다.");
+        }
+
+        String cooldownKey = getCooldownKey(email);
+
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(cooldownKey))) {
+            throw new IllegalArgumentException("인증번호는 잠시 후 다시 요청해주세요.");
+        }
+
+        sendCode(email);
+    }
 
 
     public boolean verifyEmailCode(String email, String code) {
@@ -181,5 +205,34 @@ public class AuthService {
 
     private String getVerifiedKey(String email) {
         return "email:verified:" + email;
+    }
+
+    //비밀번호 재설정
+    public void resetPassword(UserDto userDto) {
+
+        validateLoginId(userDto.getLoginId());
+        validateEmail(userDto.getEmail());
+
+        UserDto user = userService.findByLoginId(userDto.getLoginId());
+
+        if (user == null) {
+            throw new IllegalArgumentException("존재하지 않는 아이디입니다.");
+        }
+
+        if (!userDto.getEmail().equals(user.getEmail())) {
+            throw new IllegalArgumentException("아이디와 이메일이 일치하지 않습니다.");
+        }
+
+        String verified = redisTemplate.opsForValue().get(getVerifiedKey(userDto.getEmail()));
+
+        if (!"Y".equals(verified)) {
+            throw new IllegalArgumentException("이메일 인증이 완료되지 않았습니다.");
+        }
+
+        userDto.setUserId(user.getUserId());
+
+        userService.updateUserPassword(userDto);
+
+        redisTemplate.delete(getVerifiedKey(userDto.getEmail()));
     }
 }

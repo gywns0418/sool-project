@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.sool.dto.CommonCodeDto;
 import com.example.sool.dto.DrinkDto;
 import com.example.sool.dto.DrinkSearchDto;
+import com.example.sool.security.CustomUserDetails;
 import com.example.sool.service.CommonCodeService;
 import com.example.sool.service.DrinkService;
 
@@ -28,7 +30,15 @@ public class DrinkController {
     }
 
     @GetMapping("")
-    public Map<String, Object> getDrinkList(DrinkSearchDto dto){
+    public Map<String, Object> getDrinkList(DrinkSearchDto dto,Authentication authentication){
+        
+        if (authentication != null
+                && authentication.isAuthenticated()
+                && authentication.getPrincipal() instanceof CustomUserDetails userDetails) {
+            dto.setUserId(userDetails.getUserId());
+        } else {
+            dto.setUserId(null);
+        }
 
         System.out.println("dto = " + dto);
 
@@ -58,6 +68,7 @@ public class DrinkController {
         return result;
     }
 
+    
     @GetMapping("/categories")
     public List<CommonCodeDto> selectCategoryList() {
 

@@ -10,6 +10,7 @@
     <div class="drink-info">
       <div class="drink-cat">{{ displayItem.typeCode }}</div>
       <div class="drink-name">{{ displayItem.drinkName }}</div>
+      <div class="drink-name">{{ displayItem.drinkNameEn }}</div>
       <div class="drink-meta">
         <span class="drink-like">♥ {{ displayItem.likeCount }}</span>
       </div>
@@ -107,7 +108,6 @@ const displayItem = computed(() => {
   font-size: 13.5px;
   font-weight: 600;
   color: var(--ink);
-  margin-bottom: 8px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

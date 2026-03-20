@@ -96,6 +96,7 @@
             v-for="drink in drinkList"
             :key="drink.drinkId || drink.drink_id"
             :item="drink"
+            @refresh="loadDrinkList"
           />
         </div>
 
@@ -253,6 +254,7 @@ const loadDrinkList = async () => {
     }
 
     const res = await getDrinkList(params)
+    console.log(res.data)
 
     drinkList.value = res.data.list || []
     totalCount.value = res.data.totalCount || 0

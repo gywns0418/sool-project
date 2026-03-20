@@ -1,6 +1,5 @@
 <template>
   <router-link class="drink-card2" :to="`/drinks/${item.drinkId}`">
-    
     <div class="thumb2">{{ emoji }}</div>
 
     <div class="info2">
@@ -11,24 +10,27 @@
       <div class="abv2">{{ item.abv }}%</div>
 
       <div class="meta2">
-        <span class="stars2">★{{ item.avgRating ?? '-' }}</span>
+        <span class="stars2">★{{ item.avgRating ?? "-" }}</span>
 
         <button
           class="like2"
-          :class="{ liked }"
-          @click.prevent="toggleLike"
+          :class="{ liked: liked }"
+          :disabled="likeLoading"
+          @click.prevent.stop="toggleLike"
         >
-          {{ liked ? '♥' : '♡' }} {{ likeCount }}
+          {{ liked ? "♥" : "♡" }} {{ likeCount }}
         </button>
       </div>
     </div>
-
   </router-link>
 </template>
 
 <script setup>
-import { ref, computed } from "vue"
+import { ref, computed, watch } from "vue"
 import { categories } from "@/mock/soolData"
+import { useAuthStore } from "@/stores/authStore"
+import { useRoute, useRouter } from "vue-router"
+import { insertDrinkLike, deleteDrinkLike } from "@/api/likeApi"
 
 const props = defineProps({
   item: {
@@ -37,18 +39,60 @@ const props = defineProps({
   }
 })
 
-const liked = ref(false)
+const emit = defineEmits(["refresh"])
+
+const route = useRoute()
+const router = useRouter()
+const authStore = useAuthStore()
+
+const likeLoading = ref(false)
+const liked = ref(!!props.item.liked)
 const likeCount = ref(props.item.likeCount ?? 0)
 
-const toggleLike = () => {
-  liked.value = !liked.value
-  likeCount.value += liked.value ? 1 : -1
-}
+watch(
+  () => props.item,
+  (newItem) => {
+    liked.value = !!newItem?.liked
+    likeCount.value = newItem?.likeCount ?? 0
+  },
+  { deep: true, immediate: true }
+)
 
 const emoji = computed(() => {
-  const data = categories.find(e => e.name === props.item.categoryCode)
+  const data = categories.find((e) => e.name === props.item.categoryCode)
   return data ? data.emoji : "🍹"
 })
+
+const toggleLike = async () => {
+  const drinkId = props.item.drinkId
+
+  if (!drinkId || likeLoading.value) return
+
+  if (!authStore.isLogin) {
+    alert("로그인을 먼저 해주세요.")
+    router.push({
+      path: "/login",
+      query: { redirect: route.fullPath }
+    })
+    return
+  }
+
+  likeLoading.value = true
+
+  try {
+    if (liked.value) {
+      await deleteDrinkLike(drinkId)
+    } else {
+      await insertDrinkLike(drinkId)
+    }
+
+    emit("refresh")
+  } catch (e) {
+    console.log("좋아요 처리 실패", e)
+  } finally {
+    likeLoading.value = false
+  }
+}
 </script>
 
 <style scoped>

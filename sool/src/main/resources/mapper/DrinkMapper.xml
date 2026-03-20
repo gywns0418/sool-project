@@ -25,13 +25,27 @@
 
     <!-- 검색 -->
     <select id="searchDrinkList" parameterType="com.example.sool.dto.DrinkSearchDto"
-        resultType="com.example.sool.dto.DrinkDto">
+    resultType="com.example.sool.dto.DrinkDto">
         SELECT
             d.*,
             cc1.code_name AS categoryName,
-            cc2.code_name AS typeName
+            cc2.code_name AS typeName,
+            IFNULL(lc.likeCount, 0) AS likeCount,
+            <choose>
+                <when test="userId != null">
+                    CASE
+                        WHEN ul.user_id IS NOT NULL THEN true
+                        ELSE false
+                    END AS liked
+                </when>
+                <!--로그인 안했을 때 -->
+                <otherwise>
+                    false AS liked
+                </otherwise>
+            </choose>
 
         FROM drink d
+
         <!-- 카테고리 대분류 한글 이름 -->
         LEFT JOIN common_code cc1
             ON d.category_code = cc1.code
@@ -44,7 +58,7 @@
             AND cc2.group_code = 'DRINK_TYPE'
             AND cc2.use_yn = 'Y'
 
-        <!-- 좋아요 수 정렬 -->
+        <!-- 전체 좋아요 수 -->
         LEFT JOIN (
             SELECT
                 obj_id,
@@ -52,12 +66,19 @@
             FROM `like`
             WHERE obj_type = 'DRINK'
             GROUP BY obj_id
-        ) lc 
-        ON d.drink_id = lc.obj_id
+        ) lc
+            ON d.drink_id = lc.obj_id
+
+        <!-- 현재 로그인 사용자의 좋아요 여부 -->
+        <if test="userId != null">
+            LEFT JOIN `like` ul
+                ON ul.obj_id = d.drink_id
+                AND ul.obj_type = 'DRINK'
+                AND ul.user_id = #{userId}
+        </if>
 
         <if test="keyword != null and keyword != ''">
             INNER JOIN (
-
                 SELECT d1.drink_id
                 FROM drink d1
                 WHERE d1.is_deleted = 'N'
@@ -93,10 +114,10 @@
                     AND c2.use_yn = 'Y'
                 WHERE d4.is_deleted = 'N'
                 AND c2.code_name LIKE CONCAT(#{keyword}, '%')
-
             ) s
-            ON d.drink_id = s.drink_id
+                ON d.drink_id = s.drink_id
         </if>
+
         WHERE d.is_deleted = 'N'
 
         <choose>
@@ -170,8 +191,24 @@
         SELECT
             d.*,
             cc1.code_name AS categoryName,
-            cc2.code_name AS typeName
+            cc2.code_name AS typeName,
+            IFNULL(lc.likeCount, 0) AS likeCount,
+
+            <choose>
+                <when test="userId != null">
+                    CASE
+                        WHEN ul.user_id IS NOT NULL THEN true
+                        ELSE false
+                    END AS liked
+                </when>
+                <!--로그인 안했을 때 -->
+                <otherwise>
+                    false AS liked
+                </otherwise>
+            </choose>
+
         FROM drink d
+        
         LEFT JOIN common_code cc1
             ON d.category_code = cc1.code
             AND cc1.group_code = 'DRINK_CATEGORY'
@@ -190,6 +227,14 @@
             GROUP BY obj_id
         ) lc 
         ON d.drink_id = lc.obj_id
+
+        <!-- 현재 로그인 사용자의 좋아요 여부 -->
+        <if test="userId != null">
+            LEFT JOIN `like` ul
+                ON ul.obj_id = d.drink_id
+                AND ul.obj_type = 'DRINK'
+                AND ul.user_id = #{userId}
+        </if>
 
         WHERE d.is_deleted = 'N'
         <if test="categoryCode != null and categoryCode != ''">

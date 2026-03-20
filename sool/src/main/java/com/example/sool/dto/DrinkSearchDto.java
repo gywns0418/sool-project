@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class DrinkSearchDto {
+    private Integer userId;
 
     private String keyword;
 

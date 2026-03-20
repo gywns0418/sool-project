@@ -101,7 +101,7 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-@GetMapping("/check-login-id")
+    @GetMapping("/check-login-id")
     public ResponseEntity<Map<String, Object>> checkLoginId(@RequestParam String loginId) {
         System.out.println(loginId);
         boolean available = authService.isLoginIdAvailable(loginId);
@@ -112,7 +112,8 @@ public class AuthController {
         return ResponseEntity.ok(result);
     }
 
-    //처음 이메일 발송
+
+    //처음 이메일 발송(회원가입)
     @PostMapping("/email/send-code")
     public ResponseEntity<Map<String, Object>> sendEmailCode(@RequestBody Map<String, String> body) {
 
@@ -128,7 +129,7 @@ public class AuthController {
         return ResponseEntity.ok(result);
     }
 
-    //이메일 재발송
+    //이메일 재발송(회원가입)
     @PostMapping("/email/resend-code")
     public ResponseEntity<Map<String, Object>> resendEmailCode(@RequestBody Map<String, String> body) {
 
@@ -140,6 +141,7 @@ public class AuthController {
         return ResponseEntity.ok(result);
     }
 
+    //이메일 인증코드 확인
     @PostMapping("/email/verify-code")
     public ResponseEntity<Map<String, Object>> verifyEmailCode(@RequestBody Map<String, String> body) {
 
@@ -165,6 +167,35 @@ public class AuthController {
 
         return ResponseEntity.ok(result);
     }
+
+    //처음 이메일 발송(비밀번호 재설정)
+    @PostMapping("/email/password-send-code")
+    public ResponseEntity<Map<String, Object>> sendResetPasswordEmailCode(@RequestBody Map<String, String> body) {
+
+        authService.sendPasswordEmailCode(
+                body.get("loginId"),
+                body.get("email")
+        );
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("message", "인증번호가 발송되었습니다.");
+
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Map<String, Object>> resetPassword(
+            @RequestBody UserDto userDto) {
+
+        authService.resetPassword(userDto);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("message", "비밀번호가 변경되었습니다.");
+
+        return ResponseEntity.ok(result);
+    }
+
+
 
     //실패 시 메세지
     @ExceptionHandler(IllegalArgumentException.class)
