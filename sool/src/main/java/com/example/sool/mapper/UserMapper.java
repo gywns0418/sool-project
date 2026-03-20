@@ -15,6 +15,8 @@ public interface UserMapper {
 
     UserDto selectUserById(int userId);
 
+    UserDto findByNameAndEmail(UserDto dto);
+
     UserDto selectUserByEmail(String email);
 
     List<UserDto> selectUserList();

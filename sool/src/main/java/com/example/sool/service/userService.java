@@ -23,6 +23,10 @@ public class UserService {
         return userMapper.findByLoginId(loginId);
     }
 
+    public UserDto findByNameAndEmail(UserDto dto){
+        return userMapper.findByNameAndEmail(dto);
+    }
+
     public int insertUser(UserDto userDto) {
         userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
         return userMapper.insertUser(userDto);

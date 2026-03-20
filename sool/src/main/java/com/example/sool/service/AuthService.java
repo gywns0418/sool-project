@@ -37,7 +37,25 @@ public class AuthService {
         return userService.findByLoginId(loginId) == null;
     }
     
+    private String createAuthCode() {
+        Random random = new Random();
+        int number = 100000 + random.nextInt(900000);
+        return String.valueOf(number);
+    }
 
+    private String getCodeKey(String email) {
+        return "email:code:" + email;
+    }
+
+    private String getCooldownKey(String email) {
+        return "email:cooldown:" + email;
+    }
+
+    private String getVerifiedKey(String email) {
+        return "email:verified:" + email;
+    }
+
+    //이메일 인증코드 설정 및 보내기
     private void sendCode(String email) {
 
         String code = createAuthCode();
@@ -48,6 +66,7 @@ public class AuthService {
         emailService.sendAuthCode(email, code);
     }
 
+    //최초 이메일 코드 전송
     public void sendEmailCode(String loginId, String name, String email) {
 
         validateLoginId(loginId);
@@ -71,6 +90,7 @@ public class AuthService {
         sendCode(email);
     }
 
+    //이메일 코드 재전송
     public void resendEmailCode(String email) {
         validateEmail(email);
 
@@ -83,6 +103,25 @@ public class AuthService {
         sendCode(email);
     }
 
+    //최초 이메일 코드 전송(아이디 찾기)
+    public void sendIdEmailCode(String email) {
+
+        validateEmail(email);
+
+        if (userService.selectUserByEmail(email) == null) {
+            throw new IllegalArgumentException("없는 이메일입니다.");
+        }
+
+        String cooldownKey = getCooldownKey(email);
+
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(cooldownKey))) {
+            throw new IllegalArgumentException("인증번호는 잠시 후 다시 요청해주세요.");
+        }
+
+        sendCode(email);
+    }
+
+    //최초 이메일 코드 전송(비밀번호 재설정)
     public void sendPasswordEmailCode(String loginId, String email) {
 
         validateLoginId(loginId);
@@ -171,6 +210,7 @@ public class AuthService {
         }
     }
 
+    //입력 확인
     private void validateLoginId(String loginId) {
         if (loginId == null || loginId.isBlank()) {
             throw new IllegalArgumentException("아이디를 입력하세요.");
@@ -189,23 +229,30 @@ public class AuthService {
         }
     }
 
-    private String createAuthCode() {
-        Random random = new Random();
-        int number = 100000 + random.nextInt(900000);
-        return String.valueOf(number);
+    //아이디 찾기
+    public String findLoginId(String name, String email) {
+        validateName(name);
+        validateEmail(email);
+
+        String verified = redisTemplate.opsForValue().get(getVerifiedKey(email));
+        if (!"Y".equals(verified)) {
+            throw new IllegalArgumentException("이메일 인증이 완료되지 않았습니다.");
+        }
+
+        UserDto dto = new UserDto();
+        dto.setName(name);
+        dto.setEmail(email);
+        UserDto user = userService.findByNameAndEmail(dto);
+
+        if (user == null) {
+            throw new IllegalArgumentException("일치하는 회원정보가 없습니다.");
+        }
+
+        redisTemplate.delete(getVerifiedKey(email));
+
+        return user.getLoginId();
     }
 
-    private String getCodeKey(String email) {
-        return "email:code:" + email;
-    }
-
-    private String getCooldownKey(String email) {
-        return "email:cooldown:" + email;
-    }
-
-    private String getVerifiedKey(String email) {
-        return "email:verified:" + email;
-    }
 
     //비밀번호 재설정
     public void resetPassword(UserDto userDto) {

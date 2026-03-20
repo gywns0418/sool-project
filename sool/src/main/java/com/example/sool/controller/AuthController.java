@@ -168,6 +168,32 @@ public class AuthController {
         return ResponseEntity.ok(result);
     }
 
+
+    //처음 이메일 발송(아이디 찾기)
+    @PostMapping("/email/id-send-code")
+    public ResponseEntity<Map<String, Object>> sendFindLoginIdEmailCode(@RequestBody Map<String, String> body) {
+
+        authService.sendIdEmailCode(
+                body.get("email")
+        );
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("message", "인증번호가 발송되었습니다.");
+
+        return ResponseEntity.ok(result);
+    }
+
+    //아이디 찾기
+    @PostMapping("/find-id")
+    public ResponseEntity<Map<String, Object>> findLoginId(@RequestBody UserDto userDto) {
+        String loginId = authService.findLoginId(userDto.getName(), userDto.getEmail());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("loginId", loginId);
+
+        return ResponseEntity.ok(result);
+    }
+
     //처음 이메일 발송(비밀번호 재설정)
     @PostMapping("/email/password-send-code")
     public ResponseEntity<Map<String, Object>> sendResetPasswordEmailCode(@RequestBody Map<String, String> body) {
@@ -183,6 +209,7 @@ public class AuthController {
         return ResponseEntity.ok(result);
     }
 
+    //비밀번호 재설정
     @PostMapping("/reset-password")
     public ResponseEntity<Map<String, Object>> resetPassword(
             @RequestBody UserDto userDto) {

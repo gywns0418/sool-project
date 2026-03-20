@@ -24,14 +24,21 @@ export const signUp = (params) => {
   return api.post("/auth/signup", params)
 }
 
-/* =========================
-   아이디 찾기
-========================= */
+
+
+/* 아이디 찾기 */
+
+/* 아이디 찾기 인증번호 발송 */
+export const sendFindLoginIdEmailCode = (params) => {
+  return api.post("/auth/email/id-send-code", params)
+}
 
 /* 아이디 찾기 */
 export const findLoginId = (params) => {
   return api.post("/auth/find-id", params)
 }
+
+
 
 /* 비밀번호 재설정 */
 

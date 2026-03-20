@@ -41,7 +41,14 @@
         AND is_deleted = 'N'
     </select>
 
-
+    <!-- 이름/이메일로 아이디 찾기 -->
+    <select id="findByNameAndEmail" parameterType="com.example.sool.dto.UserDto" resultType="com.example.sool.dto.UserDto">
+        SELECT login_id
+        FROM user
+        WHERE email = #{email}
+        AND name = #{name}
+        AND is_deleted = 'N'
+    </select>
 
     <!-- 이메일로 회원 조회 -->
     <select id="selectUserByEmail" parameterType="String" resultType="com.example.sool.dto.UserDto">
