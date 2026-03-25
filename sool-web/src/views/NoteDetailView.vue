@@ -1,75 +1,167 @@
 <template>
-    <div class="page-wrap">
-      <PageNav :links="navLinks" />
+  <div class="page-wrap">
+    <PageNav :links="navLinks" />
 
-      <div class="nd-wrap">
-        <main class="nd-main">
-          <div class="nd-top">
-            <div>
-              <div class="nd-author-row">
-                <div class="avatar">K</div>
-                <div>
-                  <div class="nd-author-name">kimwine</div>
-                  <div class="nd-date">2026. 03. 11</div>
-                </div>
+    <div class="nd-wrap">
+      <main class="nd-main">
+        <div class="nd-top">
+          <div>
+            <div class="nd-author-row">
+              <div class="avatar">{{ authorInitial }}</div>
+              <div>
+                <div class="nd-author-name">{{ authorName }}</div>
+                <div class="nd-date">{{ formattedDate }}</div>
               </div>
             </div>
           </div>
+        </div>
 
-          <div class="nd-drink-pill">🍷 Château Margaux 2018</div>
-          <div class="nd-stars">★★★★★</div>
-          <div class="nd-photo">🍷</div>
-          <div class="nd-text">잔에 따르자마자 올라오는 블랙커런트와 시가박스 향이 인상적이었다. 타닌이 부드럽고 여운이 길어 한 모금씩 천천히 즐기기 좋았다. 지금 마셔도 충분히 좋지만 몇 년 더 숙성해도 기대가 되는 와인이다.</div>
-          <div class="nd-like-row">
-            <button class="like-btn" :class="{ liked: liked }" @click="liked = !liked">{{ liked ? '♥' : '♡' }} {{ 24 + (liked ? 1 : 0) }}</button>
-            <button class="report-btn" @click="reported = !reported">{{ reported ? '신고 완료' : '신고' }}</button>
-          </div>
-        </main>
+        <div class="nd-drink-pill">🍷 {{ drinkName }}</div>
+        <div class="nd-title">{{ noteTitle }}</div>
+        <div class="nd-stars">{{ starText }}</div>
 
-        <aside class="nd-side">
-          <div class="nd-flavor-title">맛 프로파일</div>
-          <div v-for="item in noteDetailFlavor" :key="item.label" class="nd-flavor-row">
-            <span class="nfl">{{ item.label }}</span>
-            <div class="nfb">
-              <div class="nff" :style="{ width: item.width }"></div>
-            </div>
-            <span class="nfv">{{ item.value }}</span>
-          </div>
+        <div v-if="noteImageUrl" class="nd-photo nd-photo-img-wrap">
+          <img :src="noteImageUrl" alt="테이스팅 노트 이미지" class="nd-photo-img" />
+        </div>
+        <div v-else class="nd-photo">🍷</div>
 
-          <div class="nd-comments">
-            <h4>댓글</h4>
-            <CommentItem v-for="comment in commentList" :key="comment.id" :item="comment" />
-            <form class="comment-inp" @submit.prevent="submitComment">
-              <input v-model="newComment" placeholder="댓글을 입력하세요" />
-              <button class="cm-send">등록</button>
-            </form>
+        <div class="nd-text">{{ noteContent }}</div>
+
+        <div class="nd-like-row">
+          <button class="like-btn" :class="{ liked: liked }" @click="liked = !liked">
+            {{ liked ? '♥' : '♡' }} {{ likeCount || 0}}
+          </button>
+          <button class="report-btn" @click="reported = !reported">
+            {{ reported ? '신고 완료' : '신고' }}
+          </button>
+        </div>
+      </main>
+
+      <aside class="nd-side">
+        <div class="nd-flavor-title">맛 프로파일</div>
+        <div v-for="item in noteDetailFlavor" :key="item.label" class="nd-flavor-row">
+          <span class="nfl">{{ item.label }}</span>
+          <div class="nfb">
+            <div class="nff" :style="{ width: item.width }"></div>
           </div>
-        </aside>
-      </div>
+          <span class="nfv">{{ item.value }}</span>
+        </div>
+
+        <div class="nd-comments">
+          <h4>댓글</h4>
+          <CommentItem v-for="comment in commentList" :key="comment.id" :item="comment" />
+          <form class="comment-inp" @submit.prevent="submitComment">
+            <input v-model="newComment" placeholder="댓글을 입력하세요" />
+            <button class="cm-send">등록</button>
+          </form>
+        </div>
+      </aside>
     </div>
+  </div>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import PageNav from '../components/common/PageNav.vue'
 import CommentItem from '../components/cards/CommentItem.vue'
 import { comments, noteDetailFlavor } from '../mock/soolData'
+import { getNoteDetail } from '@/api/noteApi'
 
 const route = useRoute()
+
 const liked = ref(false)
 const reported = ref(false)
 const newComment = ref('')
 const commentList = ref([...comments])
+
+const noteDetail = ref(null)
 
 const navLinks = computed(() => [
   { label: '홈', to: '/' },
   { label: `테이스팅 노트 #${route.params.id || 1}`, to: route.fullPath, active: true }
 ])
 
+const authorName = computed(() => {
+  return (
+    noteDetail.value?.userName ||
+    noteDetail.value?.name ||
+    noteDetail.value?.loginId ||
+    '작성자 미상'
+  )
+})
+
+const authorInitial = computed(() => {
+  return String(authorName.value || '작').trim().charAt(0) || '작'
+})
+
+const formattedDate = computed(() => {
+  const value = noteDetail.value?.createdAt || noteDetail.value?.created_at
+  if (!value) return '날짜 정보 없음'
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '날짜 정보 없음'
+
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+
+  return `${year}. ${month}. ${day}`
+})
+
+const drinkName = computed(() => {
+  return (
+    noteDetail.value?.drinkName ||
+    noteDetail.value?.drink_name ||
+    '주류 정보 없음'
+  )
+})
+
+const noteTitle = computed(() => {
+  return noteDetail.value?.title || '제목이 없는 테이스팅 노트'
+})
+
+const noteContent = computed(() => {
+  return (
+    noteDetail.value?.content ||
+    '아직 작성된 테이스팅 노트 내용이 없습니다.'
+  )
+})
+
+const starText = computed(() => {
+  const rating = Number(noteDetail.value?.rating ?? 0)
+  if (!rating) return '☆☆☆☆☆'
+
+  const full = Math.max(0, Math.min(5, Math.round(rating)))
+  return '★'.repeat(full) + '☆'.repeat(5 - full)
+})
+
+const noteImageUrl = computed(() => {
+  return (
+    noteDetail.value?.imageUrl ||
+    noteDetail.value?.image_path ||
+    noteDetail.value?.noteImage ||
+    ''
+  )
+})
+
+const fetchNoteDetail = async () => {
+  try {
+    const noteId = route.params.id
+    console.log("noteId : "+noteId)
+    const res = await getNoteDetail(noteId)
+    console.log(res.data)
+    noteDetail.value = res.data || null
+  } catch (error) {
+    console.log('노트 상세 조회 실패', error)
+    noteDetail.value = null
+  }
+}
+
 const submitComment = () => {
   const text = newComment.value.trim()
   if (!text) return
+
   commentList.value.push({
     id: Date.now(),
     authorInitial: '나',
@@ -79,8 +171,13 @@ const submitComment = () => {
     likes: 0,
     replies: []
   })
+
   newComment.value = ''
 }
+
+onMounted(() => {
+  fetchNoteDetail()
+})
 </script>
 
 <style scoped>
@@ -152,10 +249,18 @@ const submitComment = () => {
   margin-bottom: 16px;
 }
 
+.nd-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
 .nd-stars {
   font-size: 18px;
   color: var(--yellow);
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .nd-photo {
@@ -169,6 +274,18 @@ const submitComment = () => {
   justify-content: center;
   font-size: 60px;
   margin-bottom: 20px;
+}
+
+.nd-photo-img-wrap {
+  padding: 0;
+  overflow: hidden;
+}
+
+.nd-photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .nd-text {

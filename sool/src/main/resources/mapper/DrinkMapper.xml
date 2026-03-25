@@ -32,6 +32,7 @@
             cc2.code_name AS typeName,
             IFNULL(lc.likeCount, 0) AS likeCount,
             <choose>
+                <!-- 회원의 좋아요 상태 가져오기 -->
                 <when test="userId != null">
                     CASE
                         WHEN ul.user_id IS NOT NULL THEN true

@@ -41,8 +41,8 @@ public class TastingNoteService {
         return tastingNoteMapper.insertTastingNote(tastingNoteDto);
     }
 
-    public TastingNoteDto findByNoteId(Integer noteId){
-        return tastingNoteMapper.findByNoteId(noteId);
+    public TastingNoteDto getNoteDetail(Integer noteId){
+        return tastingNoteMapper.getNoteDetail(noteId);
     }
 
 

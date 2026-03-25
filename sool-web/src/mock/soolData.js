@@ -6,12 +6,6 @@ export const categories = [
   { id: 5, emoji: '🍸', name: 'COCKTAIL'}
 ]
 
-export const popularDrinks = [
-  { id: 1, emoji: '🍷', rank: 1, gold: true, category: '레드 와인', name: 'Château Margaux', rating: '★★★★★ 4.9', likes: 128 },
-  { id: 2, emoji: '🥃', rank: 2, category: '싱글 몰트', name: 'Glenfiddich 18Y', rating: '★★★★☆ 4.6', likes: 97 },
-  { id: 3, emoji: '🍺', rank: 3, category: '트라피스트 에일', name: 'Westvleteren 12', rating: '★★★★★ 4.8', likes: 84 },
-  { id: 4, emoji: '🍶', rank: 4, category: '증류 전통주', name: '화요 41', rating: '★★★★☆ 4.4', likes: 61 }
-]
 
 export const recentNotes = [
   {

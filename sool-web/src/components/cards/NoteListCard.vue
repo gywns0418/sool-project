@@ -1,5 +1,5 @@
 <template>
-  <router-link class="note-card" :to="`/notes/${item.id}`">
+  <router-link class="note-card" :to="`/notes/${item.noteId}`">
     <div>
       <div class="note-author">
         <div class="avatar" :class="item.avatarClass">{{ item.authorInitial }}</div>

@@ -12,7 +12,7 @@ public interface TastingNoteMapper {
 
     int insertTastingNote(TastingNoteDto tastingNoteDto);
 
-    TastingNoteDto findByNoteId(Integer noteId);
+    TastingNoteDto getNoteDetail(Integer noteId);
 
     //주류 디테일 노트 목록 
     List<TastingNoteDto> findNoteByDrinkId(NoteSearchDto noteSearchDto);

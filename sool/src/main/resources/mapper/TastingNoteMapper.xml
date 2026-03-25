@@ -8,13 +8,7 @@
     <!-- 최근 노트 3개 조회 -->
     <select id="recentNote" resultType="com.example.sool.dto.TastingNoteDto">
         SELECT
-            tn.note_id,
-            tn.user_id,
-            tn.drink_id,
-            tn.title,
-            tn.rating,
-            tn.content,
-            tn.created_at,
+            tn.*,
             u.name AS userName,
             d.drink_name,
             d.category_code AS categoryCode,
@@ -95,6 +89,35 @@
         AND tn.is_deleted = 'N'
     </select>
 
+    <!-- 노트 상세 조회 -->
+    <select id="getNoteDetail" parameterType="int" resultType="com.example.sool.dto.TastingNoteDto">
+        SELECT tn.*,
+            u.name AS userName,
+            d.drink_name,
+            d.category_code AS categoryCode,
+            cc.code_name AS typeName
+        FROM tasting_note tn
+
+                LEFT JOIN user u
+            ON tn.user_id = u.user_id
+            AND u.is_deleted = 'N'
+
+        LEFT JOIN drink d
+            ON tn.drink_id = d.drink_id
+            AND d.is_deleted = 'N'
+
+        LEFT JOIN common_code cc
+            ON d.type_code = cc.code
+            AND cc.group_code = 'DRINK_TYPE'
+            AND cc.use_yn = 'Y'
+
+        WHERE tn.note_id = #{noteId}
+        AND tn.is_deleted = 'N'
+    </select>
+
+
+
+
 
     <!-- 노트 등록 -->
     <insert id="insertTastingNote" parameterType="com.example.sool.dto.TastingNoteDto">
@@ -119,13 +142,7 @@
     </insert>
 
 
-    <!-- 노트 상세 조회 -->
-    <select id="findByNoteId" parameterType="int" resultType="com.example.sool.dto.TastingNoteDto">
-        SELECT *
-        FROM tasting_note
-        WHERE note_id = #{noteId}
-        AND is_deleted = 'N'
-    </select>
+
 
 
 
