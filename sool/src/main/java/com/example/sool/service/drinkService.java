@@ -1,7 +1,9 @@
 package com.example.sool.service;
 
+import java.time.Duration;
 import java.util.List;
 
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.example.sool.dto.DrinkDto;
@@ -13,14 +15,30 @@ public class DrinkService {
 
     private final DrinkMapper drinkMapper;
 
-    public DrinkService(DrinkMapper drinkMapper) {
+    private final RedisTemplate<String, Object> redisTemplate;
+
+    public DrinkService(DrinkMapper drinkMapper,RedisTemplate<String, Object> redisTemplate) {
         this.drinkMapper = drinkMapper;
+        this.redisTemplate = redisTemplate;
     }
 
 
-    //인기술 top4
+    //인기술 top4 (Redis 사용)
     public List<DrinkDto> drinkTop() {
-        return drinkMapper.drinkTop();
+
+        String key = "drink:top4";
+        
+        List<DrinkDto> cached = (List<DrinkDto>) redisTemplate.opsForValue().get(key);
+        
+        if(cached != null){
+            return cached;
+        }
+
+        List<DrinkDto> list = drinkMapper.drinkTop();
+
+        redisTemplate.opsForValue().set(key, list, Duration.ofMinutes(10));
+
+        return list;
     }
 
     //검색
