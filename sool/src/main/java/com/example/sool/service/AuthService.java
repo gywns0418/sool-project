@@ -37,20 +37,24 @@ public class AuthService {
         return userService.findByLoginId(loginId) == null;
     }
     
+    //이메일 랜덤 번호 생성
     private String createAuthCode() {
         Random random = new Random();
         int number = 100000 + random.nextInt(900000);
         return String.valueOf(number);
     }
 
+    //코드키 확인
     private String getCodeKey(String email) {
         return "email:code:" + email;
     }
 
+    //인증시간 확인
     private String getCooldownKey(String email) {
         return "email:cooldown:" + email;
     }
 
+    //인증 여부 확인
     private String getVerifiedKey(String email) {
         return "email:verified:" + email;
     }

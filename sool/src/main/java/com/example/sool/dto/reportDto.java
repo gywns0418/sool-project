@@ -13,7 +13,7 @@ public class ReportDto {
     private Integer objId;
     private String objType;
 
-    private String reason;
+    private String reasonCode;
     private String statusCode;
     
     private LocalDateTime createdAt;

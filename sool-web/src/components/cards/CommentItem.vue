@@ -12,7 +12,7 @@
       </div>
       <div v-if="showReply" class="reply-box">
         <form class="comment-inp" @submit.prevent="submitComment">
-          <input v-model="newComment" placeholder="댓글을 입력하세요" />
+          <input v-model="newComment" placeholder="답글을 입력하세요" />
           <button class="cm-send">등록</button>
         </form>
       </div>

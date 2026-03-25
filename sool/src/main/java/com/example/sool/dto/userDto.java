@@ -20,4 +20,6 @@ public class UserDto {
     private LocalDateTime updatedAt;
     private String isDeleted;
 
+    private Integer noteCount;
+    private Integer likeCount;
 }

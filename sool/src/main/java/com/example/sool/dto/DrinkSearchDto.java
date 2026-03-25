@@ -10,8 +10,8 @@ public class DrinkSearchDto {
 
     private String categoryCode;
 
-    private Integer abvLow;
-    private Integer abvHigh;
+    private double abvLow;
+    private double abvHigh;
     
     private Integer priceLow;
     private Integer priceHigh;

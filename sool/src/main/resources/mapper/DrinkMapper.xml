@@ -31,6 +31,15 @@
             cc1.code_name AS categoryName,
             cc2.code_name AS typeName,
             IFNULL(lc.likeCount, 0) AS likeCount,
+            <!-- 평균 평점 -->
+            IFNULL(
+                (
+                    SELECT ROUND(AVG(tn.rating), 1)
+                    FROM tasting_note tn
+                    WHERE tn.drink_id = d.drink_id
+                    AND tn.is_deleted = 'N'
+                ), 0
+            ) AS avgRating,
             <choose>
                 <!-- 회원의 좋아요 상태 가져오기 -->
                 <when test="userId != null">
@@ -194,7 +203,15 @@
             cc1.code_name AS categoryName,
             cc2.code_name AS typeName,
             IFNULL(lc.likeCount, 0) AS likeCount,
-
+            <!-- 평균 평점 -->
+            IFNULL(
+                (
+                    SELECT ROUND(AVG(tn.rating), 1)
+                    FROM tasting_note tn
+                    WHERE tn.drink_id = d.drink_id
+                    AND tn.is_deleted = 'N'
+                ), 0
+            ) AS avgRating,
             <choose>
                 <when test="userId != null">
                     CASE
@@ -238,6 +255,8 @@
         </if>
 
         WHERE d.is_deleted = 'N'
+
+        <!-- 필터 -->
         <if test="categoryCode != null and categoryCode != ''">
             AND d.category_code = #{categoryCode}
         </if>
@@ -245,7 +264,7 @@
         AND d.abv BETWEEN #{abvLow} AND #{abvHigh}
         AND d.price BETWEEN #{priceLow} AND #{priceHigh}
 
-
+        <!-- 정렬 -->
         <choose>
             <when test="sort == 'like'">
                 ORDER BY IFNULL(lc.likeCount, 0) DESC, d.drink_id DESC

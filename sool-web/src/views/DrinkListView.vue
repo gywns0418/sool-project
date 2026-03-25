@@ -24,10 +24,11 @@
             v-model="abvLow"
             type="number"
             min="0"
+            max="99.9"
             class="range-inp"
             @keydown="preventMinusInput"
             @input="sanitizeNumberInput('abvLow')"
-            @change="applyFilter"
+            @keydown.enter="applyFilter"
           />
 
           <span class="range-sep">—</span>
@@ -36,10 +37,11 @@
             v-model="abvHigh"
             type="number"
             min="0"
+            max="99.9"
             class="range-inp"
             @keydown="preventMinusInput"
             @input="sanitizeNumberInput('abvHigh')"
-            @change="applyFilter"
+            @keydown.enter="applyFilter"
           />
         </div>
 
@@ -52,7 +54,7 @@
             class="range-inp"
             @keydown="preventMinusInput"
             @input="sanitizeNumberInput('priceLow')"
-            @change="applyFilter"
+            @keydown.enter="applyFilter"
           />
           <span class="range-sep">—</span>
           <input
@@ -62,7 +64,7 @@
             class="range-inp"
             @keydown="preventMinusInput"
             @input="sanitizeNumberInput('priceHigh')"
-            @change="applyFilter"
+            @keydown.enter="applyFilter"
           />
         </div>
 
@@ -72,7 +74,7 @@
 
       <section class="list-main">
         <div class="list-top">
-          <h2>{{ titleLabel }} <span class="sub-count">{{ totalCount }}개</span></h2>
+          <h2>검색된 {{ titleLabel }} <span class="sub-count">{{ totalCount }}개</span></h2>
 
           <div class="list-controls">
             <form @submit.prevent="applySearch" class="list-search-form">
@@ -207,7 +209,21 @@ const sanitizeNumberInput = (field) => {
     priceHigh.value = "0"
     alert("0보다 작은 값은 입력할 수 없습니다.")
   }
+
+  //도수 값 정정
+  let value = parseFloat(eval(field).value)
+
+  if (isNaN(value)) return
+
+  if (value > 99.9) value = 99.9
+
+  //소숫점 한자리까지 허용
+  value = Math.floor(value * 10) / 10
+
+  eval(field).value = value
 }
+
+
 
 const loadCategoryList = async () => {
   try {

@@ -58,6 +58,32 @@
         AND is_deleted = 'N'
     </select>
 
+    <!-- 마이페이지 사이드바 -->
+    <select id="selectMyPageSidebar" parameterType="int" resultType="com.example.sool.dto.UserDto">
+        SELECT
+            u.user_id,
+            u.login_id,
+            u.name,
+            u.email,
+            (
+                SELECT COUNT(*)
+                FROM tasting_note tn
+                WHERE tn.user_id = u.user_id
+                AND tn.is_deleted = 'N'
+            ) AS noteCount,
+            (
+                SELECT COUNT(*)
+                FROM `like` l
+                WHERE l.user_id = u.user_id
+            ) AS likeCount
+
+        FROM user u
+        WHERE u.user_id = #{userId}
+    </select>
+
+
+
+
     <!-- 회원 전체 조회 -->
     <select id="selectUserList" resultType="com.example.sool.dto.UserDto">
         SELECT *

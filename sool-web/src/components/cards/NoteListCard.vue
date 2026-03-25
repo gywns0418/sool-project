@@ -13,13 +13,23 @@
     </div>
     <div class="note-side">
       <div class="note-img">{{ item.emoji || '🍷'}}</div>
-      <button class="note-like" :class="{ liked }" @click.prevent="toggleLike">{{ liked ? '♥' : '♡' }} {{ likeCount || 0}}</button>
+      <button
+        class="note-like"
+        :class="{ liked }"
+        :disabled="loading"
+        @click.prevent="toggleLike"
+      >
+        {{ liked ? '♥' : '♡' }} {{ likeCount }}
+      </button>
     </div>
   </router-link>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useAuthStore } from '@/stores/authStore'
+import { useRouter, useRoute } from 'vue-router'
+import { getNoteLike, insertNoteLike, deleteNoteLike } from '@/api/likeApi'
 
 const props = defineProps({
   item: {
@@ -27,6 +37,14 @@ const props = defineProps({
     required: true
   }
 })
+
+const authStore = useAuthStore()
+const router = useRouter()
+const route = useRoute()
+
+const liked = ref(false)
+const likeCount = ref(props.item.likeCount || 0)
+const loading = ref(false)
 
 function getStars(rating) {
   const maxStars = 5
@@ -43,13 +61,51 @@ function formatDate(dateStr) {
   return `${year}.${month}.${day}`
 }
 
-const liked = ref(false)
-const likeCount = ref(props.item.likes)
-
-const toggleLike = () => {
-  liked.value = !liked.value
-  likeCount.value += liked.value ? 1 : -1
+const fetchLikeStatus = async () => {
+  try {
+    const res = await getNoteLike(props.item.noteId)
+    liked.value = !!res.data.liked
+  } catch {
+    liked.value = false
+  }
 }
+
+const toggleLike = async () => {
+  if (loading.value) return
+
+  if (!authStore.isLogin) {
+    alert('로그인을 먼저 해주세요.')
+    router.push({
+      path: '/login',
+      query: { redirect: route.fullPath }
+    })
+    return
+  }
+
+  loading.value = true
+
+  try {
+    if (liked.value) {
+      await deleteNoteLike(props.item.noteId)
+      likeCount.value--
+    } else {
+      await insertNoteLike(props.item.noteId)
+      likeCount.value++
+    }
+
+    liked.value = !liked.value
+  } catch (e) {
+    console.log('노트 좋아요 실패', e)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  if (authStore.isLogin) {
+    fetchLikeStatus()
+  }
+})
 </script>
 
 <style scoped>

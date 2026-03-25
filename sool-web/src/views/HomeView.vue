@@ -7,7 +7,7 @@
           <h1 class="hero-title">당신의 한 잔을<br><em>기록하세요</em></h1>
           <p class="hero-desc">와인, 위스키, 전통주까지. 마셨던 술의 맛과 향을 기록하고 취향을 발견하세요.</p>
           <div class="hero-cta">
-            <router-link to="/drinks" class="btn-primary">술 목록 탐색하기 →</router-link>
+            <router-link to="/drinks" class="btn-primary">주류 목록 탐색하기 →</router-link>
           </div>
         </div>
       </section>
@@ -16,7 +16,7 @@
 
       <section class="popular">
         <div class="section-head">
-          <div class="section-title">이번 주 인기 술 ✦</div>
+          <div class="section-title">인기 주류 ✦</div>
         </div>
         <div class="drinks-row">
           <DrinkRankCard
@@ -46,8 +46,6 @@ import PageNav from '../components/common/PageNav.vue'
 import CategoryStrip from '../components/sections/CategoryStrip.vue'
 import DrinkRankCard from '../components/cards/DrinkRankCard.vue'
 import RecentNoteCard from '../components/cards/RecentNoteCard.vue'
-
-import { categories, recentNotes } from '../mock/soolData'
 
 import { ref, onMounted } from "vue"
 import { getHome } from "@/api/homeApi"

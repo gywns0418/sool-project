@@ -19,6 +19,9 @@ public interface UserMapper {
 
     UserDto selectUserByEmail(String email);
 
+    //마이페이지 사이드바
+    UserDto selectMyPageSidebar(int userId);
+
     List<UserDto> selectUserList();
 
     int updateUser(UserDto userDto);

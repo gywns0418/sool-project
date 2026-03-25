@@ -7,6 +7,9 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 
 @Configuration
@@ -20,16 +23,26 @@ public class RedisConfig {
     }
 
     //객체 캐시용(주류 TOP4)
+    
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory){
 
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+        //Redis 서버 연결
         redisTemplate.setConnectionFactory(connectionFactory);
 
+        //Redis key 저장
         redisTemplate.setKeySerializer(new StringRedisSerializer());
 
+        //localdatetime 변환 오류로 변환 설정( created_at )
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
         //객체 -> JSON / JSON -> 객체
-        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(objectMapper);
+
+        redisTemplate.setValueSerializer(serializer);
 
         return redisTemplate;
     }

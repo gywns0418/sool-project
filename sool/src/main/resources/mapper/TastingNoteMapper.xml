@@ -95,10 +95,11 @@
             u.name AS userName,
             d.drink_name,
             d.category_code AS categoryCode,
-            cc.code_name AS typeName
+            cc.code_name AS typeName,
+            IFNULL(l.likeCount, 0) AS likeCount
         FROM tasting_note tn
 
-                LEFT JOIN user u
+        LEFT JOIN user u
             ON tn.user_id = u.user_id
             AND u.is_deleted = 'N'
 
@@ -110,6 +111,16 @@
             ON d.type_code = cc.code
             AND cc.group_code = 'DRINK_TYPE'
             AND cc.use_yn = 'Y'
+
+        LEFT JOIN (
+            SELECT
+                obj_id,
+                COUNT(*) AS likeCount
+            FROM `like`
+            WHERE obj_type = 'NOTE'
+            GROUP BY obj_id
+        ) l
+            ON l.obj_id = tn.note_id
 
         WHERE tn.note_id = #{noteId}
         AND tn.is_deleted = 'N'

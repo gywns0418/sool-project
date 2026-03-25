@@ -11,16 +11,16 @@
             user_id,
             obj_id,
             obj_type,
-            reason,
+            reason_code,
             status_code,
             created_at
         )
         VALUES (
-            #{user_id},
+            #{userId},
             #{objId},
             #{objType},
-            #{reason},
-            #{status_code},
+            #{reasonCode},
+            #{statusCode},
             NOW()
         )
     </insert>

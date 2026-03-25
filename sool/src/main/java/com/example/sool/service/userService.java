@@ -36,11 +36,22 @@ public class UserService {
         return userMapper.selectUserById(userId);
     }
 
-
-
     public UserDto selectUserByEmail(String email) {
         return userMapper.selectUserByEmail(email);
     }
+
+
+    public UserDto getMyPageSidebar(Integer userId) {
+        return userMapper.selectMyPageSidebar(userId);
+    }
+
+
+
+
+
+
+
+
 
     public List<UserDto> selectUserList() {
         return userMapper.selectUserList();

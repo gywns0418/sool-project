@@ -4,17 +4,17 @@
 
     <div class="my-wrap">
       <aside class="my-sidebar">
-        <div class="my-avatar">K</div>
-        <div class="my-name">김효준</div>
-        <div class="my-email">hyojun@example.com</div>
+        <div class="my-avatar">{{ userInitial }}</div>
+        <div class="my-name">{{ sidebarInfo.name || '-' }}</div>
+        <div class="my-email">{{ sidebarInfo.email || '-' }}</div>
 
         <div class="my-stats">
           <div class="my-stat">
-            <div class="my-stat-n">{{ noteList.length }}</div>
+            <div class="my-stat-n">{{ sidebarInfo.noteCount }}</div>
             <div class="my-stat-l">노트</div>
           </div>
           <div class="my-stat">
-            <div class="my-stat-n">61</div>
+            <div class="my-stat-n">{{ sidebarInfo.likeCount }}</div>
             <div class="my-stat-l">좋아요</div>
           </div>
         </div>
@@ -24,7 +24,7 @@
             내 테이스팅 노트
           </div>
           <div class="my-nav-item" :class="{ sel: activeTab === 'likes' }" @click="activeTab = 'likes'">
-            좋아요한 술
+            나의 좋아요
           </div>
           <div class="my-nav-item" :class="{ sel: activeTab === 'profile' }" @click="activeTab = 'profile'">
             회원 정보 수정
@@ -47,7 +47,10 @@
 
         <MyLikedDrinksSection v-else-if="activeTab === 'likes'" />
 
-        <MyProfileSection v-else-if="activeTab === 'profile'" />
+        <MyProfileSection
+          v-else-if="activeTab === 'profile'"
+          :user-info="sidebarInfo"
+        />
 
         <MyReportsSection v-else-if="activeTab === 'reports'" />
       </main>
@@ -56,21 +59,34 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 import PageNav from '../components/common/PageNav.vue'
 
 import MyNotesSection from '../components/mypage/MyNotesSection.vue'
-import MyLikedDrinksSection from '../components/mypage/MyLikedDrinksSection.vue'
+import MyLikedDrinksSection from '../components/mypage/MyLikedSection.vue'
 import MyProfileSection from '../components/mypage/MyProfileSection.vue'
 import MyReportsSection from '../components/mypage/MyReportsSection.vue'
 
 import { myNotes } from '../mock/soolData'
+import { getMySidebarInfo } from '@/api/mypageApi'
 
 const router = useRouter()
 const activeTab = ref('notes')
 const noteList = ref([...myNotes])
+
+const sidebarInfo = ref({
+  name: '',
+  loginId: '',
+  email: '',
+  noteCount: 0,
+  likeCount: 0
+})
+
+const userInitial = computed(() => {
+  return sidebarInfo.value.name ? sidebarInfo.value.name.charAt(0) : 'U'
+})
 
 const navLinks = [
   { label: '홈', to: '/' },
@@ -80,12 +96,26 @@ const navLinks = [
 const goHome = () => router.push('/')
 
 const editNote = (item) => {
-  router.push({ path: '/notes/write', query: { noteId: item.id } })
+  router.push({ path: '/notes/write', query: { noteId: item.noteId || item.id } })
 }
 
 const deleteNote = (id) => {
-  noteList.value = noteList.value.filter((note) => note.id !== id)
+  noteList.value = noteList.value.filter((note) => (note.noteId || note.id) !== id)
 }
+
+const fetchSidebarInfo = async () => {
+  try {
+    const res = await getMySidebarInfo()
+    console.log(res.data)
+    sidebarInfo.value = res.data
+  } catch (e) {
+    console.log('마이페이지 사이드바 조회 실패', e)
+  }
+}
+
+onMounted(() => {
+  fetchSidebarInfo()
+})
 </script>
 
 <style scoped>

@@ -36,6 +36,7 @@
                   v-model="loginId"
                   type="text"
                   class="field-input"
+                  maxlength="20"
                   placeholder="아이디"
                   @input="onChangeLoginId"
                 />
@@ -50,13 +51,19 @@
 
             <div class="field-group">
               <label class="field-label">이름</label>
-              <input
-                v-model.trim="name"
-                type="text"
-                class="field-input"
-                placeholder="이름"
-                @input="onChangeBaseInfo"
-              />
+              <div class="field-inline">
+                <input
+                  v-model.trim="name"
+                  type="text"
+                  class="field-input"
+                  maxlength="6"
+                  placeholder="이름"
+                  @input="onChangeName"
+                />
+              </div>
+              <p v-if="nameMsg" class="field-msg" :class="{ success: nameChecked, error: !nameChecked }">
+                {{ nameMsg }}
+              </p>
             </div>
 
             <div class="field-group">
@@ -65,6 +72,7 @@
                 v-model.trim="email"
                 type="email"
                 class="field-input"
+                maxlength="100"
                 placeholder="이메일 주소를 입력하세요"
                 @input="onChangeEmail"
               />
@@ -137,6 +145,7 @@
                 v-model="password"
                 type="password"
                 class="field-input"
+                maxlength="20"
                 placeholder="비밀번호를 입력하세요"
                 @input="validatePassword"
               />
@@ -216,6 +225,9 @@ const loginIdChecked = ref(false)
 const loginIdMsg = ref('')
 
 const name = ref('')
+const nameChecked=ref(false)
+const nameValid = ref(false)
+const nameMsg = ref('')
 
 const email = ref('')
 const emailValid = ref(false)
@@ -235,7 +247,7 @@ const passwordConfirmMsg = ref('')
 const loginIdRegex = /^[a-z0-9]{1,20}$/
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?])[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]{8,20}$/
-const koreanRegex = /[ㄱ-ㅎㅏ-ㅣ가-힣]/
+const koreanRegex = /^[가-힣]{1,6}$/
 
 function resetEmailFlow() {
   emailVerified.value = false
@@ -278,8 +290,29 @@ function onChangeLoginId(event) {
   loginIdMsg.value = ''
 }
 
-function onChangeBaseInfo() {
+function onChangeName() {
+  validateName()
   resetEmailFlow()
+}
+
+function validateName() {
+  if (!name.value) {
+    nameValid.value = false
+    nameChecked.value = false
+    nameMsg.value = ''
+    return
+  }
+
+  if (!koreanRegex.test(name.value)) {
+    nameValid.value = false
+    nameChecked.value = false
+    nameMsg.value = '이름은 한글 1~6자만 입력 가능합니다.'
+    return
+  }
+
+  nameValid.value = true
+  nameChecked.value = true
+  nameMsg.value = '사용 가능한 이름 형식입니다.'
 }
 
 function onChangeEmail() {
@@ -440,11 +473,6 @@ function validatePassword() {
   if (!password.value) {
     passwordMsg.value = ''
     checkPasswordMatch()
-    return
-  }
-
-  if (koreanRegex.test(password.value)) {
-    passwordMsg.value = "비밀번호에는 한글을 사용할 수 없습니다."
     return
   }
 

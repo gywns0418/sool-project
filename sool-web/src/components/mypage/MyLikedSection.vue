@@ -1,7 +1,7 @@
 <template>
   <div>
-    <h2 class="my-main-title">좋아요한 술</h2>
-    <p>좋아요한 술 목록이 표시됩니다.</p>
+    <h2 class="my-main-title">나의 좋아요</h2>
+    <p>나의 좋아요 목록이 표시됩니다.</p>
   </div>
 </template>
 

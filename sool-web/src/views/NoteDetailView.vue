@@ -16,20 +16,25 @@
           </div>
         </div>
 
-        <div class="nd-drink-pill">🍷 {{ drinkName }}</div>
+        <div class="nd-drink-pill">{{ drinkEmoji }} {{ drinkName }}</div>
         <div class="nd-title">{{ noteTitle }}</div>
         <div class="nd-stars">{{ starText }}</div>
 
         <div v-if="noteImageUrl" class="nd-photo nd-photo-img-wrap">
           <img :src="noteImageUrl" alt="테이스팅 노트 이미지" class="nd-photo-img" />
         </div>
-        <div v-else class="nd-photo">🍷</div>
+        <div v-else class="nd-photo">{{ drinkEmoji }}</div>
 
         <div class="nd-text">{{ noteContent }}</div>
 
         <div class="nd-like-row">
-          <button class="like-btn" :class="{ liked: liked }" @click="liked = !liked">
-            {{ liked ? '♥' : '♡' }} {{ likeCount || 0}}
+          <button
+            class="like-btn"
+            :class="{ liked }"
+            :disabled="likeLoading"
+            @click="toggleLike"
+          >
+            {{ liked ? '♥' : '♡' }} {{ likeCount }}
           </button>
           <button class="report-btn" @click="reported = !reported">
             {{ reported ? '신고 완료' : '신고' }}
@@ -38,15 +43,16 @@
       </main>
 
       <aside class="nd-side">
-        <div class="nd-flavor-title">맛 프로파일</div>
-        <div v-for="item in noteDetailFlavor" :key="item.label" class="nd-flavor-row">
-          <span class="nfl">{{ item.label }}</span>
-          <div class="nfb">
-            <div class="nff" :style="{ width: item.width }"></div>
+        <section class="flavor-section">
+          <div class="nd-flavor-title">맛 프로파일</div>
+          <div v-for="item in noteDetailFlavor" :key="item.label" class="nd-flavor-row">
+            <span class="nfl">{{ item.label }}</span>
+            <div class="nfb">
+              <div class="nff" :style="{ width: item.width }"></div>
+            </div>
+            <span class="nfv">{{ item.value }}</span>
           </div>
-          <span class="nfv">{{ item.value }}</span>
-        </div>
-
+        </section>
         <div class="nd-comments">
           <h4>댓글</h4>
           <CommentItem v-for="comment in commentList" :key="comment.id" :item="comment" />
@@ -62,15 +68,22 @@
 
 <script setup>
 import { computed, ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/authStore'
 import PageNav from '../components/common/PageNav.vue'
 import CommentItem from '../components/cards/CommentItem.vue'
-import { comments, noteDetailFlavor } from '../mock/soolData'
+import { categories, comments, noteDetailFlavor } from '../mock/soolData'
 import { getNoteDetail } from '@/api/noteApi'
+import { getNoteLike, insertNoteLike, deleteNoteLike } from '@/api/likeApi'
 
 const route = useRoute()
+const router = useRouter()
+const authStore = useAuthStore()
 
 const liked = ref(false)
+const likeLoading = ref(false)
+const likeCount = ref(0)
+
 const reported = ref(false)
 const newComment = ref('')
 const commentList = ref([...comments])
@@ -145,18 +158,79 @@ const noteImageUrl = computed(() => {
   )
 })
 
+const fetchLikeStatus = async () => {
+  const noteId = route.params.id
+  if (!noteId || !authStore.isLogin) return
+
+  try {
+    const res = await getNoteLike(noteId)
+    liked.value = !!res.data.liked
+  } catch (error) {
+    console.log('노트 좋아요 상태 조회 실패', error)
+    liked.value = false
+  }
+}
+
+const toggleLike = async () => {
+  const noteId = route.params.id
+  if (!noteId || likeLoading.value) return
+
+  if (!authStore.isLogin) {
+    alert('로그인을 먼저 해주세요.')
+    router.push({
+      path: '/login',
+      query: { redirect: route.fullPath }
+    })
+    return
+  }
+
+  likeLoading.value = true
+
+  try {
+    if (liked.value) {
+      await deleteNoteLike(noteId)
+      likeCount.value = Math.max(0, likeCount.value - 1)
+    } else {
+      await insertNoteLike(noteId)
+      likeCount.value += 1
+    }
+
+    liked.value = !liked.value
+  } catch (error) {
+    console.log('노트 좋아요 처리 실패', error)
+  } finally {
+    likeLoading.value = false
+  }
+}
+
 const fetchNoteDetail = async () => {
   try {
     const noteId = route.params.id
-    console.log("noteId : "+noteId)
+    console.log('noteId : ' + noteId)
+
     const res = await getNoteDetail(noteId)
     console.log(res.data)
+
     noteDetail.value = res.data || null
+    likeCount.value = Number(res.data?.likeCount ?? 0)
+
+    if (authStore.isLogin) {
+      await fetchLikeStatus()
+    }
   } catch (error) {
     console.log('노트 상세 조회 실패', error)
     noteDetail.value = null
+    likeCount.value = 0
   }
 }
+
+const drinkEmoji = computed(() => {
+  const code = noteDetail.value?.categoryCode
+
+  const emojiData = categories.find(e => e.name === code)
+
+  return emojiData ? emojiData.emoji : '🍹'
+})
 
 const submitComment = () => {
   const text = newComment.value.trim()
@@ -409,5 +483,11 @@ onMounted(() => {
   border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
+}
+
+.flavor-section {
+  padding-bottom: 32px;
+  margin-bottom: 32px;
+  border-bottom: 3px solid var(--border);
 }
 </style>
