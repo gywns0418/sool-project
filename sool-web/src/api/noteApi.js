@@ -13,6 +13,11 @@ export const getNoteDetail = (noteId) => {
 export const getNoteWriteForm = (drinkId) => {
   return api.get(`/notes/write/${drinkId}`)
 }
+
+export function createNote(params) {
+  return api.post('/notes/writeform', params)
+}
+
 /* **************************************** */
 
 //댓글

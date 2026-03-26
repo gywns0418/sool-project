@@ -31,7 +31,6 @@ public class DrinkService {
         List<DrinkDto> cached = (List<DrinkDto>) redisTemplate.opsForValue().get(key);
         
         if(cached != null){
-            System.out.println("redis hit");
             return cached;
         }
 

@@ -46,9 +46,39 @@
 
     <!-- 특정 노트의 맛 점수 조회 -->
     <select id="findByNoteId" parameterType="int" resultType="com.example.sool.dto.TastingNoteMetricDto">
-        SELECT *
-        FROM tasting_note_metric
+        SELECT 
+            tnm.*,
+            cc.code_name AS metricName
+
+        FROM tasting_note_metric tnm
+
+        LEFT JOIN common_code cc
+            ON  tnm.metric_code = cc.code
+            AND cc.group_code = 'TASTE_METRIC'
+            
         WHERE note_id = #{noteId}
+    </select>
+
+    <!-- 주류 디테일 평균 맛 프로파일 -->
+    <select id="findAvgMetricByDrinkId" parameterType="int" resultType="com.example.sool.dto.TastingNoteMetricDto">
+        SELECT
+            tnm.metric_code,
+            cc.code_name AS metricName,
+            ROUND(AVG(tnm.score), 1) AS avgScore
+
+        FROM tasting_note_metric tnm
+
+        JOIN tasting_note tn
+            ON tn.note_id = tnm.note_id
+        AND tn.drink_id = #{drinkId}
+        AND tn.is_deleted = 'N'
+
+        LEFT JOIN common_code cc
+            ON cc.code = tnm.metric_code
+        AND cc.group_code = 'TASTE_METRIC'
+
+        GROUP BY tnm.metric_code, cc.code_name, cc.sort_seq
+        ORDER BY cc.sort_seq
     </select>
 
     <!-- 점수 수정 -->

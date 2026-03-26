@@ -16,7 +16,7 @@ const routes = [
   { path: "/drinks", name: "drink-list", component: DrinkListView },
   { path: "/drinks/:id", name: "drink-detail", component: DrinkDetailView },
   { path: "/notes/:id", name: "note-detail", component: NoteDetailView },
-  { path: "/notes/write", name: "note-write", component: NoteWriteView },
+  { path: "/write/:drinkId", name: "note-write", component: NoteWriteView },
   { path: "/mypage", name: "mypage", component: MyPageView },
   { path: "/login", name: "login", component: LoginView },
   { path: "/signup", name: "signup", component: SignupView },

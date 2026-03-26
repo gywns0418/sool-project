@@ -8,4 +8,6 @@ public class TastingNoteMetricDto {
     private String metricCode;
     private Integer score;
 
+    private String metricName;
+    private Double avgScore;
 }

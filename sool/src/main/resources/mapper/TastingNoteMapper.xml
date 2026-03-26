@@ -131,7 +131,7 @@
 
 
     <!-- 노트 등록 -->
-    <insert id="insertTastingNote" parameterType="com.example.sool.dto.TastingNoteDto">
+    <insert id="insertTastingNote" parameterType="com.example.sool.dto.TastingNoteDto" useGeneratedKeys="true" keyProperty="noteId">
         INSERT INTO tasting_note
         (
             user_id,

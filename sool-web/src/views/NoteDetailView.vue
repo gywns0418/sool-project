@@ -45,12 +45,12 @@
       <aside class="nd-side">
         <section class="flavor-section">
           <div class="nd-flavor-title">맛 프로파일</div>
-          <div v-for="item in noteDetailFlavor" :key="item.label" class="nd-flavor-row">
-            <span class="nfl">{{ item.label }}</span>
+          <div v-for="item in metricList" :key="item.metricCode" class="nd-flavor-row">
+            <span class="nfl">{{ item.metricName }}</span>
             <div class="nfb">
-              <div class="nff" :style="{ width: item.width }"></div>
+              <div class="nff" :style="{ width: (item.score / 5) * 100 + '%' }"></div>
             </div>
-            <span class="nfv">{{ item.value }}</span>
+            <span class="nfv">{{ item.score }}</span>
           </div>
         </section>
         <div class="nd-comments">
@@ -79,7 +79,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 import PageNav from '../components/common/PageNav.vue'
 import CommentItem from '../components/cards/CommentItem.vue'
-import { categories, comments, noteDetailFlavor } from '../mock/soolData'
+import { categories, comments } from '../mock/soolData'
 import { getNoteDetail } from '@/api/noteApi'
 import { getNoteLike, insertNoteLike, deleteNoteLike } from '@/api/likeApi'
 import ReportModal from '../components/common/ReportModal.vue'
@@ -92,6 +92,7 @@ const liked = ref(false)
 const likeLoading = ref(false)
 const likeCount = ref(0)
 
+const metricList = ref([])
 
 const newComment = ref('')
 const commentList = ref([...comments])
@@ -221,6 +222,7 @@ const fetchNoteDetail = async () => {
     console.log(res.data)
 
     noteDetail.value = res.data || null
+    metricList.value = res.data.metricList || null
     likeCount.value = Number(res.data?.likeCount ?? 0)
 
     if (authStore.isLogin) {

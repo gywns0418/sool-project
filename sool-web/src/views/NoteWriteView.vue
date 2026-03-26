@@ -1,47 +1,46 @@
 <template>
-    <div class="page-wrap">
-      <PageNav :links="navLinks" />
+  <div class="page-wrap">
+    <PageNav :links="navLinks" />
 
-      <section class="write-hero">
-        <div class="write-hero-drink-thumb">🍷</div>
-        <div>
-          <div class="write-hero-tag">Tasting Note</div>
-          <div class="write-hero-title">샤또 마고 2018(주류 이름)</div>
-          <div class="write-hero-title">Château Margaux 2018(주류 이름 영문)</div>
-          <div class="write-hero-sub">
-            <span>레드 와인(주류 대 카테고리)</span>
-            <span class="write-hero-dot"></span>
-            <span>레드 와인(주류 소 카테고리)</span>
-            <span class="write-hero-dot"></span>
-            <span>프랑스 · 보르도( 국가 )</span>
-          </div>
+    <section class="write-hero">
+      <div class="write-hero-drink-thumb">🍷</div>
+      <div>
+        <div class="write-hero-tag">Tasting Note</div>
+        <div class="write-hero-title">{{ drink.drinkName || '-' }}</div>
+        <div v-if="drink.drinkNameEn" class="write-hero-title">{{ drink.drinkNameEn }}</div>
+        <div class="write-hero-sub">
+          <span>{{ drink.categoryName || '-' }}</span>
+          <span class="write-hero-dot"></span>
+          <span>{{ drink.typeName || '-' }}</span>
+          <span class="write-hero-dot"></span>
+          <span>{{ drink.country || '-' }}</span>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <div class="write-single">
-
-        <div class="form-card">
-          <div class="form-card-header">
-            <div class="form-card-icon">✎</div>
-            <div>
-              <div class="form-card-title">노트 제목</div>
-              <div class="form-card-sub">테이스팅 노트의 제목을 작성하세요</div>
-            </div>
-          </div>
-
-          <div class="form-section">
-            <label class="form-label">제목</label>
-            <input
-              v-model="title"
-              type="text"
-              class="text-input"
-              maxlength="100"
-              placeholder="예: 부드러운 베리향이 인상적인 와인"
-            />
+    <div class="write-single">
+      <div class="form-card">
+        <div class="form-card-header">
+          <div class="form-card-icon">✎</div>
+          <div>
+            <div class="form-card-title">노트 제목</div>
+            <div class="form-card-sub">테이스팅 노트의 제목을 작성하세요</div>
           </div>
         </div>
 
-        <div class="note-top-section">
+        <div class="form-section">
+          <label class="form-label">제목</label>
+          <input
+            v-model="title"
+            type="text"
+            class="text-input"
+            maxlength="100"
+            placeholder="예: 부드러운 베리향이 인상적인 와인"
+          />
+        </div>
+      </div>
+
+      <div class="note-top-section">
         <div class="form-card">
           <div class="form-card-header">
             <div class="form-card-icon">★</div>
@@ -54,7 +53,16 @@
           <div class="form-section">
             <label class="form-label">별점</label>
             <div class="star-input">
-              <button v-for="star in 5" :key="star" type="button" class="star-inp-item" :class="{ on: star <= selectedStar }" @click="selectedStar = star">★</button>
+              <button
+                v-for="star in 5"
+                :key="star"
+                type="button"
+                class="star-inp-item"
+                :class="{ on: star <= selectedStar }"
+                @click="selectedStar = star"
+              >
+                ★
+              </button>
               <span class="star-label">{{ selectedStar }}점</span>
             </div>
           </div>
@@ -70,84 +78,176 @@
           </div>
 
           <div class="score-grid">
-            <div v-for="item in scores" :key="item.key" class="score-row">
+            <div v-if="scores.length === 0" class="empty-metric">
+              선택 가능한 맛 프로파일이 없습니다.
+            </div>
+
+            <div v-for="item in scores" :key="item.code" class="score-row">
               <div class="score-row-head">
-                <span class="score-label">{{ item.label }}</span>
-                <span class="score-en">{{ item.en }}</span>
+                <span class="score-label">{{ item.codeName }}</span>
                 <span class="score-val-text">{{ item.value }}점</span>
               </div>
               <div class="seg-bar">
-                <button v-for="n in 5" :key="n" type="button" class="seg" :class="{ lit: n <= item.value }" @click="item.value = n"></button>
+                <button
+                  v-for="n in 5"
+                  :key="n"
+                  type="button"
+                  class="seg"
+                  :class="{ lit: n <= item.value }"
+                  @click="item.value = n"
+                ></button>
               </div>
             </div>
           </div>
         </div>
-</div>
-        <div class="form-card span2">
-          <div class="form-card-header">
-            <div class="form-card-icon blue">✎</div>
-            <div>
-              <div class="form-card-title">상세 기록</div>
-              <div class="form-card-sub">느낀 향과 맛, 페어링, 분위기를 자유롭게 적어보세요</div>
-            </div>
-          </div>
+      </div>
 
-          <div class="form-section">
-            <label class="form-label">테이스팅 메모</label>
-            <textarea v-model="memo" class="write-textarea" placeholder="향, 맛, 피니시, 함께 먹은 음식 등을 기록해보세요."></textarea>
-          </div>
-
-          <div class="form-section">
-            <label class="form-label">사진 업로드</label>
-            <button type="button" class="upload-zone" @click="uploaded = !uploaded">
-              <div class="upload-icon-wrap">📷</div>
-              <p><em>{{ uploaded ? '사진 선택 완료' : '클릭해서 사진 업로드' }}</em><br />테이스팅 순간을 함께 남겨보세요</p>
-              <div class="up-small">JPG, PNG 파일 업로드 가능</div>
-            </button>
+      <div class="form-card span2">
+        <div class="form-card-header">
+          <div class="form-card-icon blue">✎</div>
+          <div>
+            <div class="form-card-title">상세 기록</div>
+            <div class="form-card-sub">느낀 향과 맛, 페어링, 분위기를 자유롭게 적어보세요</div>
           </div>
         </div>
 
-        <div class="write-submit-row">
-          <button class="submit-btn" @click="saveNote">노트 저장하기</button>
+        <div class="form-section">
+          <label class="form-label">테이스팅 내용</label>
+          <textarea
+            v-model="memo"
+            class="write-textarea"
+            placeholder="향, 맛, 피니시, 함께 먹은 음식 등을 기록해보세요."
+          ></textarea>
+        </div>
+
+        <div class="form-section">
+          <label class="form-label">사진 업로드</label>
+          <button type="button" class="upload-zone" @click="uploaded = !uploaded">
+            <div class="upload-icon-wrap">📷</div>
+            <p>
+              <em>{{ uploaded ? '사진 선택 완료' : '클릭해서 사진 업로드' }}</em><br />
+              테이스팅 순간을 함께 남겨보세요
+            </p>
+            <div class="up-small">JPG, PNG 파일 업로드 가능</div>
+          </button>
         </div>
       </div>
+
+      <button class="submit-btn" :disabled="isSaving" @click="saveNote">
+        {{ isSaving ? '저장 중...' : '노트 저장하기' }}
+      </button>
     </div>
+  </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import PageNav from '../components/common/PageNav.vue'
+import { getNoteWriteForm, createNote } from '@/api/noteApi'
 
+const route = useRoute()
 const router = useRouter()
 
-const navLinks = [
-  { label: '홈', to: '/' },
-  { label: '노트 작성', to: '/notes/write', active: true }
-]
-
-const selectedStar = ref(4)
+const drink = ref({})
+const title = ref('')
+const selectedStar = ref(1)
 const uploaded = ref(false)
 const memo = ref('')
-const scores = ref([
-  { key: 'sweet', label: '당도', en: 'Sweet', value: 2 },
-  { key: 'acid', label: '산도', en: 'Acid', value: 4 },
-  { key: 'body', label: '바디', en: 'Body', value: 5 },
-  { key: 'tannin', label: '탄닌', en: 'Tannin', value: 4 }
+const scores = ref([])
+const isSaving = ref(false)
+
+const navLinks = computed(() => [
+  { label: '홈', to: '/' },
+  { label: drink.value.drinkName || '노트 작성', to: route.fullPath, active: true }
 ])
 
-const saveNote = () => {
-  localStorage.setItem(
-    'sool-note-draft',
-    JSON.stringify({
-      selectedStar: selectedStar.value,
-      memo: memo.value,
-      scores: scores.value,
-      uploaded: uploaded.value
-    })
-  )
-  router.push('/notes/1')
+const fetchNoteWriteForm = async () => {
+  try {
+    const drinkId = route.params.drinkId
+    const res = await getNoteWriteForm(drinkId)
+
+    drink.value = res.data?.drink || {}
+    scores.value = (res.data?.metricList || []).map(item => ({
+      code: item.code,
+      codeName: item.codeName,
+      value: 1
+    }))
+  } catch (error) {
+    console.log('노트 작성 화면 데이터 조회 실패', error)
+    drink.value = {}
+    scores.value = []
+  }
 }
+
+const saveNote = async () => {
+  if (!drink.value?.drinkId) {
+    alert('주류 정보가 없습니다.')
+    return
+  }
+
+  if (!title.value.trim()) {
+    alert('노트 제목을 입력해주세요.')
+    return
+  }
+
+  if (!selectedStar.value) {
+    alert('별점을 선택해주세요.')
+    return
+  }
+
+  if (!memo.value.trim()) {
+    alert('테이스팅 메모를 입력해주세요.')
+    return
+  }
+
+  if (isSaving.value) {
+    return
+  }
+
+  try {
+    isSaving.value = true
+
+    const payload = {
+      drinkId: drink.value.drinkId,
+      title: title.value.trim(),
+      content: memo.value.trim(),
+      rating: selectedStar.value,
+      metricList: scores.value.map(item => ({
+        metricCode: item.code,
+        score: item.value
+      }))
+    }
+
+    const res = await createNote(payload)
+    const noteId = res.data?.noteId
+    console.log(noteId)
+
+    alert('노트가 저장되었습니다.')
+
+    if (noteId) {
+      router.push(`/notes/${noteId}`)
+      return
+    }
+
+    router.push('/mypage')
+  } catch (error) {
+    console.log('노트 저장 실패', error)
+
+    const message =
+      error.response?.data?.message ||
+      error.response?.data ||
+      '노트 저장에 실패했습니다.'
+
+    alert(message)
+  } finally {
+    isSaving.value = false
+  }
+}
+
+onMounted(() => {
+  fetchNoteWriteForm()
+})
 </script>
 
 <style scoped>
@@ -201,6 +301,7 @@ const saveNote = () => {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .write-hero-dot {
@@ -208,54 +309,6 @@ const saveNote = () => {
   height: 3px;
   border-radius: 50%;
   background: var(--border);
-}
-
-.write-progress {
-  display: flex;
-  align-items: center;
-  padding: 0 60px;
-  background: var(--white);
-  border-bottom: 1px solid var(--border);
-}
-
-.wp-step {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 20px 14px 0;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.wp-step.active {
-  color: var(--point);
-  font-weight: 600;
-}
-
-.wp-num {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 1.5px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  font-weight: 700;
-  background: white;
-  color: var(--muted);
-}
-
-.wp-step.active .wp-num {
-  border-color: var(--point);
-  background: var(--point);
-  color: white;
-}
-
-.wp-arrow {
-  color: var(--border);
-  font-size: 12px;
-  margin-right: 20px;
 }
 
 .write-single {
@@ -374,13 +427,9 @@ const saveNote = () => {
   color: var(--ink);
 }
 
-.score-en,
 .score-val-text {
   font-size: 12px;
   color: var(--muted);
-}
-
-.score-val-text {
   margin-left: auto;
 }
 
@@ -463,22 +512,28 @@ const saveNote = () => {
   cursor: pointer;
 }
 
-.text-input{
-  width:100%;
-  padding:12px 14px;
-  border:1px solid #e5e7eb;
-  border-radius:8px;
-  font-size:14px;
-  outline:none;
+.text-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
 }
 
-.text-input:focus{
-  border-color:#7c3aed;
+.text-input:focus {
+  border-color: #7c3aed;
 }
 
 .note-top-section {
   display: grid;
   grid-template-columns: 280px 1fr;
   gap: 20px;
+}
+
+.empty-metric {
+  font-size: 13px;
+  color: var(--muted);
+  padding: 8px 0;
 }
 </style>

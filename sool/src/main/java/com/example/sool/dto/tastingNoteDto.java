@@ -2,6 +2,7 @@ package com.example.sool.dto;
 
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import lombok.Data;
 
@@ -17,6 +18,9 @@ public class TastingNoteDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String isDeleted;
+
+    //노트 작성
+    private List<TastingNoteMetricDto> metricList;
 
     //홈 최근 테이스팅 노트 
     private String userName;

@@ -39,7 +39,7 @@
           <div class="detail-actions">
             <router-link
               v-if="authStore.isLogin"
-              :to="`/notes/write`"
+              :to="`/write/${drink?.drinkId}`"
               class="btn-primary"
             >
               테이스팅 노트 작성

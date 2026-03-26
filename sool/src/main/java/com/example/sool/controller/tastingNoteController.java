@@ -6,8 +6,11 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -15,6 +18,8 @@ import com.example.sool.dto.CommonCodeDto;
 import com.example.sool.dto.DrinkDto;
 import com.example.sool.dto.NoteSearchDto;
 import com.example.sool.dto.TastingNoteDto;
+import com.example.sool.dto.TastingNoteMetricDto;
+import com.example.sool.security.CustomUserDetails;
 import com.example.sool.service.DrinkService;
 import com.example.sool.service.TastingNoteService;
 
@@ -30,6 +35,7 @@ public class TastingNoteController {
         this.drinkService = drinkService;
     }
 
+    //노트 목록
     @GetMapping("/drinks/{drinkId}/notes")
     public Map<String, Object> findNoteAll(@PathVariable Integer drinkId, NoteSearchDto dto) {
 
@@ -50,6 +56,7 @@ public class TastingNoteController {
         return result;
     }
 
+    //노트 디테일
     @GetMapping("/notes/{noteId}")
     public ResponseEntity<?> getNoteDetail(@PathVariable("noteId") Integer noteId) {
         TastingNoteDto noteDetail = tastingNoteService.getNoteDetail(noteId);
@@ -59,18 +66,25 @@ public class TastingNoteController {
                     .body("존재하지 않는 테이스팅 노트입니다.");
         }
 
+        List<TastingNoteMetricDto> metriclist = tastingNoteService.findMetricByNoteId(noteId);
+
+        noteDetail.setMetricList(metriclist);
+
         return ResponseEntity.ok(noteDetail);
     }
 
 
+    //노트 작성 정보
     @GetMapping("/notes/write/{drinkId}")
     public ResponseEntity<Map<String, Object>> getNoteWriteForm(@PathVariable int drinkId) {
+        //주류 정보
         DrinkDto drink = drinkService.findByDrinkId(drinkId);
 
         if (drink == null) {
             throw new IllegalArgumentException("존재하지 않는 주류입니다.");
         }
 
+        //카테고리별 맛 프로파일 항목
         List<CommonCodeDto> metricList = tastingNoteService.getMetricCode(drinkId);
 
         Map<String, Object> result = new HashMap<>();
@@ -79,4 +93,26 @@ public class TastingNoteController {
 
         return ResponseEntity.ok(result);
     }
+
+    //노트 작성
+    @PostMapping("/notes/writeform")
+    public ResponseEntity<Map<String, Object>> createNote(@RequestBody TastingNoteDto dto, Authentication authentication) {
+
+        if (authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "로그인이 필요합니다."));
+        }
+
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        dto.setUserId(userDetails.getUserId());
+
+        Integer noteId = tastingNoteService.createNote(dto);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("noteId", noteId);
+        result.put("message", "노트가 저장되었습니다.");
+
+        return ResponseEntity.ok(result);
+    }
+
 }
