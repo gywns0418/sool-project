@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.example.sool.dto.CommonCodeDto;
 import com.example.sool.dto.NoteSearchDto;
 import com.example.sool.dto.TastingNoteDto;
 import com.example.sool.dto.TastingNoteMetricDto;
@@ -61,6 +62,11 @@ public class TastingNoteService {
 
     //테이스팅 노트 맛 점수
 
+    //카테고리 별 지표 조회
+    public List<CommonCodeDto> getMetricCode(int drinkId){
+        return tastingNoteMetricMapper.getMetricCode(drinkId);
+    }
+
     public int insertMetric(TastingNoteMetricDto tastingNoteMetricDto) {
         return tastingNoteMetricMapper.insertMetric(tastingNoteMetricDto);
     }
@@ -77,7 +83,5 @@ public class TastingNoteService {
         return tastingNoteMetricMapper.deleteByNoteId(noteId);
     }
 
-    public List<TastingNoteMetricDto> findByMetricCode(String metricCode){
-        return tastingNoteMetricMapper.findByMetricCode(metricCode);
-    }
+    
 }

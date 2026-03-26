@@ -16,10 +16,12 @@ public class CommentService {
         this.commentMapper = commentMapper;
     }
 
+    //댓글 작성
     public int insertComment(CommentDto commentDto) {
         return commentMapper.insertComment(commentDto);
     }
 
+    //특정 노트의 댓글 목록 조회
     public List<CommentDto> findByNoteId(Integer noteId) {
         return commentMapper.findByNoteId(noteId);
     }

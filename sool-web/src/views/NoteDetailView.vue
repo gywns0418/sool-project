@@ -18,7 +18,7 @@
 
         <div class="nd-drink-pill">{{ drinkEmoji }} {{ drinkName }}</div>
         <div class="nd-title">{{ noteTitle }}</div>
-        <div class="nd-stars">{{ starText }}</div>
+        <div class="nd-stars">{{ star }}</div>
 
         <div v-if="noteImageUrl" class="nd-photo nd-photo-img-wrap">
           <img :src="noteImageUrl" alt="테이스팅 노트 이미지" class="nd-photo-img" />
@@ -36,8 +36,8 @@
           >
             {{ liked ? '♥' : '♡' }} {{ likeCount }}
           </button>
-          <button class="report-btn" @click="reported = !reported">
-            {{ reported ? '신고 완료' : '신고' }}
+          <button class="report-btn" @click="openReportModal">
+            신고
           </button>
         </div>
       </main>
@@ -64,6 +64,13 @@
       </aside>
     </div>
   </div>
+  
+  <ReportModal
+    v-model="reportModalOpen"
+    objType="NOTE"
+    :objId="Number(route.params.id)"
+    @success="fetchNoteDetail"
+  />
 </template>
 
 <script setup>
@@ -75,6 +82,7 @@ import CommentItem from '../components/cards/CommentItem.vue'
 import { categories, comments, noteDetailFlavor } from '../mock/soolData'
 import { getNoteDetail } from '@/api/noteApi'
 import { getNoteLike, insertNoteLike, deleteNoteLike } from '@/api/likeApi'
+import ReportModal from '../components/common/ReportModal.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -84,7 +92,7 @@ const liked = ref(false)
 const likeLoading = ref(false)
 const likeCount = ref(0)
 
-const reported = ref(false)
+
 const newComment = ref('')
 const commentList = ref([...comments])
 
@@ -92,7 +100,8 @@ const noteDetail = ref(null)
 
 const navLinks = computed(() => [
   { label: '홈', to: '/' },
-  { label: `테이스팅 노트 #${route.params.id || 1}`, to: route.fullPath, active: true }
+  { label: `${noteDetail.value?.drinkName || ''}`, to: `/drinks/${noteDetail.value?.drinkId}` },
+  { label: `${noteDetail.value?.drinkName || ''} 테이스팅 노트`, to: route.fullPath, active: true }
 ])
 
 const authorName = computed(() => {
@@ -141,7 +150,7 @@ const noteContent = computed(() => {
   )
 })
 
-const starText = computed(() => {
+const star = computed(() => {
   const rating = Number(noteDetail.value?.rating ?? 0)
   if (!rating) return '☆☆☆☆☆'
 
@@ -247,6 +256,21 @@ const submitComment = () => {
   })
 
   newComment.value = ''
+}
+
+const reportModalOpen = ref(false)
+
+const openReportModal = () => {
+  if (!authStore.isLogin) {
+    alert('로그인을 먼저 해주세요.')
+    router.push({
+      path: '/login',
+      query: { redirect: route.fullPath }
+    })
+    return
+  }
+
+  reportModalOpen.value = true
 }
 
 onMounted(() => {

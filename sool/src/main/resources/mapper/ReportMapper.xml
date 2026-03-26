@@ -5,6 +5,17 @@
 
 <mapper namespace="com.example.sool.mapper.ReportMapper">
 
+    <!-- 신고 사유 가져오기 -->
+     <select id="getReportReasons" resultType="com.example.sool.dto.CommonCodeDto">
+        SELECT
+            code,
+            code_name
+        FROM common_code
+        WHERE group_code = 'REPORT_REASON'
+        AND use_yn = 'Y'
+        ORDER BY sort_seq
+     </select>
+
     <!-- 신고 등록 -->
     <insert id="insertReport" parameterType="com.example.sool.dto.ReportDto">
         INSERT INTO report (
@@ -20,10 +31,20 @@
             #{objId},
             #{objType},
             #{reasonCode},
-            #{statusCode},
+            'RECEIVED',
             NOW()
         )
     </insert>
+
+    <!-- 신고 존재 확인 -->
+    <select id="existsReport" parameterType="com.example.sool.dto.ReportDto" resultType="int">
+        SELECT COUNT(*)
+        FROM report
+        WHERE user_id = #{userId}
+        AND obj_id = #{objId}
+        AND obj_type = #{objType}
+        AND is_deleted = 'N'
+    </select>
 
     <!-- 신고 단건 조회 -->
     <select id="selectReportById" parameterType="int" resultType="com.example.sool.dto.ReportDto">

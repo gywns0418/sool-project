@@ -11,8 +11,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.sool.dto.CommonCodeDto;
+import com.example.sool.dto.DrinkDto;
 import com.example.sool.dto.NoteSearchDto;
 import com.example.sool.dto.TastingNoteDto;
+import com.example.sool.service.DrinkService;
 import com.example.sool.service.TastingNoteService;
 
 @RestController
@@ -20,9 +23,11 @@ import com.example.sool.service.TastingNoteService;
 public class TastingNoteController {
 
     private final TastingNoteService tastingNoteService;
+    private final DrinkService drinkService;
 
-    public TastingNoteController(TastingNoteService tastingNoteService){
+    public TastingNoteController(TastingNoteService tastingNoteService, DrinkService drinkService){
         this.tastingNoteService = tastingNoteService;
+        this.drinkService = drinkService;
     }
 
     @GetMapping("/drinks/{drinkId}/notes")
@@ -58,4 +63,20 @@ public class TastingNoteController {
     }
 
 
+    @GetMapping("/notes/write/{drinkId}")
+    public ResponseEntity<Map<String, Object>> getNoteWriteForm(@PathVariable int drinkId) {
+        DrinkDto drink = drinkService.findByDrinkId(drinkId);
+
+        if (drink == null) {
+            throw new IllegalArgumentException("존재하지 않는 주류입니다.");
+        }
+
+        List<CommonCodeDto> metricList = tastingNoteService.getMetricCode(drinkId);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("drink", drink);
+        result.put("metricList", metricList);
+
+        return ResponseEntity.ok(result);
+    }
 }

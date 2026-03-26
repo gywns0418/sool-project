@@ -98,9 +98,10 @@ const submitReport = async () => {
     alert('신고가 접수되었습니다.')
     emit('success')
     closeModal()
-  } catch (error) {
-    console.log('신고 등록 실패', error)
-    alert('신고 처리 중 오류가 발생했습니다.')
+  } catch (e) {
+    console.log('신고 등록 실패', e)
+    const message = e.response?.data?.message || '신고 처리에 실패했습니다.'
+    alert(message)
   } finally {
     reportLoading.value = false
   }

@@ -6,16 +6,42 @@
         <div class="write-hero-drink-thumb">🍷</div>
         <div>
           <div class="write-hero-tag">Tasting Note</div>
-          <div class="write-hero-title">Château Margaux 2018</div>
+          <div class="write-hero-title">샤또 마고 2018(주류 이름)</div>
+          <div class="write-hero-title">Château Margaux 2018(주류 이름 영문)</div>
           <div class="write-hero-sub">
-            <span>레드 와인</span>
+            <span>레드 와인(주류 대 카테고리)</span>
             <span class="write-hero-dot"></span>
-            <span>프랑스 · 보르도</span>
+            <span>레드 와인(주류 소 카테고리)</span>
+            <span class="write-hero-dot"></span>
+            <span>프랑스 · 보르도( 국가 )</span>
           </div>
         </div>
       </section>
 
       <div class="write-single">
+
+        <div class="form-card">
+          <div class="form-card-header">
+            <div class="form-card-icon">✎</div>
+            <div>
+              <div class="form-card-title">노트 제목</div>
+              <div class="form-card-sub">테이스팅 노트의 제목을 작성하세요</div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <label class="form-label">제목</label>
+            <input
+              v-model="title"
+              type="text"
+              class="text-input"
+              maxlength="100"
+              placeholder="예: 부드러운 베리향이 인상적인 와인"
+            />
+          </div>
+        </div>
+
+        <div class="note-top-section">
         <div class="form-card">
           <div class="form-card-header">
             <div class="form-card-icon">★</div>
@@ -38,7 +64,7 @@
           <div class="form-card-header">
             <div class="form-card-icon green">◎</div>
             <div>
-              <div class="form-card-title">맛 점수</div>
+              <div class="form-card-title">맛 프로파일</div>
               <div class="form-card-sub">항목별로 1점부터 5점까지 선택하세요</div>
             </div>
           </div>
@@ -56,7 +82,7 @@
             </div>
           </div>
         </div>
-
+</div>
         <div class="form-card span2">
           <div class="form-card-header">
             <div class="form-card-icon blue">✎</div>
@@ -233,11 +259,11 @@ const saveNote = () => {
 }
 
 .write-single {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
   padding: 28px 40px 48px;
-  max-width: 90%;
+  max-width: 900px;
   margin: 0 auto;
 }
 
@@ -435,5 +461,24 @@ const saveNote = () => {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+}
+
+.text-input{
+  width:100%;
+  padding:12px 14px;
+  border:1px solid #e5e7eb;
+  border-radius:8px;
+  font-size:14px;
+  outline:none;
+}
+
+.text-input:focus{
+  border-color:#7c3aed;
+}
+
+.note-top-section {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 20px;
 }
 </style>

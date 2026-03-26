@@ -4,12 +4,17 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
+import com.example.sool.dto.CommonCodeDto;
 import com.example.sool.dto.ReportDto;
 
 @Mapper
 public interface ReportMapper {
 
+    List<CommonCodeDto> getReportReasons();
+
     int insertReport(ReportDto reportDto);
+
+    int existsReport(ReportDto reportDto);
 
     ReportDto selectReportById(int report_id);
 

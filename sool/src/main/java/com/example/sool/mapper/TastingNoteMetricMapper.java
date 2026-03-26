@@ -4,10 +4,14 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
+import com.example.sool.dto.CommonCodeDto;
 import com.example.sool.dto.TastingNoteMetricDto;
 
 @Mapper
 public interface TastingNoteMetricMapper {
+
+    //카테고리 별 지표 조회
+    List<CommonCodeDto> getMetricCode(Integer drinkId);
 
     int insertMetric(TastingNoteMetricDto tastingNoteMetricDto);
 
@@ -17,5 +21,5 @@ public interface TastingNoteMetricMapper {
 
     int deleteByNoteId(Integer noteId);
 
-    List<TastingNoteMetricDto> findByMetricCode(String metricCode);
+    
 }

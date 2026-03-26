@@ -5,6 +5,29 @@
 
 <mapper namespace="com.example.sool.mapper.TastingNoteMetricMapper">
 
+    <!-- 카테고리 별 지표 조회 -->
+    <select id="getMetricCode" parameterType="int" resultType="com.example.sool.dto.CommonCodeDto">
+        SELECT
+            cc.code,
+            cc.code_name
+        FROM drink d
+
+        JOIN common_code cc
+            ON cc.group_code = 'TASTE_METRIC'
+
+        WHERE d.drink_id = #{drinkId}
+
+        AND d.is_deleted = 'N'
+        AND cc.use_yn = 'Y'
+        AND cc.is_deleted = 'N'
+        AND (
+                cc.parent_code IS NULL
+                OR cc.parent_code = d.category_code
+            )
+
+        ORDER BY cc.sort_seq ASC, cc.code_id ASC
+    </select>
+
     <!-- 맛 점수 등록 -->
     <insert id="insertMetric" parameterType="com.example.sool.dto.TastingNoteMetricDto">
         INSERT INTO tasting_note_metric
@@ -43,11 +66,6 @@
         WHERE note_id = #{noteId}
     </delete>
 
-    <!-- 특정 지표 조회 -->
-    <select id="findByMetricCode" parameterType="String" resultType="com.example.sool.dto.TastingNoteMetricDto">
-        SELECT *
-        FROM tasting_note_metric
-        WHERE metric_code = #{metricCode}
-    </select>
+
 
 </mapper>

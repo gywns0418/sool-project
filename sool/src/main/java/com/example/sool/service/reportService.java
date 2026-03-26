@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.example.sool.dto.CommonCodeDto;
 import com.example.sool.dto.ReportDto;
 import com.example.sool.mapper.ReportMapper;
 
@@ -16,9 +17,23 @@ public class ReportService {
         this.reportMapper = reportMapper;
     }
 
+    public List<CommonCodeDto> getReportReasons(){
+        return reportMapper.getReportReasons();
+    }
+
+    //신고 등록 (이미 등록 되어있으면 실패)
     public int insertReport(ReportDto reportDto) {
+        int count = reportMapper.existsReport(reportDto);
+
+        if (count > 0) {
+            throw new IllegalArgumentException("이미 신고한 노트입니다.");
+        }
+
         return reportMapper.insertReport(reportDto);
     }
+
+
+    //아직 사용 X
 
     public ReportDto selectReportById(int report_id) {
         return reportMapper.selectReportById(report_id);
