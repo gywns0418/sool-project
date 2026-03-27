@@ -37,8 +37,16 @@
           </p>
 
           <div class="detail-actions">
+            <button
+              v-if="authStore.isLogin && hasMyNote"
+              class="btn-primary disabled"
+              disabled
+            >
+              이미 노트를 작성했습니다
+            </button>
+
             <router-link
-              v-if="authStore.isLogin"
+              v-else-if="authStore.isLogin"
               :to="`/write/${drink?.drinkId}`"
               class="btn-primary"
             >
@@ -66,7 +74,7 @@
       </div>
 
       <div class="flavor-section">
-        <FlavorBars title="평균 맛 프로파일" :items="flavorProfile" />
+        <FlavorBars :avgMetric="avgMetric" />
       </div>
     </div>
 
@@ -105,7 +113,6 @@ import NoteListCard from '@/components/cards/NoteListCard.vue'
 import { getDrinkDetail } from '@/api/drinkApi'
 import { getDrinkLike, insertDrinkLike, deleteDrinkLike } from '@/api/likeApi'
 import { getNoteList } from '@/api/noteApi'
-import { flavorProfile } from '@/mock/soolData'
 
 const route = useRoute()
 const router = useRouter()
@@ -121,6 +128,8 @@ const page = ref(1)
 const size = ref(12)
 const totalPage = ref(0)
 const sortBy = ref('latest')
+
+const avgMetric = ref([]);
 
 const navLinks = computed(() => [
   { label: '홈', to: '/' },
@@ -172,17 +181,20 @@ const fetchTastingNote = async () => {
       size: size.value,
       sort: sortBy.value
     })
+    console.log(res.data)
 
     noteList.value = Array.isArray(res.data.list) ? res.data.list : []
     totalCount.value = res.data.totalCount ?? 0
     totalPage.value = res.data.totalPage ?? 0
     page.value = res.data.page ?? 1
     size.value = res.data.size ?? 12
+    avgMetric.value = res.data.avgMetric ?? []
   } catch (e) {
     console.log('테이스팅 노트 조회 실패', e)
     noteList.value = []
     totalCount.value = 0
     totalPage.value = 0
+    avgMetric.value = []
   }
 }
 
@@ -221,8 +233,13 @@ const toggleLike = async () => {
 const initPage = async () => {
   page.value = 1
   await fetchDrinkDetail()
-  await fetchLikeStatus()
   await fetchTastingNote()
+
+  if (authStore.isLogin) {
+    await fetchLikeStatus()
+  } else {
+    liked.value = false
+  }
 }
 
 onMounted(() => {
@@ -246,6 +263,15 @@ watch(
 watch(sortBy, async () => {
   page.value = 1
   await fetchTastingNote()
+})
+
+const hasMyNote = computed(() => {
+  if (!authStore.isLogin) return false
+  if (!Array.isArray(noteList.value)) return false
+
+  const loginUserId = Number(authStore.user?.userId)
+
+  return noteList.value.some(note => Number(note.userId) === loginUserId)
 })
 </script>
 
@@ -376,6 +402,12 @@ watch(sortBy, async () => {
   color: white;
   background: var(--point);
   border: none;
+}
+
+.btn-primary.disabled {
+  background: #d9d9d9;
+  color: #888;
+  cursor: not-allowed;
 }
 
 .btn-ghost {

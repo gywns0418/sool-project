@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -46,12 +47,15 @@ public class TastingNoteController {
 
         int totalPage = (int) Math.ceil((double) totalCount / dto.getSize());
 
+        List<TastingNoteMetricDto> avgMetric = tastingNoteService.findAvgMetricByDrinkId(drinkId);
+
         Map<String, Object> result = new HashMap<>();
         result.put("list", list);
         result.put("totalCount", totalCount);
         result.put("page", dto.getPage());
         result.put("size", dto.getSize());
         result.put("totalPage", totalPage);
+        result.put("avgMetric",avgMetric);
 
         return result;
     }
@@ -115,4 +119,41 @@ public class TastingNoteController {
         return ResponseEntity.ok(result);
     }
 
+    //노트 수정 기본 정보 
+    @GetMapping("/notes/edit/{noteId}")
+    public ResponseEntity<Map<String, Object>> getNoteUpdateForm(@PathVariable int noteId) {
+        //노트수정 주류 기본 정보 
+        DrinkDto drink = drinkService.findDrinkByNoteId(noteId);
+
+        //노트 수정 노트 기본 정보
+        TastingNoteDto note = tastingNoteService.findByNoteId(noteId);
+
+        //저장된 카테고리별 맛 프로파일 항목
+        List<TastingNoteMetricDto> metricList = tastingNoteService.findMetricByNoteId(noteId);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("drink", drink);
+        result.put("note", note);
+        result.put("metricList", metricList);
+
+        return ResponseEntity.ok(result);
+    }
+    
+    @PutMapping("/notes/edit/{noteId}")
+    public ResponseEntity<?> updateNote(@PathVariable int noteId, 
+                    @RequestBody TastingNoteDto dto, Authentication authentication) {
+        
+        if (authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "로그인이 필요합니다."));
+        }
+
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        dto.setUserId(userDetails.getUserId());
+
+        dto.setNoteId(noteId);
+        tastingNoteService.updateNote(dto);
+
+        return ResponseEntity.ok("수정 완료");
+    }
 }

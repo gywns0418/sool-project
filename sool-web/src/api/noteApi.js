@@ -18,6 +18,16 @@ export function createNote(params) {
   return api.post('/notes/writeform', params)
 }
 
+export const getNoteUpdateForm = (noteId) => {
+  return api.get(`/notes/edit/${noteId}`)
+}
+
+export function updateNote(noteId, params) {
+  return api.put(`/notes/edit/${noteId}`, params)
+}
+
+
+
 /* **************************************** */
 
 //댓글

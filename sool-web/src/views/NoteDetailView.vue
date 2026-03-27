@@ -39,18 +39,34 @@
           <button class="report-btn" @click="openReportModal">
             신고
           </button>
+          <template v-if="isOwner">
+              <button type="button" class="nd-action-btn" @click="goEdit">
+                수정
+              </button>
+
+              <button type="button" class="nd-action-btn danger" @click="removeNote">
+                삭제
+              </button>
+          </template>
         </div>
       </main>
 
       <aside class="nd-side">
         <section class="flavor-section">
           <div class="nd-flavor-title">맛 프로파일</div>
-          <div v-for="item in metricList" :key="item.metricCode" class="nd-flavor-row">
-            <span class="nfl">{{ item.metricName }}</span>
-            <div class="nfb">
-              <div class="nff" :style="{ width: (item.score / 5) * 100 + '%' }"></div>
+
+          <template v-if="metricList.length > 0">
+            <div v-for="item in metricList" :key="item.metricCode" class="nd-flavor-row">
+              <span class="nfl">{{ item.metricName }}</span>
+              <div class="nfb">
+                <div class="nff" :style="{ width: (item.score / 5) * 100 + '%' }"></div>
+              </div>
+              <span class="nfv">{{ item.score }}</span>
             </div>
-            <span class="nfv">{{ item.score }}</span>
+          </template>
+
+          <div v-else class="nd-flavor-empty">
+              등록된 맛 프로파일이 없습니다.
           </div>
         </section>
         <div class="nd-comments">
@@ -213,6 +229,7 @@ const toggleLike = async () => {
   }
 }
 
+//노트 디테일 정보
 const fetchNoteDetail = async () => {
   try {
     const noteId = route.params.id
@@ -222,7 +239,7 @@ const fetchNoteDetail = async () => {
     console.log(res.data)
 
     noteDetail.value = res.data || null
-    metricList.value = res.data.metricList || null
+    metricList.value = res.data.metricList || []
     likeCount.value = Number(res.data?.likeCount ?? 0)
 
     if (authStore.isLogin) {
@@ -273,6 +290,34 @@ const openReportModal = () => {
   }
 
   reportModalOpen.value = true
+}
+
+const isOwner = computed(() => {
+  if (!authStore.isLogin) return false
+  if (!noteDetail.value) return false
+
+  return Number(authStore.user?.userId) === Number(noteDetail.value.userId)
+})
+
+function goEdit() {
+  if (!noteDetail.value?.noteId) return
+  router.push(`/notes/${noteDetail.value.noteId}/edit`)
+}
+
+async function removeNote() {
+  if (!noteDetail.value?.noteId) return
+
+  const ok = window.confirm('정말 삭제하시겠습니까?')
+  if (!ok) return
+
+  try {
+    await deleteNote(noteDetail.value.noteId)
+    alert('삭제되었습니다.')
+    router.push(`/drinks/${noteDetail.value.drinkId}`)
+  } catch (error) {
+    console.log('노트 삭제 실패', error)
+    alert('삭제에 실패했습니다.')
+  }
 }
 
 onMounted(() => {
@@ -515,5 +560,37 @@ onMounted(() => {
   padding-bottom: 32px;
   margin-bottom: 32px;
   border-bottom: 3px solid var(--border);
+}
+
+.nd-flavor-empty {
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  background: white;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.nd-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nd-action-btn {
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.nd-action-btn.danger {
+  color: #c0392b;
+  border-color: #f1b5ae;
 }
 </style>

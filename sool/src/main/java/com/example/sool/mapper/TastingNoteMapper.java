@@ -23,6 +23,16 @@ public interface TastingNoteMapper {
     //최근 노트 3개 조회
     List<TastingNoteDto> recentNote();
 
+    //노트 수정 노트 정보 가져오기
+    TastingNoteDto findByNoteId(Integer noteId);
+
+
+
+
+
+
+
+
     List<TastingNoteDto> orderByRatingDesc(Integer drinkId);
 
     int updateTastingNote(TastingNoteDto tastingNoteDto);

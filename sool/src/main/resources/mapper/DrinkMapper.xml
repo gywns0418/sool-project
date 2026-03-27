@@ -340,6 +340,28 @@
         AND d.is_deleted = 'N'
     </select>
 
+    <!-- 노트 아이디로 주류 검색 -->
+    <select id="findDrinkByNoteId" parameterType="int" resultType="com.example.sool.dto.DrinkDto">
+        SELECT
+            d.*,
+            cc1.code_name AS categoryName,
+            cc2.code_name AS typeName
+        FROM drink d
+        INNER JOIN tasting_note tn
+            ON d.drink_id = tn.drink_id
+
+        LEFT JOIN common_code cc1
+            ON d.category_code = cc1.code
+            AND cc1.group_code = 'DRINK_CATEGORY'
+            AND cc1.use_yn = 'Y'
+        LEFT JOIN common_code cc2
+            ON d.type_code = cc2.code
+            AND cc2.group_code = 'DRINK_TYPE'
+            AND cc2.use_yn = 'Y'
+
+        WHERE tn.note_id = #{noteId}
+    </select>
+
 
     <insert id="insertDrink" parameterType="com.example.sool.dto.DrinkDto">
         INSERT INTO drink (

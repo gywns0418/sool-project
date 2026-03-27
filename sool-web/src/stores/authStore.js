@@ -20,6 +20,7 @@ export const useAuthStore = defineStore("auth", {
       this.user = null
     },
 
+    //로그인
     async login(loginId, password) {
       try {
         const res = await api.post("/auth/login", {
@@ -35,6 +36,7 @@ export const useAuthStore = defineStore("auth", {
       }
     },
 
+    //로그아웃
     async logout() {
       try {
         await api.post("/auth/logout")
@@ -43,6 +45,7 @@ export const useAuthStore = defineStore("auth", {
       }
     },
 
+    //로그인 시 확인
     async fetchMe() {
       try {
         const res = await api.get("/auth/me")

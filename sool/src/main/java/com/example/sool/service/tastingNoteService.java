@@ -38,23 +38,24 @@ public class TastingNoteService {
         return tastingNoteMapper.findNoteByDrinkId(noteSearchDto);
     }
 
+    //페이지네이션 용 노트 수
     public int countNoteByDrinkId(NoteSearchDto noteSearchDto){
         return tastingNoteMapper.countNoteByDrinkId(noteSearchDto);
     }
 
-    public int insertTastingNote(TastingNoteDto tastingNoteDto){
-        return tastingNoteMapper.insertTastingNote(tastingNoteDto);
-    }
-
+    //노트 디테일 
     public TastingNoteDto getNoteDetail(Integer noteId){
         return tastingNoteMapper.getNoteDetail(noteId);
     }
 
-
-
-    public int updateTastingNote(TastingNoteDto tastingNoteDto){
-        return tastingNoteMapper.updateTastingNote(tastingNoteDto);
+    //노트 수정 기본 정보
+    public TastingNoteDto findByNoteId(Integer noteId){
+        return tastingNoteMapper.findByNoteId(noteId);
     }
+
+
+    
+
 
     public int deleteTastingNote(Integer noteId){
         return tastingNoteMapper.deleteTastingNote(noteId);
@@ -77,14 +78,9 @@ public class TastingNoteService {
     }
 
 
-    public int insertMetric(TastingNoteMetricDto tastingNoteMetricDto) {
-        return tastingNoteMetricMapper.insertMetric(tastingNoteMetricDto);
-    }
-
-
-
-    public int updateMetric(TastingNoteMetricDto tastingNoteMetricDto) {
-        return tastingNoteMetricMapper.updateMetric(tastingNoteMetricDto);
+    //주류 디테일 평균 맛 프로파일
+    public List<TastingNoteMetricDto> findAvgMetricByDrinkId(Integer drinkId){
+        return tastingNoteMetricMapper.findAvgMetricByDrinkId(drinkId);
     }
 
     public int deleteMetricByNoteId(Integer noteId) {
@@ -93,9 +89,9 @@ public class TastingNoteService {
 
 
 
-
-    @Transactional
-    public Integer createNote(TastingNoteDto dto) {
+    //노트 삽입
+    @Transactional  //트랜잭션 관리 어노테이션
+    public int createNote(TastingNoteDto dto) {
         validateCreateNote(dto);
 
         DrinkDto drink = drinkService.findByDrinkId(dto.getDrinkId());
@@ -121,6 +117,35 @@ public class TastingNoteService {
         return dto.getNoteId();
     }
 
+    //노트 수정
+    @Transactional
+    public int updateNote(TastingNoteDto dto) {
+        validateCreateNote(dto);
+
+        TastingNoteDto savedNote = tastingNoteMapper.findByNoteId(dto.getNoteId());
+        if (savedNote == null || "Y".equals(savedNote.getIsDeleted())) {
+            throw new IllegalArgumentException("존재하지 않는 테이스팅 노트입니다.");
+        }
+
+        dto.setTitle(dto.getTitle().trim());
+        dto.setContent(dto.getContent().trim());
+
+        tastingNoteMapper.updateTastingNote(dto);
+
+        tastingNoteMetricMapper.deleteByNoteId(dto.getNoteId());
+
+        if (dto.getMetricList() != null && !dto.getMetricList().isEmpty()) {
+            for (TastingNoteMetricDto metric : dto.getMetricList()) {
+                validateMetric(metric);
+                metric.setNoteId(dto.getNoteId());
+                tastingNoteMetricMapper.insertMetric(metric);
+            }
+        }
+
+        return dto.getNoteId();
+    }
+
+    //노트 유효성 검사
     private void validateCreateNote(TastingNoteDto dto) {
         if (dto == null) {
             throw new IllegalArgumentException("요청 데이터가 없습니다.");
@@ -147,6 +172,7 @@ public class TastingNoteService {
         }
     }
 
+    //맛 프로파일 유효성 검사
     private void validateMetric(TastingNoteMetricDto metric) {
         if (metric == null) {
             throw new IllegalArgumentException("맛 프로파일 정보가 올바르지 않습니다.");

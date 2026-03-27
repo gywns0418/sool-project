@@ -1,23 +1,19 @@
 <template>
   <div class="flavor-block">
-    <h4>{{ title }}</h4>
-    <div v-for="item in items" :key="item.label" class="flavor-row">
-      <span class="flavor-label" :class="{ yellow: yellow }">{{ item.label }}</span>
+    <h4>평균 맛 프로파일</h4>
+    <div v-for="item in avgMetric" :key="item.metricCode" class="flavor-row">
+      <span class="flavor-label" :class="{ yellow: yellow }">{{ item.metricName }}</span>
       <div class="flavor-bar-bg">
-        <div class="flavor-bar-fill" :class="{ yellow: yellow }" :style="{ width: item.width }"></div>
+        <div class="flavor-bar-fill" :class="{ yellow: yellow }" :style="{ width: (item.avgScore / 5) * 100 + '%' }"></div>
       </div>
-      <span class="flavor-val">{{ item.value }}</span>
+      <span class="flavor-val">{{ item.avgScore }}</span>
     </div>
   </div>
 </template>
 
 <script setup>
 defineProps({
-  title: {
-    type: String,
-    required: true
-  },
-  items: {
+  avgMetric: {
     type: Array,
     default: () => []
   },

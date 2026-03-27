@@ -55,13 +55,6 @@ export const drinkGrid = [
   { id: 6, emoji: '🍾', category: '로제 와인', name: 'Whispering Angel Rosé', meta: '13% · 프랑스', rating: '★★★★☆ 4.2', likes: 63, liked: false }
 ]
 
-export const flavorProfile = [
-  { label: '당도', value: 2, width: '40%' },
-  { label: '산도', value: 4, width: '80%' },
-  { label: '바디', value: 5, width: '100%' },
-  { label: '탄닌', value: 4, width: '80%' }
-]
-
 export const ratingDistribution = [
   { label: '★★★★★', value: 34, width: '68%' },
   { label: '★★★★', value: 13, width: '26%' },

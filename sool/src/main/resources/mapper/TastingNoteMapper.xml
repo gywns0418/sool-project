@@ -126,10 +126,6 @@
         AND tn.is_deleted = 'N'
     </select>
 
-
-
-
-
     <!-- 노트 등록 -->
     <insert id="insertTastingNote" parameterType="com.example.sool.dto.TastingNoteDto" useGeneratedKeys="true" keyProperty="noteId">
         INSERT INTO tasting_note
@@ -152,9 +148,14 @@
         )
     </insert>
 
-
-
-
+    <!-- 노트 ID로 노트 수정 기본 정보 -->
+    <select id="findByNoteId" parameterType="int" resultType="com.example.sool.dto.TastingNoteDto">
+        SELECT
+            *
+        FROM tasting_note
+        WHERE note_id = #{noteId}
+        AND is_deleted = 'N'
+    </select>
 
 
 
@@ -170,6 +171,10 @@
         AND user_id = #{userId}
         AND is_deleted = 'N'
     </update>
+
+
+
+
 
 
     <!-- 노트 삭제 -->

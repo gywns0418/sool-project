@@ -5,7 +5,7 @@
     <section class="write-hero">
       <div class="write-hero-drink-thumb">🍷</div>
       <div>
-        <div class="write-hero-tag">Tasting Note</div>
+        <div class="write-hero-tag">{{ isEditMode ? 'Edit Note' : 'Tasting Note' }}</div>
         <div class="write-hero-title">{{ drink.drinkName || '-' }}</div>
         <div v-if="drink.drinkNameEn" class="write-hero-title">{{ drink.drinkNameEn }}</div>
         <div class="write-hero-sub">
@@ -23,8 +23,12 @@
         <div class="form-card-header">
           <div class="form-card-icon">✎</div>
           <div>
-            <div class="form-card-title">노트 제목</div>
-            <div class="form-card-sub">테이스팅 노트의 제목을 작성하세요</div>
+            <div class="form-card-title">
+              {{ isEditMode ? '노트 수정' : '노트 제목' }}
+            </div>
+            <div class="form-card-sub">
+              {{ isEditMode ? '작성한 테이스팅 노트를 수정하세요' : '테이스팅 노트의 제목을 작성하세요' }}
+            </div>
           </div>
         </div>
 
@@ -87,6 +91,7 @@
                 <span class="score-label">{{ item.codeName }}</span>
                 <span class="score-val-text">{{ item.value }}점</span>
               </div>
+
               <div class="seg-bar">
                 <button
                   v-for="n in 5"
@@ -133,9 +138,26 @@
         </div>
       </div>
 
-      <button class="submit-btn" :disabled="isSaving" @click="saveNote">
-        {{ isSaving ? '저장 중...' : '노트 저장하기' }}
-      </button>
+      <div class="submit-row">
+        <button
+          v-if="isEditMode"
+          type="button"
+          class="cancel-btn"
+          :disabled="isSaving"
+          @click="goBack"
+        >
+          취소
+        </button>
+
+        <button
+          type="button"
+          class="submit-btn"
+          :disabled="isSaving"
+          @click="saveNote"
+        >
+          {{ isSaving ? (isEditMode ? '수정 중...' : '저장 중...') : (isEditMode ? '노트 수정하기' : '노트 저장하기') }}
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -144,7 +166,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PageNav from '../components/common/PageNav.vue'
-import { getNoteWriteForm, createNote } from '@/api/noteApi'
+import { getNoteWriteForm, createNote, getNoteUpdateForm, updateNote } from '@/api/noteApi'
 
 const route = useRoute()
 const router = useRouter()
@@ -157,22 +179,48 @@ const memo = ref('')
 const scores = ref([])
 const isSaving = ref(false)
 
-const navLinks = computed(() => [
-  { label: '홈', to: '/' },
-  { label: drink.value.drinkName || '노트 작성', to: route.fullPath, active: true }
-])
+const isEditMode = computed(() => !!route.params.noteId)
+const drinkId = computed(() => Number(route.params.drinkId))
+const noteId = computed(() => Number(route.params.noteId))
 
-const fetchNoteWriteForm = async () => {
+const navLinks = computed(() => {
+  if (isEditMode.value) {
+    return [
+      { label: '홈', to: '/' },
+      { label: drink.value.drinkName || '노트 상세', to: drink.value.drinkId ? `/drinks/${drink.value.drinkId}` : '/' },
+      { label: '노트 수정', to: route.fullPath, active: true }
+    ]
+  }
+
+  return [
+    { label: '홈', to: '/' },
+    { label: drink.value.drinkName || '노트 작성', to: route.fullPath, active: true }
+  ]
+})
+
+function resetForm() {
+  drink.value = {}
+  title.value = ''
+  selectedStar.value = 1
+  uploaded.value = false
+  memo.value = ''
+  scores.value = []
+}
+
+function normalizeMetricList(metricList) {
+  return (metricList || []).map(item => ({
+    code: item.code || item.metricCode,
+    codeName: item.codeName || item.metricName,
+    value: Number(item.value ?? item.score ?? 1)
+  }))
+}
+
+async function fetchWriteForm() {
   try {
-    const drinkId = route.params.drinkId
-    const res = await getNoteWriteForm(drinkId)
+    const res = await getNoteWriteForm(drinkId.value)
 
     drink.value = res.data?.drink || {}
-    scores.value = (res.data?.metricList || []).map(item => ({
-      code: item.code,
-      codeName: item.codeName,
-      value: 1
-    }))
+    scores.value = normalizeMetricList(res.data?.metricList)
   } catch (error) {
     console.log('노트 작성 화면 데이터 조회 실패', error)
     drink.value = {}
@@ -180,34 +228,47 @@ const fetchNoteWriteForm = async () => {
   }
 }
 
-const saveNote = async () => {
-  if (!drink.value?.drinkId) {
-    alert('주류 정보가 없습니다.')
-    return
-  }
-
-  if (!title.value.trim()) {
-    alert('노트 제목을 입력해주세요.')
-    return
-  }
-
-  if (!selectedStar.value) {
-    alert('별점을 선택해주세요.')
-    return
-  }
-
-  if (!memo.value.trim()) {
-    alert('테이스팅 메모를 입력해주세요.')
-    return
-  }
-
-  if (isSaving.value) {
-    return
-  }
-
+async function fetchEditForm() {
   try {
-    isSaving.value = true
+    const res = await getNoteUpdateForm(noteId.value)
+    console.log(res.data)
 
+    const drinkData = res.data?.drink || {}
+    const noteData = res.data?.note || {}
+    const metricList = res.data?.metricList || []
+
+    drink.value = {
+      drinkId: drinkData.drinkId,
+      drinkName: drinkData.drinkName,
+      drinkNameEn: drinkData.drinkNameEn,
+      categoryName: drinkData.categoryName,
+      typeName: drinkData.typeName,
+      country: drinkData.country
+    }
+
+    title.value = noteData.title || ''
+    selectedStar.value = Number(noteData.rating ?? 1)
+    memo.value = noteData.content || ''
+    scores.value = normalizeMetricList(metricList)
+  } catch (error) {
+    console.log('노트 수정 화면 데이터 조회 실패', error)
+    alert('수정할 노트 정보를 불러오지 못했습니다.')
+  }
+}
+
+async function fetchPageData() {
+  resetForm()
+
+  if (isEditMode.value) {
+    await fetchEditForm()
+    return
+  }
+
+  await fetchWriteForm()
+}
+
+async function saveNote() {
+  try {
     const payload = {
       drinkId: drink.value.drinkId,
       title: title.value.trim(),
@@ -219,34 +280,43 @@ const saveNote = async () => {
       }))
     }
 
-    const res = await createNote(payload)
-    const noteId = res.data?.noteId
-    console.log(noteId)
-
-    alert('노트가 저장되었습니다.')
-
-    if (noteId) {
-      router.push(`/notes/${noteId}`)
+    if (isEditMode.value) {
+      await updateNote(noteId.value, payload)
+      alert('노트가 수정되었습니다.')
+      router.push(`/notes/${noteId.value}`)
       return
     }
 
-    router.push('/mypage')
+    const res = await createNote(payload)
+    const createdNoteId = res.data?.noteId
+
+    alert('노트가 저장되었습니다.')
+
+    if (createdNoteId) {
+      router.push(`/notes/${createdNoteId}`)
+    }
   } catch (error) {
     console.log('노트 저장 실패', error)
-
-    const message =
-      error.response?.data?.message ||
-      error.response?.data ||
-      '노트 저장에 실패했습니다.'
-
-    alert(message)
-  } finally {
-    isSaving.value = false
+    alert('저장에 실패했습니다.')
   }
 }
 
+function goBack() {
+  if (isEditMode.value && noteId.value) {
+    router.push(`/notes/${noteId.value}`)
+    return
+  }
+
+  if (drink.value?.drinkId) {
+    router.push(`/drinks/${drink.value.drinkId}`)
+    return
+  }
+
+  router.back()
+}
+
 onMounted(() => {
-  fetchNoteWriteForm()
+  fetchPageData()
 })
 </script>
 
@@ -320,6 +390,12 @@ onMounted(() => {
   margin: 0 auto;
 }
 
+.note-top-section {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 20px;
+}
+
 .form-card {
   background: var(--white);
   border: 1px solid var(--border);
@@ -384,6 +460,14 @@ onMounted(() => {
   margin-bottom: 10px;
 }
 
+.text-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
 .star-input {
   display: flex;
   align-items: center;
@@ -412,6 +496,18 @@ onMounted(() => {
 .score-grid {
   display: grid;
   gap: 16px;
+}
+
+.empty-metric {
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  background: white;
+  font-size: 13px;
+  color: var(--muted);
 }
 
 .score-row-head {
@@ -495,45 +591,50 @@ onMounted(() => {
   color: var(--muted);
 }
 
-.write-submit-row {
-  grid-column: 1 / -1;
+.submit-row {
   display: flex;
   justify-content: flex-end;
+  gap: 10px;
 }
 
-.submit-btn {
+.submit-btn,
+.cancel-btn {
   padding: 14px 24px;
-  border: none;
   border-radius: 8px;
-  background: var(--point);
-  color: white;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
 }
 
-.text-input {
-  width: 100%;
-  padding: 12px 14px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  font-size: 14px;
-  outline: none;
+.submit-btn {
+  border: none;
+  background: var(--point);
+  color: white;
 }
 
-.text-input:focus {
-  border-color: #7c3aed;
+.cancel-btn {
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--sub);
 }
 
-.note-top-section {
-  display: grid;
-  grid-template-columns: 280px 1fr;
-  gap: 20px;
+.submit-btn:disabled,
+.cancel-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
 }
 
-.empty-metric {
-  font-size: 13px;
-  color: var(--muted);
-  padding: 8px 0;
+@media (max-width: 900px) {
+  .write-hero {
+    padding: 24px 20px;
+  }
+
+  .write-single {
+    padding: 20px 16px 36px;
+  }
+
+  .note-top-section {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

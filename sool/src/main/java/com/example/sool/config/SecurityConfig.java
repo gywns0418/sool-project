@@ -110,10 +110,10 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // Vue 개발 서버 주소 허용
+        // Vue 서버 주소 허용
         config.setAllowedOrigins(List.of("http://localhost:5173"));
         // 허용할 HTTP 메서드
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE"));
         // 모든 헤더 허용
         config.setAllowedHeaders(List.of("*"));
         // 세션 쿠키 전달 허용

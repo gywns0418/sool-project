@@ -66,6 +66,21 @@ public class DrinkService {
         return drinkMapper.findByDrinkId(drinkId);
     }
 
+    //노트 아이디로 주류 정보
+    public DrinkDto findDrinkByNoteId(Integer noteId){
+        return drinkMapper.findByDrinkId(noteId);
+    }
+
+
+
+
+
+
+
+
+
+
+
     public int insertDrink(DrinkDto drinkDTO) {
         return drinkMapper.insertDrink(drinkDTO);
     }

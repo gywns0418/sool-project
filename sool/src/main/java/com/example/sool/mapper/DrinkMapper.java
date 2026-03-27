@@ -28,6 +28,17 @@ public interface DrinkMapper {
     //주류 디테일 이동
     DrinkDto findByDrinkId(Integer drinkId);
 
+    //노트 아이디로 주류 정보
+    DrinkDto findDrinkByNoteId(Integer noteId);
+
+
+
+
+
+
+
+
+
     int insertDrink(DrinkDto drinkDTO);
 
     List<DrinkDto> drinkAll();
