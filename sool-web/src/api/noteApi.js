@@ -26,6 +26,9 @@ export function updateNote(noteId, params) {
   return api.put(`/notes/edit/${noteId}`, params)
 }
 
+export function deleteNote(noteId){
+  return api.post(`/notes/delete/${noteId}`)
+}
 
 
 /* **************************************** */

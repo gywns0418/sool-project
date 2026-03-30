@@ -60,6 +60,17 @@ public class ReportController {
         return ResponseEntity.ok(result);
     }
 
+    //신고 목록 조회
+    @GetMapping("/myReport")
+    public ResponseEntity<List<ReportDto>> myReport(Authentication authentication){
+
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        int userId = userDetails.getUserId();
+        
+        List<ReportDto> reportlist = reportService.getReportList(userId);
+        
+        return ResponseEntity.ok(reportlist);
+    }
 
     //신고 정보 확인
     private void validateReportRequest(ReportDto dto) {
@@ -84,4 +95,6 @@ public class ReportController {
         result.put("message", e.getMessage());
         return result;
     }
+
+
 }

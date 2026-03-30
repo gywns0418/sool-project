@@ -65,13 +65,22 @@
     </update>
 
 
-    <!-- 댓글 삭제 -->
-    <update id="deleteComment">
+    <!-- 댓글 삭제(t) -->
+    <update id="deleteComment" parameterType="int">
         UPDATE comment
         SET
             is_deleted = 'Y',
-            deleted_at = NOW()
+            updated_at = NOW()
         WHERE comment_id = #{commentId}
+    </update>
+
+    <!-- 노트 삭제시 댓글 전체 삭제-->
+    <update id="deleteAllComment" parameterType="int">
+        UPDATE comment
+        SET
+            is_deleted = 'Y',
+            updated_at = NOW()
+        WHERE note_id = #{noteId}
     </update>
 
 

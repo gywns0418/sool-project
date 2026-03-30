@@ -1,29 +1,54 @@
 <template>
   <div class="my-note-card">
-    <router-link class="my-note-link" :to="`/notes/${item.id}`">
-      <div class="mn-thumb">{{ item.emoji }}</div>
+    <router-link class="my-note-link" :to="`/notes/${displayItem.noteId}`">
+      <div class="mn-thumb">{{ displayItem.emoji }}</div>
       <div class="mn-content">
-        <div class="mn-drink">{{ item.category }}</div>
-        <div class="mn-title">{{ item.title }}</div>
-        <div class="mn-date">{{ item.date }}</div>
+        <div class="mn-drink">{{ displayItem.typeName }}</div>
+        <div class="mn-title">{{ displayItem.title }}</div>
+        <div class="mn-date">{{ formatDate(displayItem.createdAt) }}</div>
       </div>
     </router-link>
     <div class="mn-actions">
-      <button class="mn-btn" @click="$emit('edit', item)">수정</button>
-      <button class="mn-btn del" @click="$emit('delete', item.id)">삭제</button>
+      <button class="mn-btn" @click="$emit('edit', displayItem.noteId)">수정</button>
+      <button class="mn-btn del" @click="$emit('delete', displayItem.noteId)">삭제</button>
     </div>
   </div>
 </template>
 
 <script setup>
+import { computed } from 'vue'
+import { categories } from '@/mock/soolData'
+
 defineEmits(['edit', 'delete'])
 
-defineProps({
+const props = defineProps({
   item: {
     type: Object,
     required: true
   }
 })
+
+const displayItem = computed(() => {
+  const categoryData =
+    categories.find(e => e.name === props.item.categoryCode)
+
+  return {
+    ...props.item,
+    emoji: categoryData ? categoryData.emoji : '🍹'
+  }
+})
+
+function formatDate(value) {
+  if (!value) return ''
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}.${month}.${day}`
+}
 </script>
 
 <style scoped>

@@ -20,4 +20,9 @@ public class ReportDto {
     private LocalDateTime updatedAt;
     private String isDeleted;
 
+    private String reportStatus;
+    private String reportReason;
+    private String noteTitle;
+    private String commentContent;
+
 }

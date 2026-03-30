@@ -33,11 +33,12 @@ public class ReportService {
     }
 
 
+    public List<ReportDto> getReportList(int userId) {
+        return reportMapper.selectReportByUserid(userId);
+    }
+
     //아직 사용 X
 
-    public ReportDto selectReportById(int report_id) {
-        return reportMapper.selectReportById(report_id);
-    }
 
     public List<ReportDto> selectReportList() {
         return reportMapper.selectReportList();

@@ -156,4 +156,21 @@ public class TastingNoteController {
 
         return ResponseEntity.ok("수정 완료");
     }
+
+    @PostMapping("/notes/delete/{noteId}")
+    public ResponseEntity<?> deleteNote(@PathVariable int noteId, Authentication authentication) {
+        if (authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "로그인이 필요합니다."));
+        }
+
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        try {
+            tastingNoteService.deleteNote(noteId, userDetails.getUserId());
+            return ResponseEntity.ok("노트가 삭제되었습니다.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

@@ -5,11 +5,15 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.sool.dto.CommentDto;
 import com.example.sool.dto.CommonCodeDto;
 import com.example.sool.dto.DrinkDto;
+import com.example.sool.dto.LikeDto;
 import com.example.sool.dto.NoteSearchDto;
 import com.example.sool.dto.TastingNoteDto;
 import com.example.sool.dto.TastingNoteMetricDto;
+import com.example.sool.mapper.CommentMapper;
+import com.example.sool.mapper.LikeMapper;
 import com.example.sool.mapper.TastingNoteMapper;
 import com.example.sool.mapper.TastingNoteMetricMapper;
 
@@ -18,12 +22,16 @@ public class TastingNoteService {
     private final TastingNoteMapper tastingNoteMapper;
     private final TastingNoteMetricMapper tastingNoteMetricMapper;
     private final DrinkService drinkService;
+    private final LikeMapper likeMapper;
+    private final CommentMapper commentMapper;
 
     public TastingNoteService(TastingNoteMapper tastingNoteMapper,TastingNoteMetricMapper tastingNoteMetricMapper,
-            DrinkService drinkService){
+            DrinkService drinkService, LikeMapper likeMapper, CommentMapper commentMapper){
         this.tastingNoteMapper = tastingNoteMapper;
         this.tastingNoteMetricMapper = tastingNoteMetricMapper;
         this.drinkService = drinkService;
+        this.likeMapper = likeMapper;
+        this.commentMapper = commentMapper;
     }
 
     //테이스팅 노트
@@ -103,7 +111,6 @@ public class TastingNoteService {
         dto.setContent(dto.getContent().trim());
 
         tastingNoteMapper.insertTastingNote(dto);
-        System.out.println("insert 후 noteId = " + dto.getNoteId());
 
         if (dto.getMetricList() != null && !dto.getMetricList().isEmpty()) {
             for (TastingNoteMetricDto metric : dto.getMetricList()) {
@@ -143,6 +150,33 @@ public class TastingNoteService {
         }
 
         return dto.getNoteId();
+    }
+
+    //노트 삭제
+    @Transactional
+    public void deleteNote(int noteId, int userId) {
+
+        TastingNoteDto note = tastingNoteMapper.findByNoteId(noteId);
+
+        if (note == null || "Y".equals(note.getIsDeleted())) {
+            throw new IllegalArgumentException("존재하지 않는 테이스팅 노트입니다.");
+        }
+
+        if (!note.getUserId().equals(userId)) {
+            throw new IllegalArgumentException("본인이 작성한 노트만 삭제할 수 있습니다.");
+        }
+
+        //좋아요 삭제
+        likeMapper.deleteAllLike("NOTE",noteId);
+
+        //댓글 삭제
+        commentMapper.deleteAllComment(noteId);
+
+        // 맛 프로파일 삭제
+        tastingNoteMetricMapper.deleteByNoteId(noteId);
+
+        // 노트 삭제
+        tastingNoteMapper.deleteTastingNote(noteId);
     }
 
     //노트 유효성 검사

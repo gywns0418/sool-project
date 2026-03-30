@@ -7,7 +7,14 @@
 
       <div class="name2">{{ item.drinkName }}</div>
 
-      <div class="abv2">{{ item.abv }}%</div>
+      <div class="info-list">
+          <span v-if="item.abv !== null && item.abv !== undefined">
+            도수 {{ item.abv }}%
+          </span>
+          <span v-if="item.price !== null && item.price !== undefined">
+            {{ formatPrice(item.price) }}
+          </span>
+      </div>
 
       <div class="meta2">
         <span class="stars2">★{{ item.avgRating ?? "-" }}</span>
@@ -62,6 +69,11 @@ const emoji = computed(() => {
   const data = categories.find((e) => e.name === props.item.categoryCode)
   return data ? data.emoji : "🍹"
 })
+
+
+function formatPrice(value) {
+  return `${Number(value).toLocaleString()}원`
+}
 
 const toggleLike = async () => {
   const drinkId = props.item.drinkId
@@ -173,5 +185,23 @@ const toggleLike = async () => {
   border-color: var(--point);
   color: var(--point);
   background: #fdf3ef;
+}
+
+.info-list {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.info-list span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #f8f4ef;
+  color: #7a5c45;
+  font-size: 12px;
 }
 </style>

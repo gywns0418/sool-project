@@ -46,14 +46,45 @@
         AND is_deleted = 'N'
     </select>
 
-    <!-- 신고 단건 조회 -->
-    <select id="selectReportById" parameterType="int" resultType="com.example.sool.dto.ReportDto">
-        SELECT *
-        FROM report
-        WHERE report_id = #{report_id}
-        AND is_deleted = 'N'
+    <!-- 마이페이지 신고 조회 -->
+    <select id="selectReportByUserid" parameterType="int" resultType="com.example.sool.dto.ReportDto">
+        SELECT 
+            r.*,
+            cc1.code_name AS reportStatus,
+            cc2.code_name AS reportReason,
+
+            tn.title AS noteTitle,
+            c.content AS commentContent
+
+        FROM report r
+        
+        LEFT JOIN common_code cc1
+            ON r.status_code = cc1.code
+            AND cc1.group_code = 'REPORT_STATUS'
+            AND cc1.use_yn = 'Y'
+
+        LEFT JOIN common_code cc2
+            ON r.reason_code = cc2.code
+            AND cc2.group_code = 'REPORT_REASON'
+            AND cc2.use_yn = 'Y'
+
+        LEFT JOIN tasting_note tn
+            ON r.obj_type = 'NOTE'
+            AND r.obj_id = tn.note_id
+
+        LEFT JOIN comment c
+            ON r.obj_type = 'COMMENT'
+            AND r.obj_id = c.comment_id
+
+        WHERE r.user_id = #{userId}
+        AND r.is_deleted = 'N'
+
+        ORDER BY r.created_at DESC
     </select>
 
+
+
+    
     <!-- 신고 전체 조회 -->
     <select id="selectReportList" resultType="com.example.sool.dto.ReportDto">
         SELECT *

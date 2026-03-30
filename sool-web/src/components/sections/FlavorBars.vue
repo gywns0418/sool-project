@@ -1,13 +1,20 @@
 <template>
   <div class="flavor-block">
     <h4>평균 맛 프로파일</h4>
-    <div v-for="item in avgMetric" :key="item.metricCode" class="flavor-row">
-      <span class="flavor-label" :class="{ yellow: yellow }">{{ item.metricName }}</span>
-      <div class="flavor-bar-bg">
-        <div class="flavor-bar-fill" :class="{ yellow: yellow }" :style="{ width: (item.avgScore / 5) * 100 + '%' }"></div>
+    <template v-if="avgMetric.length > 0">
+      <div v-for="item in avgMetric" :key="item.metricCode" class="flavor-row">
+        <span class="flavor-label" :class="{ yellow: yellow }">{{ item.metricName }}</span>
+        <div class="flavor-bar-bg">
+          <div class="flavor-bar-fill" :class="{ yellow: yellow }" :style="{ width: (item.avgScore / 5) * 100 + '%' }"></div>
+        </div>
+        <span class="flavor-val">{{ item.avgScore }}</span>
       </div>
-      <span class="flavor-val">{{ item.avgScore }}</span>
+    </template>
+
+    <div v-else class="nd-flavor-empty">
+      등록된 맛 프로파일이 없습니다.
     </div>
+
   </div>
 </template>
 
@@ -76,5 +83,17 @@ defineProps({
   color: var(--ink);
   width: 18px;
   text-align: right;
+}
+
+.nd-flavor-empty {
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  font-size: 13px;
+  color: var(--muted);
 }
 </style>

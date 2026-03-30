@@ -15,12 +15,18 @@ public interface CommentMapper {
     //특정 노트의 댓글 목록 조회
     List<CommentDto> findByNoteId(Integer noteId);
 
+    //댓글 삭제
+    int deleteComment(Integer commentId);
+
+    //노트 삭제시 댓글 전체 삭제
+    int deleteAllComment(Integer noteId);
+
 
     List<CommentDto> findByParentCommentId(Integer parentCommentId);
 
     int updateComment(CommentDto commentDto);
 
-    int deleteComment(Integer commentId);
+
 
     List<CommentDto> findByUserId(Integer userId);
 }

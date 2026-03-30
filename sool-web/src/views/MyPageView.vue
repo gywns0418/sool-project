@@ -38,14 +38,12 @@
       </aside>
 
       <main class="my-main">
-        <MyNotesSection
-          v-if="activeTab === 'notes'"
-          :note-list="noteList"
+        <MyNotesSection v-if="activeTab === 'notes'"
           @edit="editNote"
           @delete="deleteNote"
         />
 
-        <MyLikedDrinksSection v-else-if="activeTab === 'likes'" />
+        <MyLikedDrinksSection v-else-if="activeTab === 'likes'" @refreshSidebar="fetchSidebarInfo"/>
 
         <MyProfileSection
           v-else-if="activeTab === 'profile'"
@@ -69,12 +67,10 @@ import MyLikedDrinksSection from '../components/mypage/MyLikedSection.vue'
 import MyProfileSection from '../components/mypage/MyProfileSection.vue'
 import MyReportsSection from '../components/mypage/MyReportsSection.vue'
 
-import { myNotes } from '../mock/soolData'
 import { getMySidebarInfo } from '@/api/mypageApi'
 
 const router = useRouter()
 const activeTab = ref('notes')
-const noteList = ref([...myNotes])
 
 const sidebarInfo = ref({
   name: '',

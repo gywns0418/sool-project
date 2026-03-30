@@ -16,7 +16,7 @@ public interface ReportMapper {
 
     int existsReport(ReportDto reportDto);
 
-    ReportDto selectReportById(int report_id);
+    List<ReportDto> selectReportByUserid(int userId);
 
     List<ReportDto> selectReportList();
 

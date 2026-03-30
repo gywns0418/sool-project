@@ -96,7 +96,7 @@ import { useAuthStore } from '@/stores/authStore'
 import PageNav from '../components/common/PageNav.vue'
 import CommentItem from '../components/cards/CommentItem.vue'
 import { categories, comments } from '../mock/soolData'
-import { getNoteDetail } from '@/api/noteApi'
+import { getNoteDetail, deleteNote } from '@/api/noteApi'
 import { getNoteLike, insertNoteLike, deleteNoteLike } from '@/api/likeApi'
 import ReportModal from '../components/common/ReportModal.vue'
 

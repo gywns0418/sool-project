@@ -4,7 +4,11 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
+import com.example.sool.dto.DrinkDto;
 import com.example.sool.dto.LikeDto;
+import com.example.sool.dto.TastingNoteDto;
+
+import io.lettuce.core.dynamic.annotation.Param;
 
 @Mapper
 public interface LikeMapper {
@@ -15,5 +19,9 @@ public interface LikeMapper {
 
     int deleteLike(LikeDto likeDto);
 
-    List<LikeDto> findByUserId(Integer userId);
+    int deleteAllLike(@Param("objType") String objType, @Param("objId") int objId);
+
+    List<DrinkDto> findLikedDrinkList(Integer userId);
+
+    List<TastingNoteDto> findLikedNoteList(Integer userId);
 }
