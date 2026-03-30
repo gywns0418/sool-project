@@ -121,21 +121,14 @@
     </update>
 
 
-
-
-
-
-
-
-
-
     <!-- 회원 삭제 -->
     <update id="deleteUser" parameterType="int">
         UPDATE user
         SET
             is_deleted = 'Y',
-            deleted_at = NOW()
+            updated_at = NOW()
         WHERE user_id = #{userId}
     </update>
+
 
 </mapper>

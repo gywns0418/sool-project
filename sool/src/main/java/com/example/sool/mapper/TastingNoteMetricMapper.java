@@ -23,5 +23,5 @@ public interface TastingNoteMetricMapper {
 
     int deleteByNoteId(Integer noteId);
 
-    
+    int deleteByUserId(Integer userId);
 }

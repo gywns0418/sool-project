@@ -26,8 +26,13 @@ public interface TastingNoteMapper {
     //노트 수정 노트 정보 가져오기
     TastingNoteDto findByNoteId(Integer noteId);
 
+    //노트 수정
+    int updateTastingNote(TastingNoteDto tastingNoteDto);
+    //노트 삭제
+    int deleteTastingNote(Integer noteId);
 
-
+    //회원 삭제 시 노트 삭제
+    int deleteByUserId(Integer userId);
 
 
 
@@ -35,9 +40,7 @@ public interface TastingNoteMapper {
 
     List<TastingNoteDto> orderByRatingDesc(Integer drinkId);
 
-    int updateTastingNote(TastingNoteDto tastingNoteDto);
 
-    int deleteTastingNote(Integer noteId);
 
     List<TastingNoteDto> findByUserId(Integer userId);
 }

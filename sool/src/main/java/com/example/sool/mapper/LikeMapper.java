@@ -24,4 +24,6 @@ public interface LikeMapper {
     List<DrinkDto> findLikedDrinkList(Integer userId);
 
     List<TastingNoteDto> findLikedNoteList(Integer userId);
+
+    int deleteByUserId(Integer userId);
 }

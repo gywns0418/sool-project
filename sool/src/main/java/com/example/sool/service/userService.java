@@ -7,6 +7,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.sool.dto.UserDto;
+import com.example.sool.mapper.CommentMapper;
+import com.example.sool.mapper.ImageMapper;
+import com.example.sool.mapper.LikeMapper;
+import com.example.sool.mapper.TastingNoteMapper;
+import com.example.sool.mapper.TastingNoteMetricMapper;
 import com.example.sool.mapper.UserMapper;
 
 @Service
@@ -14,10 +19,21 @@ public class UserService {
 
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final LikeMapper likeMapper;
+    private final CommentMapper commentMapper;
+    private final TastingNoteMetricMapper tastingNoteMetricMapper;
+    private final TastingNoteMapper tastingNoteMapper;
+    private final ImageMapper imageMapper;
 
-    public UserService(UserMapper userMapper, PasswordEncoder passwordEncoder) {
+    public UserService(UserMapper userMapper, PasswordEncoder passwordEncoder, LikeMapper likeMapper, CommentMapper commentMapper,
+                        TastingNoteMetricMapper tastingNoteMetricMapper, TastingNoteMapper tastingNoteMapper,ImageMapper imageMapper) {
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder ;
+        this.likeMapper = likeMapper;
+        this.commentMapper = commentMapper;
+        this.tastingNoteMetricMapper = tastingNoteMetricMapper;
+        this.tastingNoteMapper = tastingNoteMapper;
+        this.imageMapper = imageMapper;
     }
 
     public UserDto findByLoginId(String loginId) {
@@ -72,25 +88,33 @@ public class UserService {
         
         userMapper.updateUserPassword(dto);
     }
-
-
-
-
-
-    public List<UserDto> selectUserList() {
-        return userMapper.selectUserList();
-    }
-
-    public int updateUser(UserDto userDto) {
-        return userMapper.updateUser(userDto);
-    }
-
+    
     public int updateUserPassword(UserDto userDto) {
         userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
         return userMapper.updateUserPassword(userDto);
     }
 
+
+    //유저 삭제
+    @Transactional
     public int deleteUser(int userId) {
+        //좋아요 삭제
+        likeMapper.deleteByUserId(userId);
+
+        //댓글 삭제
+        commentMapper.deleteByUserId(userId);
+
+        //노트 이미지 삭제
+        imageMapper.deleteImageByUserId(userId);
+
+        //노트의 맛 프로파일 삭제
+        tastingNoteMetricMapper.deleteByUserId(userId);
+
+        //노트 삭제
+        tastingNoteMapper.deleteByUserId(userId);
+
+        //회원 삭제
         return userMapper.deleteUser(userId);
     }
+
 }

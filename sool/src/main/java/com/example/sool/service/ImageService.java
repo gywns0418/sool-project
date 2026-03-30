@@ -39,10 +39,6 @@ public class ImageService {
         return imageMapper.selectImageById(image_id);
     }
 
-    public List<ImageDto> selectImageListByUserId(int user_id) {
-        return imageMapper.selectImageListByUserId(user_id);
-    }
-
     public List<ImageDto> selectImageListByNoteId(int note_id) {
         return imageMapper.selectImageListByNoteId(note_id);
     }

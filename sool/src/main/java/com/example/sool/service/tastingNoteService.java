@@ -5,10 +5,8 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.sool.dto.CommentDto;
 import com.example.sool.dto.CommonCodeDto;
 import com.example.sool.dto.DrinkDto;
-import com.example.sool.dto.LikeDto;
 import com.example.sool.dto.NoteSearchDto;
 import com.example.sool.dto.TastingNoteDto;
 import com.example.sool.dto.TastingNoteMetricDto;

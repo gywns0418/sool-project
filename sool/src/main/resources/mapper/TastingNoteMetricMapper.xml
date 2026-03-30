@@ -98,6 +98,16 @@
         WHERE note_id = #{noteId}
     </delete>
 
+    <!-- 회원 삭제 시 맛 점수 삭제 -->
+    <delete id="deleteByUserId" >
+        DELETE FROM tasting_note_metric
+        WHERE note_id IN (
+            SELECT note_id
+            FROM tasting_note
+            WHERE user_id = #{userId}
+        )
+    </delete>
+
 
 
 </mapper>

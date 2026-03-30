@@ -205,4 +205,12 @@
         ORDER BY tn.created_at DESC
     </select>
 
+    <!--회원 탈퇴 시 노트 삭제-->
+    <update id="deleteByUserId">
+        UPDATE tasting_note
+        SET
+            is_deleted = 'Y',
+            updated_at = NOW()
+        WHERE user_id = #{userId}
+    </update>
 </mapper>

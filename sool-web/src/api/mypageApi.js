@@ -15,13 +15,13 @@ export const updateMyPassword = (data) => {
   })
 }
 
-export const checkLoginIdDuplicateApi = (loginId) => {
+export const checkLoginIdApi = (loginId) => {
   return api.get('/user/check-loginId', {
     params: { loginId }
   })
 }
 
-export const checkEmailDuplicateApi = (email) => {
+export const checkEmailApi = (email) => {
   return api.get('/user/check-email', {
     params: { email }
   })
@@ -51,4 +51,9 @@ export function deleteMyLike(data) {
 //마이페이지 신고목록
 export const getMyReports = () => {
   return api.get('/report/myReport')
+}
+
+//회원 탈퇴
+export function deleteUser(){
+  return api.post('/mypage/users/delete')
 }

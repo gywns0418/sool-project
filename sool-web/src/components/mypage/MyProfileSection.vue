@@ -182,8 +182,8 @@ import { reactive, ref, computed, watch } from 'vue'
 import {
   updateMyProfile,
   updateMyPassword,
-  checkLoginIdDuplicateApi,
-  checkEmailDuplicateApi
+  checkLoginIdApi,
+  checkEmailApi
 } from '@/api/mypageApi'
 
 const props = defineProps({
@@ -338,7 +338,7 @@ async function checkLoginIdDuplicate() {
   }
 
   try {
-    const res = await checkLoginIdDuplicateApi(profileForm.loginId)
+    const res = await checkLoginIdApi(profileForm.loginId)
 
     if (res.data.available) {
       loginIdChecked.value = true
@@ -370,7 +370,7 @@ async function checkEmailDuplicate() {
   }
 
   try {
-    const res = await checkEmailDuplicateApi(profileForm.email)
+    const res = await checkEmailApi(profileForm.email)
 
     if (res.data.available) {
       emailChecked.value = true

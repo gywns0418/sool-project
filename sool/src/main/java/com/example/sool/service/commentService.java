@@ -37,8 +37,4 @@ public class CommentService {
     public int deleteComment(Integer commentId) {
         return commentMapper.deleteComment(commentId);
     }
-
-    public List<CommentDto> findByUserId(Integer userId) {
-        return commentMapper.findByUserId(userId);
-    }
 }

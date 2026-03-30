@@ -10,6 +10,7 @@ import LoginView from "@/views/auth/LoginView.vue"
 import SignupView from "@/views/auth/SignupView.vue"
 import FindIdView from "@/views/auth/FindIdView.vue"
 import ResetPasswordView from "@/views/auth/ResetPasswordView.vue"
+import NotFoundView from "@/views/NotFoundView.vue"
 
 const routes = [
   { path: "/", name: "home", component: HomeView },
@@ -22,7 +23,8 @@ const routes = [
   { path: "/login", name: "login", component: LoginView },
   { path: "/signup", name: "signup", component: SignupView },
   { path: "/find-id", name: "find-id", component: FindIdView },
-  { path: "/reset-password", name: "reset-password", component: ResetPasswordView }
+  { path: "/reset-password", name: "reset-password", component: ResetPasswordView },
+  { path: "/:pathMatch(.*)*", name: "not-found", component: NotFoundView }
 ]
 
 const router = createRouter({

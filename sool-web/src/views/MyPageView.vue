@@ -59,6 +59,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
+import { useAuthStore } from '@/stores/authStore'
 import PageNav from '../components/common/PageNav.vue'
 
 import MyNotesSection from '../components/mypage/MyNotesSection.vue'
@@ -66,8 +67,9 @@ import MyLikedDrinksSection from '../components/mypage/MyLikedSection.vue'
 import MyProfileSection from '../components/mypage/MyProfileSection.vue'
 import MyReportsSection from '../components/mypage/MyReportsSection.vue'
 
-import { getMySidebarInfo } from '@/api/mypageApi'
+import { getMySidebarInfo, deleteUser } from '@/api/mypageApi'
 
+const authStore = useAuthStore()
 const router = useRouter()
 const activeTab = ref('notes')
 
@@ -91,11 +93,15 @@ const navLinks = [
 const handleUserDelete = async () => {
   if (!confirm('정말 회원을 탈퇴하시겠습니까?')) return
 
-  try{
-    //const res = await deleteUser()
+  try {
+    await deleteUser()
 
-  }catch(error){
-    console.log('회원탈퇴 실패', e)
+    alert('회원 탈퇴가 완료되었습니다.')
+    await authStore.logout()
+    router.replace('/')
+
+  } catch (error) {
+    console.log('회원탈퇴 실패', error)
   }
 }
 

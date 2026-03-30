@@ -64,9 +64,8 @@
         AND is_deleted = 'N'
     </update>
 
-
     <!-- 댓글 삭제(t) -->
-    <update id="deleteComment" parameterType="int">
+    <update id="deleteComment">
         UPDATE comment
         SET
             is_deleted = 'Y',
@@ -75,7 +74,7 @@
     </update>
 
     <!-- 노트 삭제시 댓글 전체 삭제-->
-    <update id="deleteAllComment" parameterType="int">
+    <update id="deleteAllComment">
         UPDATE comment
         SET
             is_deleted = 'Y',
@@ -83,14 +82,13 @@
         WHERE note_id = #{noteId}
     </update>
 
-
-    <!-- 특정 사용자가 작성한 댓글 조회 -->
-    <select id="findByUserId" resultType="com.example.sool.dto.CommentDto">
-        SELECT *
-        FROM comment
+    <!-- 회원 탈퇴 시 댓글 삭제-->
+    <update id="deleteByUserId">
+        UPDATE comment
+        SET
+            is_deleted = 'Y',
+            updated_at = NOW()
         WHERE user_id = #{userId}
-        AND is_deleted = 'N'
-        ORDER BY created_at DESC
-    </select>
+    </update>
 
 </mapper>

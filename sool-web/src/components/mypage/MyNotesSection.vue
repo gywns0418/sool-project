@@ -1,7 +1,7 @@
 <template>
   <div>
     <h2 class="my-main-title">내 테이스팅 노트</h2>
-    <div class="my-notes-grid">
+    <div v-if="noteList.length > 0" class="my-notes-grid">
       <MyNoteCard
         v-for="note in noteList"
         :key="note.noteId"
@@ -10,6 +10,8 @@
         @delete="handleDeleteNote"
       />
     </div>
+
+    <p v-else class="empty-text">작성한 노트가 없습니다.</p>
   </div>
 </template>
 
@@ -82,5 +84,15 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
+}
+
+.empty-text {
+  padding: 24px 16px;
+  border: 1px dashed #d8cfc6;
+  border-radius: 14px;
+  text-align: center;
+  color: #9a8f84;
+  font-size: 14px;
+  background: #fcfaf7;
 }
 </style>

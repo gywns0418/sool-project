@@ -110,4 +110,10 @@
         WHERE obj_id = #{objId}
           AND obj_type = #{objType}
     </delete>
+
+    <!--회원 삭제 시 좋아요 삭제-->
+    <delete id="deleteByUserId">
+        DELETE FROM `like`
+        WHERE user_id = #{userId}
+    </delete>
 </mapper>

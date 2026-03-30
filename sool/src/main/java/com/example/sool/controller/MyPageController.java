@@ -13,13 +13,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.sool.dto.LikeDto;
 import com.example.sool.dto.TastingNoteDto;
 import com.example.sool.dto.UserDto;
 import com.example.sool.security.CustomUserDetails;
 import com.example.sool.service.LikeService;
 import com.example.sool.service.TastingNoteService;
 import com.example.sool.service.UserService;
+
+import jakarta.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("/api/mypage")
@@ -81,5 +82,20 @@ public class MyPageController {
         userService.updateMyPassword(userId, currentPassword, newPassword);
 
         return ResponseEntity.ok("비밀번호가 변경되었습니다.");
+    }
+
+    @PostMapping("/users/delete")
+    public ResponseEntity<?> deleteUser(HttpSession session, Authentication authentication) {
+        if (authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        Integer userId = userDetails.getUserId();
+
+        userService.deleteUser(userId);
+
+        session.invalidate();
+        return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
     }
 }
