@@ -28,14 +28,17 @@ public class DrinkService {
 
         String key = "drink:top4";
         
+        //redis 데이터 확인
         List<DrinkDto> cached = (List<DrinkDto>) redisTemplate.opsForValue().get(key);
         
         if(cached != null){
             return cached;
         }
 
+        //redis에 데이터 없을 때 주류 top4
         List<DrinkDto> list = drinkMapper.drinkTop();
 
+        //redis에 데이터 삽입
         redisTemplate.opsForValue().set(key, list, Duration.ofMinutes(10));
 
         return list;
@@ -68,7 +71,7 @@ public class DrinkService {
 
     //노트 아이디로 주류 정보
     public DrinkDto findDrinkByNoteId(Integer noteId){
-        return drinkMapper.findByDrinkId(noteId);
+        return drinkMapper.findDrinkByNoteId(noteId);
     }
 
 

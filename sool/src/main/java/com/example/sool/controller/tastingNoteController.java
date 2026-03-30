@@ -122,9 +122,10 @@ public class TastingNoteController {
     //노트 수정 기본 정보 
     @GetMapping("/notes/edit/{noteId}")
     public ResponseEntity<Map<String, Object>> getNoteUpdateForm(@PathVariable int noteId) {
+        
         //노트수정 주류 기본 정보 
         DrinkDto drink = drinkService.findDrinkByNoteId(noteId);
-
+        
         //노트 수정 노트 기본 정보
         TastingNoteDto note = tastingNoteService.findByNoteId(noteId);
 
@@ -139,7 +140,7 @@ public class TastingNoteController {
         return ResponseEntity.ok(result);
     }
     
-    @PutMapping("/notes/edit/{noteId}")
+    @PostMapping("/notes/edit/{noteId}")
     public ResponseEntity<?> updateNote(@PathVariable int noteId, 
                     @RequestBody TastingNoteDto dto, Authentication authentication) {
         

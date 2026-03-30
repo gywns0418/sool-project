@@ -22,8 +22,8 @@ public class RedisConfig {
         return new StringRedisTemplate(connectionFactory);
     }
 
-    //객체 캐시용(주류 TOP4)
     
+    //객체 캐시용(주류 TOP4)
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory){
 

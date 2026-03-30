@@ -23,7 +23,7 @@ export const getNoteUpdateForm = (noteId) => {
 }
 
 export function updateNote(noteId, params) {
-  return api.put(`/notes/edit/${noteId}`, params)
+  return api.post(`/notes/edit/${noteId}`, params)
 }
 
 export function deleteNote(noteId){
