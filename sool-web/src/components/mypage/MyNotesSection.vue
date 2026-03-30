@@ -6,8 +6,8 @@
         v-for="note in noteList"
         :key="note.noteId"
         :item="note"
-        @edit="$emit('edit', note.noteId)"
-        @delete="$emit('delete', note.noteId)"
+        @edit="handleEditNote"
+        @delete="handleDeleteNote"
       />
     </div>
   </div>
@@ -15,10 +15,13 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import MyNoteCard from './card/MyNoteCard.vue'
-import { getMyTastingNote } from '@/api/mypageApi'
+import { getMyTastingNote, deleteMyTastingNote } from '@/api/mypageApi'
 
-defineEmits(['edit', 'delete'])
+const emit = defineEmits(['refreshSidebar'])
+
+const router = useRouter()
 
 const noteList = ref([])
 
@@ -31,6 +34,33 @@ const fetchMyTastingNote = async () => {
   } catch (error) {
     console.log('테이스팅 노트 목록 조회 실패', error)
     noteList.value = []
+  }
+}
+
+async function handleEditNote(noteId) {
+  if (!confirm('테이스팅 노트를 수정하시겠습니까?')) return
+  
+  try {
+    router.push(`/notes/${noteId}/edit`)
+  } catch (error) {
+    console.log('테이스팅 노트 수정 실패', error)
+  }
+}
+
+async function handleDeleteNote(noteId) {
+  if (!confirm('테이스팅 노트를 삭제하시겠습니까?')) return
+  
+  try {
+    await deleteMyTastingNote(noteId)
+    alert('삭제되었습니다.')
+
+    noteList.value = noteList.value.filter(
+      note => note.noteId !== noteId
+    )
+
+    emit('refreshSidebar')
+  } catch (error) {
+    console.log('테이스팅 노트 삭제 실패', error)
   }
 }
 

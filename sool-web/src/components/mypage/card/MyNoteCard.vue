@@ -3,7 +3,7 @@
     <router-link class="my-note-link" :to="`/notes/${displayItem.noteId}`">
       <div class="mn-thumb">{{ displayItem.emoji }}</div>
       <div class="mn-content">
-        <div class="mn-drink">{{ displayItem.typeName }}</div>
+        <div class="mn-drink">{{ displayItem.typeName }} - {{ displayItem.drinkName }}</div>
         <div class="mn-title">{{ displayItem.title }}</div>
         <div class="mn-date">{{ formatDate(displayItem.createdAt) }}</div>
       </div>
@@ -53,6 +53,10 @@ function formatDate(value) {
 
 <style scoped>
 .my-note-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
   background: var(--white);
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -62,6 +66,7 @@ function formatDate(value) {
 .my-note-link {
   display: flex;
   gap: 14px;
+  flex: 1;
 }
 
 .mn-thumb {

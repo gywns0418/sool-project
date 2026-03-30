@@ -33,14 +33,13 @@
             신고 목록
           </div>
           <div class="my-nav-sep"></div>
-          <div class="my-nav-item" @click="goHome">회원 탈퇴</div>
+          <div class="my-nav-item" @click="handleUserDelete">회원 탈퇴</div>
         </div>
       </aside>
 
       <main class="my-main">
         <MyNotesSection v-if="activeTab === 'notes'"
-          @edit="editNote"
-          @delete="deleteNote"
+          @refreshSidebar="fetchSidebarInfo"
         />
 
         <MyLikedDrinksSection v-else-if="activeTab === 'likes'" @refreshSidebar="fetchSidebarInfo"/>
@@ -89,14 +88,15 @@ const navLinks = [
   { label: '마이페이지', to: '/mypage', active: true }
 ]
 
-const goHome = () => router.push('/')
+const handleUserDelete = async () => {
+  if (!confirm('정말 회원을 탈퇴하시겠습니까?')) return
 
-const editNote = (item) => {
-  router.push({ path: '/notes/write', query: { noteId: item.noteId || item.id } })
-}
+  try{
+    //const res = await deleteUser()
 
-const deleteNote = (id) => {
-  noteList.value = noteList.value.filter((note) => (note.noteId || note.id) !== id)
+  }catch(error){
+    console.log('회원탈퇴 실패', e)
+  }
 }
 
 const fetchSidebarInfo = async () => {

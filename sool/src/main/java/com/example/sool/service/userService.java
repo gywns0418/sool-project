@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.sool.dto.UserDto;
 import com.example.sool.mapper.UserMapper;
@@ -46,8 +47,31 @@ public class UserService {
     }
 
 
+    //마이페이지 비밀번호 재설정
+    @Transactional
+    public void updateMyPassword(int userId, String currentPassword, String newPassword) {
 
+        if (currentPassword == null || currentPassword.trim().isEmpty()) {
+            throw new IllegalArgumentException("현재 비밀번호를 입력해주세요.");
+        }
 
+        if (newPassword == null || newPassword.trim().isEmpty()) {
+            throw new IllegalArgumentException("새 비밀번호를 입력해주세요.");
+        }
+
+        String encodedPassword = userMapper.findPasswordByUserId(userId);
+
+        if (!passwordEncoder.matches(currentPassword, encodedPassword)) {
+            throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+        }
+
+        
+        UserDto dto = new UserDto();
+        dto.setUserId(userId);
+        dto.setPassword(passwordEncoder.encode(newPassword));
+        
+        userMapper.updateUserPassword(dto);
+    }
 
 
 

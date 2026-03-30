@@ -9,7 +9,10 @@ export const updateMyProfile = (data) => {
 }
 
 export const updateMyPassword = (data) => {
-  return api.put('/mypage/password', data)
+  return api.post('/mypage/password', {
+    currentPassword: data.currentPassword,
+    newPassword: data.newPassword
+  })
 }
 
 export const checkLoginIdDuplicateApi = (loginId) => {
@@ -24,8 +27,15 @@ export const checkEmailDuplicateApi = (email) => {
   })
 }
 
+
+//마이페이지 내 테이스팅 노트
 export const getMyTastingNote = () => {
   return api.get('/mypage/myTastingNote')
+}
+
+//마이페이지 내 테이스팅 노트 삭제
+export function deleteMyTastingNote(noteId) {
+  return api.post(`/notes/delete/${noteId}`)
 }
 
 //마이페이지 좋아요

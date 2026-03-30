@@ -424,12 +424,6 @@ function validatePassword() {
     return
   }
 
-  if (koreanRegex.test(password.value)) {
-    passwordMsg.value = '비밀번호에는 한글을 사용할 수 없습니다.'
-    checkPasswordMatch()
-    return
-  }
-
   if (!passwordRegex.test(password.value)) {
     passwordMsg.value = '비밀번호는 영문 대/소문자, 숫자, 특수문자를 포함한 8~20자여야 합니다.'
   } else {

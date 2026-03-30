@@ -182,14 +182,11 @@
     </update>
 
 
-
-
-
-
     <!-- 사용자의 테이스팅 노트 -->
     <select id="findByUserId" resultType="com.example.sool.dto.TastingNoteDto">
         SELECT 
             tn.*,
+            d.drink_name AS drinkName,
             d.category_code AS categoryCode,
             cc.code_name AS typeName
         FROM tasting_note tn

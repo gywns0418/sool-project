@@ -19,14 +19,21 @@ public interface UserMapper {
 
     UserDto selectUserByEmail(String email);
 
+    //회원 비밀번호 재설정
+    int updateUserPassword(UserDto userDto);
+
     //마이페이지 사이드바
     UserDto selectMyPageSidebar(int userId);
+
+    //현재 비밀번호 일치 확인
+    String findPasswordByUserId(int userId);
+
 
     List<UserDto> selectUserList();
 
     int updateUser(UserDto userDto);
 
-    int updateUserPassword(UserDto userDto);
+
 
     int deleteUser(int userId);
 }

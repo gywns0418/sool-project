@@ -4,8 +4,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -58,5 +62,24 @@ public class MyPageController {
         Map<String, Object> result = new HashMap<>();
         result.put("noteList", noteList);
         return result;
+    }
+
+    //마이페이지 비밀번호 재설정
+    @PostMapping("/password")
+    public ResponseEntity<?> updateMyPassword(@RequestBody Map<String, String> param, Authentication authentication) {
+
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        Integer userId = userDetails.getUserId();
+
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+
+        String currentPassword = param.get("currentPassword");
+        String newPassword = param.get("newPassword");
+
+        userService.updateMyPassword(userId, currentPassword, newPassword);
+
+        return ResponseEntity.ok("비밀번호가 변경되었습니다.");
     }
 }

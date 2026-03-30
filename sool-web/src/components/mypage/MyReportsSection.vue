@@ -43,7 +43,7 @@
             </p>
 
             <p class="report-reason">
-              {{ report.reportReason  || '신고 사유 없음' }}
+              신고 사유 : {{ report.reportReason  || '신고 사유 없음' }}
             </p>
           </div>
         </article>

@@ -216,7 +216,7 @@ const passwordForm = reactive({
 
 const loginIdRegex = /^[a-zA-Z0-9]{4,20}$/
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$%^&*()_\-+=]{8,20}$/
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?])[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]{8,20}$/
 
 const loginIdValid = ref(false)
 const loginIdMsg = ref('')
@@ -286,7 +286,7 @@ function validateNewPassword() {
 
   if (!passwordRegex.test(passwordForm.newPassword)) {
     passwordValid.value = false
-    passwordMsg.value = '비밀번호는 영문+숫자 포함 8~20자리여야 합니다.'
+    passwordMsg.value = '비밀번호는 영문 대/소문자, 숫자, 특수문자를 포함한 8~20자여야 합니다.'
     validatePasswordConfirm()
     return
   }
@@ -330,6 +330,13 @@ async function checkLoginIdDuplicate() {
 
   if (!loginIdValid.value) return
 
+  if (profileForm.loginId === originalProfile.loginId) {
+    loginIdChecked.value = true
+    checkedLoginIdValue.value = profileForm.loginId
+    loginIdMsg.value = '현재 사용 중인 아이디입니다.'
+    return
+  }
+
   try {
     const res = await checkLoginIdDuplicateApi(profileForm.loginId)
 
@@ -354,6 +361,13 @@ async function checkEmailDuplicate() {
   validateEmail()
 
   if (!emailValid.value) return
+
+  if (profileForm.email === originalProfile.email) {
+    emailChecked.value = true
+    checkedEmailValue.value = profileForm.email
+    emailMsg.value = '현재 사용 중인 이메일입니다.'
+    return
+  }
 
   try {
     const res = await checkEmailDuplicateApi(profileForm.email)
@@ -387,11 +401,11 @@ function applyProfile(data) {
   validateLoginId()
   validateEmail()
 
-  loginIdChecked.value = true
+  loginIdChecked.value = !!profileForm.loginId
   checkedLoginIdValue.value = profileForm.loginId
   loginIdMsg.value = profileForm.loginId ? '현재 사용 중인 아이디입니다.' : ''
 
-  emailChecked.value = true
+  emailChecked.value = !!profileForm.email
   checkedEmailValue.value = profileForm.email
   emailMsg.value = profileForm.email ? '현재 사용 중인 이메일입니다.' : ''
 }
@@ -411,6 +425,15 @@ function resetPasswordForm() {
 }
 
 async function saveProfile() {
+  if (
+    profileForm.loginId === originalProfile.loginId &&
+    profileForm.name === originalProfile.name &&
+    profileForm.email === originalProfile.email
+  ) {
+    alert('변경된 정보가 없습니다.')
+    return
+  }
+
   validateLoginId()
   validateEmail()
 
@@ -487,6 +510,11 @@ async function savePassword() {
     return
   }
 
+  if (passwordForm.currentPassword === passwordForm.newPassword) {
+    alert('새 비밀번호는 현재 비밀번호와 다르게 입력해주세요.')
+    return
+  }
+
   passwordLoading.value = true
 
   try {
@@ -509,6 +537,7 @@ watch(
   () => props.userInfo,
   (newValue) => {
     if (!newValue) return
+    if (!newValue.loginId && !newValue.name && !newValue.email) return
 
     applyProfile(newValue)
   },

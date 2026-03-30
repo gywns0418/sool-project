@@ -116,7 +116,6 @@ public class TastingNoteService {
             for (TastingNoteMetricDto metric : dto.getMetricList()) {
                 validateMetric(metric);
                 metric.setNoteId(dto.getNoteId());
-                System.out.println(dto.getMetricList());
                 tastingNoteMetricMapper.insertMetric(metric);
             }
         }
