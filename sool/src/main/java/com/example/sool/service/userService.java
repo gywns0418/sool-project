@@ -1,7 +1,5 @@
 package com.example.sool.service;
 
-import java.util.List;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -117,4 +115,11 @@ public class UserService {
         return userMapper.deleteUser(userId);
     }
 
+    public boolean existsByEmail(String email) {
+        return userMapper.existsByEmail(email) > 0;
+    }
+
+    public int updateUser(UserDto dto){
+        return userMapper.updateUser(dto);
+    }
 }

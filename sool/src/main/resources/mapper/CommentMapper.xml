@@ -6,7 +6,50 @@
 <mapper namespace="com.example.sool.mapper.CommentMapper">
 
     <!-- 댓글 등록 -->
-    <insert id="insertComment" parameterType="com.example.sool.dto.CommentDto">
+    <insert id="insertComment" parameterType="com.example.sool.dto.CommentDto" useGeneratedKeys="true" keyProperty="commentId">
+        INSERT INTO comment
+        (
+            note_id,
+            user_id,
+            parent_comment_id,
+            group_id,
+            depth,
+            content,
+            created_at
+        )
+        VALUES
+        (
+            #{noteId},
+            #{userId},
+            #{parentCommentId},
+            0,
+            0,
+            #{content},
+            NOW()
+        )
+    </insert>
+
+    <update id="updateGroupId">
+        UPDATE comment
+        SET group_id = #{commentId}
+        WHERE comment_id = #{commentId}
+    </update>
+
+    <!-- 특정 노트의 댓글 목록 조회 -->
+    <select id="findByNoteId" parameterType="int" resultType="com.example.sool.dto.CommentDto">
+        SELECT 
+            c.*,
+            u.name AS userName,
+            u.login_id AS loginId
+        FROM comment c
+        JOIN user u
+            ON c.user_id = u.user_id
+        WHERE c.note_id = #{noteId}
+        ORDER BY c.group_id ASC, c.created_at ASC
+    </select>
+
+    <!-- 대댓글 등록 -->
+    <insert id="insertReplyComment" parameterType="com.example.sool.dto.CommentDto">
         INSERT INTO comment
         (
             note_id,
@@ -29,25 +72,11 @@
         )
     </insert>
 
-    <!-- 특정 노트의 댓글 목록 조회 -->
-    <select id="findByNoteId" parameterType="int" resultType="com.example.sool.dto.CommentDto">
-        SELECT 
-            c.*,
-            u.name
-        FROM comment c
-        JOIN user u
-            ON c.user_id = u.user_id
-        WHERE c.note_id = #{noteId}
-        AND c.is_deleted = 'N'
-        ORDER BY c.group_id ASC, c.created_at ASC
-    </select>
-
-
     <!-- 특정 댓글의 대댓글 조회 -->
-    <select id="findByParentCommentId" resultType="com.example.sool.dto.CommentDto">
+    <select id="findByCommentId" resultType="com.example.sool.dto.CommentDto">
         SELECT *
         FROM comment
-        WHERE parent_comment_id = #{parentCommentId}
+        WHERE comment_id = #{commentId}
         AND is_deleted = 'N'
         ORDER BY created_at ASC
     </select>

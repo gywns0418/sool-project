@@ -13,15 +13,21 @@ public interface TastingNoteMetricMapper {
     //카테고리 별 지표 조회
     List<CommonCodeDto> getMetricCode(Integer drinkId);
 
-    List<TastingNoteMetricDto> findAvgMetricByDrinkId(Integer drinkId);
-
+    //맛 프로파일 등록
     int insertMetric(TastingNoteMetricDto tastingNoteMetricDto);
 
+    //맛 프로파일 수정
+    int updateMetric(TastingNoteMetricDto tastingNoteMetricDto);
+    
+    //특정 노트의 맛 점수 조회
     List<TastingNoteMetricDto> findByNoteId(Integer noteId);
 
-    int updateMetric(TastingNoteMetricDto tastingNoteMetricDto);
+    //주류 디테일 평균 맛 프로파일
+    List<TastingNoteMetricDto> findAvgMetricByDrinkId(Integer drinkId);
 
+    //노트 전체 맛 점수 삭제
     int deleteByNoteId(Integer noteId);
 
+    //회원 삭제 시 맛 점수 삭제
     int deleteByUserId(Integer userId);
 }

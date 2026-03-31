@@ -30,22 +30,4 @@ public interface DrinkMapper {
 
     //노트 아이디로 주류 정보
     DrinkDto findDrinkByNoteId(Integer noteId);
-
-
-
-
-
-
-
-
-
-    int insertDrink(DrinkDto drinkDTO);
-
-    List<DrinkDto> drinkAll();
-
-    
-
-    int updateDrink(DrinkDto drinkDTO);
-
-    int deleteDrink(Integer drinkId);
 }

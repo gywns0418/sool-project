@@ -6,7 +6,7 @@
       <div class="detail-header">
         <div class="detail-img">
           <img v-if="drink?.imageUrl" :src="drink.imageUrl" alt="주류 이미지" />
-          <div v-else class="detail-placeholder">🍷</div>
+          <div v-else class="detail-placeholder">{{ drinkEmoji }}</div>
         </div>
 
         <div class="detail-info">
@@ -113,6 +113,7 @@ import NoteListCard from '@/components/cards/NoteListCard.vue'
 import { getDrinkDetail } from '@/api/drinkApi'
 import { getDrinkLike, insertDrinkLike, deleteDrinkLike } from '@/api/likeApi'
 import { getNoteList } from '@/api/noteApi'
+import { categories } from '@/mock/soolData'
 
 const route = useRoute()
 const router = useRouter()
@@ -146,18 +147,29 @@ const formatPrice = (price) => {
   return `₩ ${Number(price).toLocaleString()}`
 }
 
+
+
+//주류 정보 표시
 const fetchDrinkDetail = async () => {
   const drinkId = route.params.id
   if (!drinkId) return
 
   try {
     const res = await getDrinkDetail(drinkId)
+    console.log(res.data)
+    
     drink.value = res.data
   } catch (e) {
     console.log('주류 상세 조회 실패', e)
     drink.value = null
   }
 }
+
+const drinkEmoji = computed(() => {
+  const code = drink.value?.categoryCode
+  const emojiData = categories.find(e => e.name === code)
+  return emojiData ? emojiData.emoji : '🍹'
+})
 
 const fetchLikeStatus = async () => {
   const drinkId = route.params.id

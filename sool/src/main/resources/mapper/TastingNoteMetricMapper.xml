@@ -25,10 +25,10 @@
                 OR cc.parent_code = d.category_code
             )
 
-        ORDER BY cc.sort_seq ASC, cc.code_id ASC
+        ORDER BY cc.sort_seq ASC, cc.code ASC
     </select>
 
-    <!-- 맛 점수 등록 -->
+    <!-- 맛 프로파일 등록 -->
     <insert id="insertMetric" parameterType="com.example.sool.dto.TastingNoteMetricDto">
         INSERT INTO tasting_note_metric
         (
@@ -107,7 +107,5 @@
             WHERE user_id = #{userId}
         )
     </delete>
-
-
 
 </mapper>

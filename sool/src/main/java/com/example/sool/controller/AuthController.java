@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -39,17 +40,21 @@ public class AuthController {
     private final AuthService authService;
     
 
+    //로그인
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody @Validated LoginRequestDto dto, HttpServletRequest request) {
         try {
+            // 아이디 / 비밀번호 인증 처리
             Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(dto.getLoginId(), dto.getPassword())
             );
 
+            //인증 정보를 SecurityContext에 저장
             SecurityContext context = SecurityContextHolder.createEmptyContext();
             context.setAuthentication(authentication);
             SecurityContextHolder.setContext(context);
 
+            //세션 저장
             HttpSession session = request.getSession(true);
             session.setAttribute("SPRING_SECURITY_CONTEXT", context);
 
@@ -64,11 +69,14 @@ public class AuthController {
 
             return ResponseEntity.ok(response);
 
-        } catch (BadCredentialsException e) {
+        }catch (DisabledException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("탈퇴한 회원입니다.");
+        }catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("아이디 또는 비밀번호가 올바르지 않습니다.");
         }
     }
 
+    //로그아웃
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
@@ -101,6 +109,7 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    //아이디 확인
     @GetMapping("/check-login-id")
     public ResponseEntity<Map<String, Object>> checkLoginId(@RequestParam String loginId) {
         System.out.println(loginId);

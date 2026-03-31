@@ -364,6 +364,8 @@ const movePage = (pageNum) => {
   if (pageNum < 1 || pageNum > totalPage.value) return
   page.value = pageNum
   updateRoute()
+
+  goTop()
 }
 
 watch(
@@ -401,6 +403,14 @@ const visiblePages = computed(() => {
 
   return pages
 })
+
+//스크롤 최상위로
+const goTop = () => {
+  const el = document.querySelector('.list-main')
+  if (el) {
+    el.scrollTop = 0
+  }
+}
 </script>
 
 <style scoped>
@@ -413,7 +423,7 @@ const visiblePages = computed(() => {
 .list-body {
   display: grid;
   grid-template-columns: 240px 1fr;
-  min-height: calc(100vh - 60px);
+  height: calc(100vh - 60px);
 }
 
 .filter-panel {
@@ -520,6 +530,8 @@ const visiblePages = computed(() => {
 }
 
 .list-main {
+  flex: 1;
+  overflow-y: auto;
   padding: 28px 32px;
   background: var(--bg);
 }
@@ -605,5 +617,14 @@ const visiblePages = computed(() => {
 .page-btn:disabled {
   cursor: default;
   opacity: 0.5;
+}
+
+.list-main::-webkit-scrollbar {
+  width: 6px;
+}
+
+.list-main::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 3px;
 }
 </style>

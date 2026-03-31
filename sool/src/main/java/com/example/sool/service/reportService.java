@@ -32,23 +32,8 @@ public class ReportService {
         return reportMapper.insertReport(reportDto);
     }
 
-
+    //마이페이지 신고 목록
     public List<ReportDto> getReportList(int userId) {
         return reportMapper.selectReportByUserid(userId);
-    }
-
-    //아직 사용 X
-
-
-    public List<ReportDto> selectReportList() {
-        return reportMapper.selectReportList();
-    }
-
-    public int updateReportStatus(ReportDto reportDto) {
-        return reportMapper.updateReportStatus(reportDto);
-    }
-
-    public int deleteReport(int report_id) {
-        return reportMapper.deleteReport(report_id);
     }
 }

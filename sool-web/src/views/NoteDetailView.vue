@@ -36,17 +36,22 @@
           >
             {{ liked ? '♥' : '♡' }} {{ likeCount }}
           </button>
-          <button class="report-btn" @click="openReportModal">
+
+          <button class="report-btn" @click="openReportModal({
+            objType: 'NOTE',
+            objId: route.params.id
+          })">
             신고
           </button>
-          <template v-if="isOwner">
-              <button type="button" class="nd-action-btn" @click="goEdit">
-                수정
-              </button>
 
-              <button type="button" class="nd-action-btn danger" @click="removeNote">
-                삭제
-              </button>
+          <template v-if="isOwner">
+            <button type="button" class="nd-action-btn" @click="goEdit">
+              수정
+            </button>
+
+            <button type="button" class="nd-action-btn danger" @click="removeNote">
+              삭제
+            </button>
           </template>
         </div>
       </main>
@@ -59,32 +64,53 @@
             <div v-for="item in metricList" :key="item.metricCode" class="nd-flavor-row">
               <span class="nfl">{{ item.metricName }}</span>
               <div class="nfb">
-                <div class="nff" :style="{ width: (item.score / 5) * 100 + '%' }"></div>
+                <div class="nff" :style="{ width: (Number(item.score || 0) / 5) * 100 + '%' }"></div>
               </div>
               <span class="nfv">{{ item.score }}</span>
             </div>
           </template>
 
           <div v-else class="nd-flavor-empty">
-              등록된 맛 프로파일이 없습니다.
+            등록된 맛 프로파일이 없습니다.
           </div>
         </section>
+
         <div class="nd-comments">
           <h4>댓글</h4>
-          <CommentItem v-for="comment in commentList" :key="comment.id" :item="comment" />
+          <div class="comment-list">
+            <div v-if="commentTree.length === 0" class="nd-comment-empty">
+              아직 댓글이 없습니다.
+            </div>
+
+            <CommentItem
+              v-for="comment in commentTree"
+              :key="comment.commentId"
+              :item="comment"
+              :noteId="Number(route.params.id)"
+              @refresh="fetchComments"
+              @report="openReportModal"
+            />
+          </div>
           <form class="comment-inp" @submit.prevent="submitComment">
-            <input v-model="newComment" placeholder="댓글을 입력하세요" />
-            <button class="cm-send">등록</button>
+            <input
+              v-model="newComment"
+              type="text"
+              maxlength="500"
+              placeholder="댓글을 입력하세요"
+            />
+            <button class="cm-send" :disabled="commentSubmitting">
+              등록
+            </button>
           </form>
         </div>
       </aside>
     </div>
   </div>
-  
+
   <ReportModal
     v-model="reportModalOpen"
-    objType="NOTE"
-    :objId="Number(route.params.id)"
+    :objType="reportObjType"
+    :objId="reportObjId"
     @success="fetchNoteDetail"
   />
 </template>
@@ -95,9 +121,10 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 import PageNav from '../components/common/PageNav.vue'
 import CommentItem from '../components/cards/CommentItem.vue'
-import { categories, comments } from '../mock/soolData'
+import { categories } from '../mock/soolData'
 import { getNoteDetail, deleteNote } from '@/api/noteApi'
 import { getNoteLike, insertNoteLike, deleteNoteLike } from '@/api/likeApi'
+import { getComments, createComment } from '@/api/commentApi'
 import ReportModal from '../components/common/ReportModal.vue'
 
 const route = useRoute()
@@ -109,11 +136,13 @@ const likeLoading = ref(false)
 const likeCount = ref(0)
 
 const metricList = ref([])
+const noteDetail = ref(null)
 
 const newComment = ref('')
-const commentList = ref([...comments])
+const commentList = ref([])
+const commentSubmitting = ref(false)
 
-const noteDetail = ref(null)
+
 
 const navLinks = computed(() => [
   { label: '홈', to: '/' },
@@ -161,10 +190,7 @@ const noteTitle = computed(() => {
 })
 
 const noteContent = computed(() => {
-  return (
-    noteDetail.value?.content ||
-    '아직 작성된 테이스팅 노트 내용이 없습니다.'
-  )
+  return noteDetail.value?.content || '아직 작성된 테이스팅 노트 내용이 없습니다.'
 })
 
 const star = computed(() => {
@@ -177,11 +203,52 @@ const star = computed(() => {
 
 const noteImageUrl = computed(() => {
   return (
-    noteDetail.value?.imageUrl ||
-    noteDetail.value?.image_path ||
-    noteDetail.value?.noteImage ||
-    ''
+    noteDetail.value?.imageUrl || ''
   )
+})
+
+const drinkEmoji = computed(() => {
+  const code = noteDetail.value?.categoryCode
+  const emojiData = categories.find(e => e.name === code)
+  return emojiData ? emojiData.emoji : '🍹'
+})
+
+const commentTree = computed(() => {
+  const map = new Map()
+  const roots = []
+
+  commentList.value.forEach(comment => {
+    map.set(comment.commentId, {
+      ...comment,
+      replies: []
+    })
+  })
+
+  commentList.value.forEach(comment => {
+    const current = map.get(comment.commentId)
+
+    if (Number(comment.depth) === 1 && comment.parentCommentId) {
+      const parent = map.get(comment.parentCommentId)
+      if (parent) {
+        parent.replies.push(current)
+      } else {
+        roots.push(current)
+      }
+    } else {
+      roots.push(current)
+    }
+  })
+
+  roots.sort((a, b) => {
+    if (b.groupId !== a.groupId) return Number(b.groupId) - Number(a.groupId)
+    return new Date(a.createdAt) - new Date(b.createdAt)
+  })
+
+  roots.forEach(root => {
+    root.replies.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+  })
+
+  return roots
 })
 
 const fetchLikeStatus = async () => {
@@ -229,18 +296,18 @@ const toggleLike = async () => {
   }
 }
 
-//노트 디테일 정보
 const fetchNoteDetail = async () => {
   try {
     const noteId = route.params.id
-    console.log('noteId : ' + noteId)
-
     const res = await getNoteDetail(noteId)
-    console.log(res.data)
 
-    noteDetail.value = res.data || null
-    metricList.value = res.data.metricList || []
-    likeCount.value = Number(res.data?.likeCount ?? 0)
+    noteDetail.value = res.data?.noteDetail || res.data || null
+    metricList.value = res.data?.list || res.data?.metricList || []
+    likeCount.value = Number(
+      res.data?.noteDetail?.likeCount ??
+      res.data?.likeCount ??
+      0
+    )
 
     if (authStore.isLogin) {
       await fetchLikeStatus()
@@ -252,34 +319,23 @@ const fetchNoteDetail = async () => {
   }
 }
 
-const drinkEmoji = computed(() => {
-  const code = noteDetail.value?.categoryCode
+const fetchComments = async () => {
+  try {
+    const noteId = route.params.id
+    const res = await getComments(noteId)
+    console.log(res.data)
 
-  const emojiData = categories.find(e => e.name === code)
-
-  return emojiData ? emojiData.emoji : '🍹'
-})
-
-const submitComment = () => {
-  const text = newComment.value.trim()
-  if (!text) return
-
-  commentList.value.push({
-    id: Date.now(),
-    authorInitial: '나',
-    author: 'me',
-    date: '방금',
-    text,
-    likes: 0,
-    replies: []
-  })
-
-  newComment.value = ''
+    commentList.value =  res.data || []
+  } catch (error) {
+    console.log('댓글 조회 실패', error)
+    commentList.value = []
+  }
 }
 
-const reportModalOpen = ref(false)
+const submitComment = async () => {
+  const content = newComment.value.trim()
+  if (!content) return
 
-const openReportModal = () => {
   if (!authStore.isLogin) {
     alert('로그인을 먼저 해주세요.')
     router.push({
@@ -289,6 +345,36 @@ const openReportModal = () => {
     return
   }
 
+  try {
+    commentSubmitting.value = true
+    await createComment(Number(route.params.id), { content })
+    newComment.value = ''
+    await fetchComments()
+  } catch (error) {
+    console.log('댓글 등록 실패', error)
+    alert('댓글 등록에 실패했습니다.')
+  } finally {
+    commentSubmitting.value = false
+  }
+}
+
+const reportModalOpen = ref(false)
+const reportObjType = ref('')
+const reportObjId = ref(null)
+
+const openReportModal = (payload) => {
+  if (!authStore.isLogin) {
+    alert('로그인을 먼저 해주세요.')
+    router.push({
+      path: '/login',
+      query: { redirect: route.fullPath }
+    })
+    return
+  }
+  console.log("부모",payload)
+  reportObjType.value = payload.objType
+  reportObjId.value = payload.objId
+
   reportModalOpen.value = true
 }
 
@@ -296,7 +382,7 @@ const isOwner = computed(() => {
   if (!authStore.isLogin) return false
   if (!noteDetail.value) return false
 
-  return Number(authStore.user?.userId) === Number(noteDetail.value.userId)
+  return authStore.user?.userId === noteDetail.value.userId
 })
 
 function goEdit() {
@@ -322,6 +408,7 @@ async function removeNote() {
 
 onMounted(() => {
   fetchNoteDetail()
+  fetchComments()
 })
 </script>
 
@@ -554,6 +641,12 @@ onMounted(() => {
   border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
+  cursor: pointer;
+}
+
+.cm-send:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 
 .flavor-section {
@@ -562,7 +655,8 @@ onMounted(() => {
   border-bottom: 3px solid var(--border);
 }
 
-.nd-flavor-empty {
+.nd-flavor-empty,
+.nd-comment-empty {
   min-height: 120px;
   display: flex;
   align-items: center;
@@ -572,12 +666,6 @@ onMounted(() => {
   background: white;
   font-size: 13px;
   color: var(--muted);
-}
-
-.nd-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .nd-action-btn {
@@ -592,5 +680,18 @@ onMounted(() => {
 .nd-action-btn.danger {
   color: #c0392b;
   border-color: #f1b5ae;
+}
+
+.nd-comments {
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  height: 420px;
+}
+
+.comment-list {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 6px;
 }
 </style>

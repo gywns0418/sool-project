@@ -1,29 +1,34 @@
 import api from "./apiClient"
 
+//마이페이지 사이드바 정보
 export const getMySidebarInfo = () => {
   return api.get('/mypage/sidebar')
 }
 
+//마이페이지 회원 기본 정보 수정
 export const updateMyProfile = (data) => {
-  return api.put('/mypage/profile', data)
+  return api.post('/mypage/profile', data)
 }
 
-export const updateMyPassword = (data) => {
-  return api.post('/mypage/password', {
-    currentPassword: data.currentPassword,
-    newPassword: data.newPassword
-  })
-}
-
+//로그인 아이디 확인
 export const checkLoginIdApi = (loginId) => {
-  return api.get('/user/check-loginId', {
+  return api.get('/auth/check-login-id', {
     params: { loginId }
   })
 }
 
+//이메일 확인
 export const checkEmailApi = (email) => {
-  return api.get('/user/check-email', {
+  return api.get('/mypage/email/check-email', {
     params: { email }
+  })
+}
+
+//비밀번호 확인 및 변경
+export const updateMyPassword = (data) => {
+  return api.post('/mypage/password', {
+    currentPassword: data.currentPassword,
+    newPassword: data.newPassword
   })
 }
 

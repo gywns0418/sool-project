@@ -113,7 +113,7 @@ public class SecurityConfig {
         // Vue 서버 주소 허용
         config.setAllowedOrigins(List.of("http://localhost:5173"));
         // 허용할 HTTP 메서드
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE"));
+        config.setAllowedMethods(List.of("GET", "POST", "DELETE"));
         // 모든 헤더 허용
         config.setAllowedHeaders(List.of("*"));
         // 세션 쿠키 전달 허용

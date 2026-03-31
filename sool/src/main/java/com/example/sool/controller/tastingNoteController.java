@@ -10,7 +10,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -81,6 +80,8 @@ public class TastingNoteController {
     //노트 작성 정보
     @GetMapping("/notes/write/{drinkId}")
     public ResponseEntity<Map<String, Object>> getNoteWriteForm(@PathVariable int drinkId) {
+        System.out.println(drinkId);
+
         //주류 정보
         DrinkDto drink = drinkService.findByDrinkId(drinkId);
 
@@ -100,23 +101,31 @@ public class TastingNoteController {
 
     //노트 작성
     @PostMapping("/notes/writeform")
-    public ResponseEntity<Map<String, Object>> createNote(@RequestBody TastingNoteDto dto, Authentication authentication) {
+    public ResponseEntity<?> createNote(@RequestBody TastingNoteDto dto, Authentication authentication) {
+        try {
+            if (authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("message", "로그인이 필요합니다."));
+            }
 
-        if (authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("message", "로그인이 필요합니다."));
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            dto.setUserId(userDetails.getUserId());
+
+            Integer noteId = tastingNoteService.createNote(dto);
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("noteId", noteId);
+            result.put("message", "노트가 저장되었습니다.");
+
+            return ResponseEntity.ok(result);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "노트 저장 중 오류가 발생했습니다."));
         }
-
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        dto.setUserId(userDetails.getUserId());
-
-        Integer noteId = tastingNoteService.createNote(dto);
-
-        Map<String, Object> result = new HashMap<>();
-        result.put("noteId", noteId);
-        result.put("message", "노트가 저장되었습니다.");
-
-        return ResponseEntity.ok(result);
     }
 
     //노트 수정 기본 정보 

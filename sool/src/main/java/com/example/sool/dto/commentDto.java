@@ -21,4 +21,6 @@ public class CommentDto {
     private LocalDateTime updatedAt;
     private String isDeleted;
 
+    private String userName;
+    private String loginId;
 }

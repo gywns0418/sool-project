@@ -9,7 +9,6 @@
         SELECT *
         FROM user
         WHERE login_id = #{loginId}
-        AND is_deleted = 'N'
     </select>
 
 
@@ -97,17 +96,6 @@
         WHERE user_id = #{userId}
     </select>
 
-
-
-    <!-- 회원 전체 조회 -->
-    <select id="selectUserList" resultType="com.example.sool.dto.UserDto">
-        SELECT *
-        FROM user
-        WHERE is_deleted = 'N'
-        ORDER BY user_id DESC
-    </select>
-
-
     <!-- 회원 정보 수정 -->
     <update id="updateUser" parameterType="com.example.sool.dto.UserDto">
         UPDATE user
@@ -115,7 +103,6 @@
             login_id = #{loginId},
             name = #{name},
             email = #{email},
-            role_code = #{roleCode},
             updated_at = NOW()
         WHERE user_id = #{userId}
     </update>
@@ -130,5 +117,11 @@
         WHERE user_id = #{userId}
     </update>
 
+    <!-- 이메일 존재 확인-->
+    <select id="existsByEmail" parameterType="string" resultType="int">
+        SELECT COUNT(*)
+        FROM user
+        WHERE email = #{email}
+    </select>
 
 </mapper>

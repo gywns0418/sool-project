@@ -1,49 +1,257 @@
 <template>
   <div class="comment-item">
-    <div class="comment">
+    <div class="comment" :class="{ deleted: isDeleted }">
       <div class="cm-head">
-        <div class="avatar">{{ item.authorInitial }}</div>
-        <span class="cm-name">{{ item.author }}</span>
-        <span class="cm-date">{{ item.date }}</span>
+        <div class="avatar">{{ authorInitial }}</div>
+        <span class="cm-name">{{ authorName }}</span>
+        <span class="cm-date">{{ formattedDate }}</span>
       </div>
-      <div class="cm-text">{{ item.text }}</div>
-      <div class="cm-actions">
-        <button class="cm-btn reply-btn" @click="showReply = !showReply">답글</button>
+
+      <div v-if="editing" class="comment-inp edit-inp">
+        <input
+          v-model="editContent"
+          type="text"
+          maxlength="500"
+          placeholder="댓글을 수정하세요"
+        />
+        <button class="cm-send" :disabled="editSubmitting" @click="submitEdit">
+          저장
+        </button>
+        <button class="cm-cancel" :disabled="editSubmitting" @click="cancelEdit">
+          취소
+        </button>
       </div>
+
+      <div v-else class="cm-text">
+        {{ displayContent }}
+      </div>
+
+      <div class="cm-actions" v-if="!isDeleted && !editing">
+
+        <button v-if="item.depth === 0" class="cm-btn reply-btn" @click="toggleReply">
+          {{ showReply ? '취소' : '답글' }}
+        </button>
+
+        <button class="cm-btn report-btn" @click="reportComment">
+          신고
+        </button>
+
+        <template v-if="isOwner">
+          <button class="cm-btn reply-btn" @click="startEdit">
+            수정
+          </button>
+
+          <button class="cm-btn reply-btn" @click="deleteComment">
+            삭제
+          </button>
+        </template>
+
+      </div>
+
       <div v-if="showReply" class="reply-box">
-        <form class="comment-inp" @submit.prevent="submitComment">
-          <input v-model="newComment" placeholder="답글을 입력하세요" />
-          <button class="cm-send">등록</button>
+        <form class="comment-inp" @submit.prevent="submitReply">
+          <input
+            v-model="replyContent"
+            type="text"
+            maxlength="500"
+            placeholder="답글을 입력하세요"
+          />
+          <button class="cm-send" :disabled="replySubmitting">
+            등록
+          </button>
         </form>
       </div>
     </div>
 
     <div v-if="item.replies?.length" class="replies">
-      <div v-for="reply in item.replies" :key="reply.id" class="reply">
-        <div class="cm-head">
-          <div class="avatar small">{{ reply.authorInitial }}</div>
-          <span class="cm-name">{{ reply.author }}</span>
-          <span class="cm-date">{{ reply.date }}</span>
-        </div>
-        <div class="cm-text">{{ reply.text }}</div>
-        <div class="cm-actions">
-        </div>
-      </div>
+      <CommentItem
+        v-for="reply in item.replies"
+        :key="reply.commentId"
+        :item="reply"
+        :noteId="Number(route.params.id)"
+        @refresh="$emit('refresh')"
+        @report="$emit('report', $event)"
+      />
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { useAuthStore } from '@/stores/authStore'
+import { useRoute, useRouter } from 'vue-router'
+import { createReply,updateCommentApi,deleteCommentApi } from '@/api/commentApi'
 
-const liked = ref(false)
-const showReply = ref(false)
-
-defineProps({
+const props = defineProps({
   item: {
     type: Object,
     required: true
+  },
+  noteId: {
+    type: Number,
+    required: true
   }
+})
+
+const emit = defineEmits(['refresh','report'])
+
+const authStore = useAuthStore()
+const route = useRoute()
+const router = useRouter()
+
+const showReply = ref(false)
+const replyContent = ref('')
+const replySubmitting = ref(false)
+
+const editing = ref(false)
+const editContent = ref('')
+const editSubmitting = ref(false)
+
+const isDeleted = computed(() => props.item.isDeleted === 'Y')
+
+const authorName = computed(() => {
+  return props.item.userName || props.item.name || props.item.loginId || '알 수 없음'
+})
+
+const authorInitial = computed(() => {
+  return String(authorName.value || '익').trim().charAt(0) || '익'
+})
+
+//삭제된 댓글 표시
+const displayContent = computed(() => {
+  if (isDeleted.value) {
+    return '삭제된 댓글입니다.'
+  }
+  return props.item.content || ''
+})
+
+const formattedDate = computed(() => {
+  const value = props.item.createdAt || props.item.created_at
+  if (!value) return ''
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+
+  return `${year}. ${month}. ${day}`
+})
+
+//로그인 확인
+function requireLogin() {
+  if (!authStore.isLogin) {
+    alert('로그인을 먼저 해주세요.')
+    router.push({
+      path: '/login',
+      query: { redirect: route.fullPath }
+    })
+    return false
+  }
+  return true
+}
+
+
+//대댓글 표시
+function toggleReply() {
+  if (!requireLogin()) return
+
+  showReply.value = !showReply.value
+}
+
+//대댓글 작성
+async function submitReply() {
+  const content = replyContent.value.trim()
+  if (!content) return
+
+  if (!requireLogin()) return
+  
+
+  try {
+    replySubmitting.value = true
+
+    await createReply(props.noteId, {
+      parentCommentId: props.item.commentId,
+      content
+    })
+
+    replyContent.value = ''
+    showReply.value = false
+    emit('refresh')
+  } catch (error) {
+    console.log('답글 등록 실패', error)
+    alert('답글 등록에 실패했습니다.')
+  } finally {
+    replySubmitting.value = false
+  }
+}
+
+//댓글 수정 창 표시
+function startEdit() {
+  if (!requireLogin()) return
+  editing.value = true
+  editContent.value = props.item.content || ''
+  showReply.value = false
+}
+
+//댓글 수정 취소
+function cancelEdit() {
+  editing.value = false
+  editContent.value = props.item.content || ''
+}
+
+//댓글 수정
+async function submitEdit() {
+  const content = editContent.value.trim()
+  if (!content) {
+    alert('댓글 내용을 입력해주세요.')
+    return
+  }
+
+  try {
+    editSubmitting.value = true
+
+    await updateCommentApi(props.item.commentId, {
+      content
+    })
+
+    editing.value = false
+    emit('refresh')
+  } catch (error) {
+    console.log('댓글 수정 실패', error)
+    alert('댓글 수정에 실패했습니다.')
+  } finally {
+    editSubmitting.value = false
+  }
+}
+
+//댓글 삭제
+async function deleteComment() {
+  if (!confirm('댓글을 삭제하시겠습니까?')) return
+
+  try {
+    await deleteCommentApi(props.item.commentId)
+    emit('refresh')
+  } catch (error) {
+    console.log('댓글 삭제 실패', error)
+  }
+}
+
+//신고 모달을 위한 emit
+function reportComment() {
+  emit('report', {
+    objType: 'COMMENT',
+    objId: props.item.commentId
+  })
+}
+
+//작성자 확인
+const isOwner = computed(() => {
+  if (!authStore.isLogin) return false
+  if (!props.item) return false
+
+  return authStore.user?.userId === props.item.userId
 })
 </script>
 
@@ -51,6 +259,10 @@ defineProps({
 .comment {
   padding: 12px 0 4px;
   border-bottom: 1px solid var(--border);
+}
+
+.comment.deleted .cm-text {
+  color: var(--muted);
 }
 
 .cm-head {
@@ -71,12 +283,6 @@ defineProps({
   justify-content: center;
   font-size: 10px;
   font-weight: 600;
-}
-
-.avatar.small {
-  width: 20px;
-  height: 20px;
-  font-size: 9px;
 }
 
 .cm-name {
@@ -132,15 +338,6 @@ defineProps({
   margin-bottom: 4px;
 }
 
-.reply {
-  padding: 10px 0 4px;
-  border-bottom: 1px solid #f0ede8;
-}
-
-.reply:last-child {
-  border-bottom: none;
-}
-
 .comment-inp {
   margin-top: 14px;
   display: flex;
@@ -167,5 +364,24 @@ defineProps({
   border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
+  cursor: pointer;
+}
+
+.cm-cancel {
+  height: 36px;
+  padding: 0 14px;
+  background: white;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cm-send:disabled,
+.cm-cancel:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 </style>

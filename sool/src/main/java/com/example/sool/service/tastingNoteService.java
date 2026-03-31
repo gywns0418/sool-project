@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.sool.dto.CommonCodeDto;
 import com.example.sool.dto.DrinkDto;
+import com.example.sool.dto.LikeDto;
 import com.example.sool.dto.NoteSearchDto;
 import com.example.sool.dto.TastingNoteDto;
 import com.example.sool.dto.TastingNoteMetricDto;
@@ -58,10 +59,6 @@ public class TastingNoteService {
     public TastingNoteDto findByNoteId(Integer noteId){
         return tastingNoteMapper.findByNoteId(noteId);
     }
-
-
-    
-
 
     public int deleteTastingNote(Integer noteId){
         return tastingNoteMapper.deleteTastingNote(noteId);
@@ -164,7 +161,11 @@ public class TastingNoteService {
         }
 
         //좋아요 삭제
-        likeMapper.deleteAllLike("NOTE",noteId);
+        LikeDto lDto = new LikeDto();
+        lDto.setObjType("NOTE");
+        lDto.setObjId(noteId);
+        
+        likeMapper.deleteAllLike(lDto);
 
         //댓글 삭제
         commentMapper.deleteAllComment(noteId);

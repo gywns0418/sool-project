@@ -20,16 +20,16 @@
         </div>
 
         <div class="my-nav">
-          <div class="my-nav-item" :class="{ sel: activeTab === 'notes' }" @click="activeTab = 'notes'">
+          <div class="my-nav-item" :class="{ sel: activeTab === 'notes' }" @click="changeTab('notes')">
             내 테이스팅 노트
           </div>
-          <div class="my-nav-item" :class="{ sel: activeTab === 'likes' }" @click="activeTab = 'likes'">
+          <div class="my-nav-item" :class="{ sel: activeTab === 'likes' }" @click="changeTab('likes')">
             나의 좋아요
           </div>
-          <div class="my-nav-item" :class="{ sel: activeTab === 'profile' }" @click="activeTab = 'profile'">
+          <div class="my-nav-item" :class="{ sel: activeTab === 'profile' }" @click="changeTab('profile')">
             회원 정보 수정
           </div>
-          <div class="my-nav-item" :class="{ sel: activeTab === 'reports' }" @click="activeTab = 'reports'">
+          <div class="my-nav-item" :class="{ sel: activeTab === 'reports' }" @click="changeTab('reports')">
             신고 목록
           </div>
           <div class="my-nav-sep"></div>
@@ -115,6 +115,19 @@ const fetchSidebarInfo = async () => {
   }
 }
 
+//스크롤 최상위로
+const goTop = () => {
+  const el = document.querySelector('.my-main')
+  if (el) {
+    el.scrollTop = 0
+  }
+}
+
+const changeTab = (tab) => {
+  activeTab.value = tab
+  goTop()
+}
+
 onMounted(() => {
   fetchSidebarInfo()
 })
@@ -130,7 +143,7 @@ onMounted(() => {
 .my-wrap {
   display: grid;
   grid-template-columns: 240px 1fr;
-  min-height: 700px;
+  height: calc(100vh - 60px); 
 }
 
 .my-sidebar {
@@ -226,6 +239,8 @@ onMounted(() => {
 }
 
 .my-main {
+  flex: 1;
+  overflow-y: auto;
   background: var(--bg);
   padding: 32px;
 }
@@ -242,5 +257,14 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
+}
+
+.my-main::-webkit-scrollbar {
+  width: 6px;
+}
+
+.my-main::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 3px;
 }
 </style>

@@ -73,32 +73,4 @@ public class DrinkService {
     public DrinkDto findDrinkByNoteId(Integer noteId){
         return drinkMapper.findDrinkByNoteId(noteId);
     }
-
-
-
-
-
-
-
-
-
-
-
-    public int insertDrink(DrinkDto drinkDTO) {
-        return drinkMapper.insertDrink(drinkDTO);
-    }
-
-    public List<DrinkDto> drinkAll() {
-        return drinkMapper.drinkAll();
-    }
-
-
-
-    public int updateDrink(DrinkDto drinkDTO) {
-        return drinkMapper.updateDrink(drinkDTO);
-    }
-
-    public int deleteDrink(Integer drinkId) {
-        return drinkMapper.deleteDrink(drinkId);
-    }
 }

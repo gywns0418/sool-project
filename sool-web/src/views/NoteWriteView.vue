@@ -3,7 +3,7 @@
     <PageNav :links="navLinks" />
 
     <section class="write-hero">
-      <div class="write-hero-drink-thumb">🍷</div>
+      <div class="write-hero-drink-thumb">{{ drinkEmoji }}</div>
       <div>
         <div class="write-hero-tag">{{ isEditMode ? 'Edit Note' : 'Tasting Note' }}</div>
         <div class="write-hero-title">{{ drink.drinkName || '-' }}</div>
@@ -166,10 +166,13 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PageNav from '../components/common/PageNav.vue'
+import { categories } from '@/mock/soolData'
 import { getNoteWriteForm, createNote, getNoteUpdateForm, updateNote } from '@/api/noteApi'
 
 const route = useRoute()
 const router = useRouter()
+
+const errorMsg = ref('')
 
 const drink = ref({})
 const title = ref('')
@@ -241,6 +244,7 @@ async function fetchEditForm() {
       drinkId: drinkData.drinkId,
       drinkName: drinkData.drinkName,
       drinkNameEn: drinkData.drinkNameEn,
+      categoryCode: drinkData.categoryCode,
       categoryName: drinkData.categoryName,
       typeName: drinkData.typeName,
       country: drinkData.country
@@ -256,6 +260,12 @@ async function fetchEditForm() {
   }
 }
 
+const drinkEmoji = computed(() => {
+  const code = drink.value?.categoryCode
+  const emojiData = categories.find(e => e.name === code)
+  return emojiData ? emojiData.emoji : '🍹'
+})
+
 async function fetchPageData() {
   resetForm()
 
@@ -267,16 +277,22 @@ async function fetchPageData() {
   await fetchWriteForm()
 }
 
-async function saveNote() {
+const saveNote = async () => {
+  if (isSaving.value) return
+
+  errorMsg.value = ''
+
   try {
+    isSaving.value = true
+
     const payload = {
       drinkId: drink.value.drinkId,
-      title: title.value.trim(),
-      content: memo.value.trim(),
+      title: title.value,
+      content: memo.value,
       rating: selectedStar.value,
-      metricList: scores.value.map(item => ({
-        metricCode: item.code,
-        score: item.value
+      metricList: scores.value.map(m => ({
+        metricCode: m.code,
+        score: m.value
       }))
     }
 
@@ -295,9 +311,11 @@ async function saveNote() {
     if (createdNoteId) {
       router.push(`/notes/${createdNoteId}`)
     }
-  } catch (error) {
-    console.log('노트 저장 실패', error)
-    alert('저장에 실패했습니다.')
+  } catch (e) {
+    errorMsg.value = e.response?.data?.message || '노트 저장 중 오류가 발생했습니다.'
+    alert(errorMsg.value)
+  } finally {
+    isSaving.value = false
   }
 }
 
