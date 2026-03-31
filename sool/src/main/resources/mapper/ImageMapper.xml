@@ -34,7 +34,8 @@
     <select id="selectImageListByNoteId" parameterType="int" resultType="com.example.sool.dto.ImageDto">
         SELECT *
         FROM image
-        WHERE note_id = #{note_id}
+        WHERE obj_id = #{note_id}
+        AND obj_type = 'NOTE'
         ORDER BY image_id DESC
     </select>
 

@@ -210,15 +210,14 @@ const sanitizeNumberInput = (field) => {
     alert("0보다 작은 값은 입력할 수 없습니다.")
   }
 
-  //도수 값 정정
   let value = parseFloat(eval(field).value)
-
   if (isNaN(value)) return
 
-  if (value > 99.9) value = 99.9
-
-  //소숫점 한자리까지 허용
-  value = Math.floor(value * 10) / 10
+  // 도수만 제한
+  if (field === "abvLow" || field === "abvHigh") {
+    if (value > 99.9) value = 99.9
+    value = Math.floor(value * 10) / 10
+  }
 
   eval(field).value = value
 }
