@@ -1,7 +1,5 @@
 package com.example.sool.mapper;
 
-import java.util.List;
-
 import org.apache.ibatis.annotations.Mapper;
 
 import com.example.sool.dto.ImageDto;

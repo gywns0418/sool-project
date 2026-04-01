@@ -77,9 +77,6 @@
                 ORDER BY tn.created_at DESC
             </otherwise>
         </choose>
-
-        LIMIT #{size}
-        OFFSET #{offset}
     </select>
 
     <!--주류 노트 총 갯수-->

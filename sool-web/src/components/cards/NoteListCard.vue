@@ -12,7 +12,15 @@
       <div class="note-text">{{ item.content }}</div>
     </div>
     <div class="note-side">
-      <div class="note-img">{{ item.emoji || '🍷'}}</div>
+      <div class="note-img">
+        <img
+          v-if="item?.image?.fileUrl"
+          :src="item?.image?.fileUrl"
+          alt="note image"
+        />
+        <span v-else>{{ item.emoji || '🍷' }}</span>
+      </div>
+
       <button
         class="note-like"
         :class="{ liked }"
@@ -184,7 +192,14 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
   font-size: 26px;
+}
+
+.note-img img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .note-like {

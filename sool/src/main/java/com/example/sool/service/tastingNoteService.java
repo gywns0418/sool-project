@@ -53,7 +53,12 @@ public class TastingNoteService {
 
     //주류 디테일 노트 목록
     public List<TastingNoteDto> findNoteByDrinkId(NoteSearchDto noteSearchDto){ 
-        return tastingNoteMapper.findNoteByDrinkId(noteSearchDto);
+        List<TastingNoteDto> list = tastingNoteMapper.findNoteByDrinkId(noteSearchDto);
+        for (TastingNoteDto note : list) {
+            ImageDto image = imageMapper.selectImageByNoteId(note.getNoteId());
+            note.setImage(image);
+        }
+        return list;
     }
 
     //페이지네이션 용 노트 수
@@ -66,17 +71,16 @@ public class TastingNoteService {
         return tastingNoteMapper.getNoteDetail(noteId);
     }
     
+    //노트 기본 정보
     public TastingNoteDto findByNoteId(Integer noteId){
         return tastingNoteMapper.findByNoteId(noteId);
     }
 
-    public int deleteTastingNote(Integer noteId){
-        return tastingNoteMapper.deleteTastingNote(noteId);
-    }
-
     //마이페이지 테이스팅 노트
     public List<TastingNoteDto> findByUserId(Integer userId){
+
         List<TastingNoteDto> list = tastingNoteMapper.findByUserId(userId);
+        //이미지 추가
         for (TastingNoteDto note : list) {
             ImageDto image = imageMapper.selectImageByDrinkId(note.getDrinkId());
             note.setImage(image);
@@ -84,7 +88,7 @@ public class TastingNoteService {
         return list;
     }
 
-    //테이스팅 노트 맛 점수
+    //테이스팅 노트 맛 점수*******************************************************************
 
     //맛 프로파일 정보 가져오기
     public List<CommonCodeDto> getMetricCode(int drinkId){
@@ -101,12 +105,6 @@ public class TastingNoteService {
     public List<TastingNoteMetricDto> findAvgMetricByDrinkId(Integer drinkId){
         return tastingNoteMetricMapper.findAvgMetricByDrinkId(drinkId);
     }
-
-    public int deleteMetricByNoteId(Integer noteId) {
-        return tastingNoteMetricMapper.deleteByNoteId(noteId);
-    }
-
-
 
     //노트 삽입
     @Transactional  //트랜잭션 관리 어노테이션
@@ -170,7 +168,11 @@ public class TastingNoteService {
             ImageDto image = dto.getImage();
             image.setObjId(dto.getNoteId());
             image.setObjType("NOTE");
-            imageMapper.updateImage(image);
+            if(imageMapper.selectImageByNoteId(dto.getNoteId())==null){
+                imageMapper.insertImage(image);
+            }else{
+                imageMapper.updateImage(image);
+            }   
         }
 
         return dto.getNoteId();
@@ -199,7 +201,6 @@ public class TastingNoteService {
         LikeDto lDto = new LikeDto();
         lDto.setObjType("NOTE");
         lDto.setObjId(noteId);
-        
         likeMapper.deleteAllLike(lDto);
 
         //댓글 삭제

@@ -11,7 +11,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 import com.example.sool.dto.S3UploadResultDto;
-import com.example.sool.mapper.ImageMapper;
 import com.example.sool.service.S3Service;
 
 @RestController

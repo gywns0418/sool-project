@@ -158,6 +158,7 @@ public class TastingNoteController {
         return ResponseEntity.ok(result);
     }
     
+    //노트 수정
     @PostMapping("/notes/edit/{noteId}")
     public ResponseEntity<?> updateNote(@PathVariable int noteId, 
                     @RequestBody TastingNoteDto dto, Authentication authentication) {

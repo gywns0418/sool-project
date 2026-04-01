@@ -369,7 +369,7 @@ const saveNote = async () => {
 
     if (isEditMode.value) {
       await updateNote(noteId.value, payload)
-
+      console.log("payload",payload)
       // 새 이미지 업로드했으면 기존 이미지 삭제
       if (uploadedFileKey && noteImage.value?.fileKey) {
         try {

@@ -5,7 +5,7 @@
     <div class="detail-wrap">
       <div class="detail-header">
         <div class="detail-img">
-          <img v-if="drink?.image?.fileUrl" :src="drink.image?.fileUrl" alt="주류 이미지" />
+          <img v-if="drink?.image?.fileUrl" :src="drink?.image?.fileUrl" alt="주류 이미지" />
           <div v-else class="detail-placeholder">{{ drinkEmoji }}</div>
         </div>
 
