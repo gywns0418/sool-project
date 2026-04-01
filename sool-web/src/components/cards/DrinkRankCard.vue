@@ -1,11 +1,20 @@
 <template>
   <router-link class="drink-card" :to="`/drinks/${displayItem.drinkId}`">
-    <div class="drink-thumb">
-      {{ displayItem.emoji }}
-      <div class="drink-rank" :class="{ gold: rank === 1 }">
-        {{ rank }}
-      </div>
+  <div class="drink-thumb">
+    <img
+      v-if="displayItem.image?.fileUrl"
+      :src="displayItem.image?.fileUrl"
+      :alt="displayItem.title"
+      class="thumb"
+    />
+    <div v-else class="thumb empty-thumb">
+      <span class="empty-emoji">{{ displayItem.emoji }}</span>
     </div>
+
+    <div class="drink-rank" :class="{ gold: rank === 1 }">
+      {{ rank }}
+    </div>
+  </div>
 
     <div class="drink-info">
       <div class="drink-cat">{{ displayItem.typeCode }}</div>
@@ -69,6 +78,22 @@ const displayItem = computed(() => {
   border-bottom: 1px solid var(--border);
   position: relative;
 }
+
+.thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.empty-thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #aa9d91;
+  font-size: 13px;
+}
+
 
 .drink-rank {
   position: absolute;

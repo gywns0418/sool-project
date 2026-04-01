@@ -1,6 +1,16 @@
 <template>
   <router-link class="drink-card2" :to="`/drinks/${item.drinkId}`">
-    <div class="thumb2">{{ emoji }}</div>
+    <div class="drink-thumb">
+      <img
+        v-if="item.image?.fileUrl"
+        :src="item.image?.fileUrl"
+        :alt="item.title"
+        class="thumb"
+      />
+      <div v-else class="thumb empty-thumb">
+        <span class="empty-emoji">{{ emoji }}</span>
+      </div>
+    </div>
 
     <div class="info2">
       <div class="cat2">{{ item.typeName || item.typeCode }}</div>
@@ -117,14 +127,32 @@ const toggleLike = async () => {
   display: block;
 }
 
-.thumb2 {
+.drink-thumb {
   height: 130px;
-  background: var(--surface);
+  background: linear-gradient(145deg, var(--surface), #ede8e0);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 50px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
 }
+
+.thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.empty-thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #aa9d91;
+  font-size: 40px;
+}
+
 
 .info2 {
   padding: 14px 16px;

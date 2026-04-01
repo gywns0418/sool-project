@@ -7,11 +7,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.sool.dto.CommonCodeDto;
 import com.example.sool.dto.DrinkDto;
+import com.example.sool.dto.ImageDto;
 import com.example.sool.dto.LikeDto;
 import com.example.sool.dto.NoteSearchDto;
 import com.example.sool.dto.TastingNoteDto;
 import com.example.sool.dto.TastingNoteMetricDto;
 import com.example.sool.mapper.CommentMapper;
+import com.example.sool.mapper.ImageMapper;
 import com.example.sool.mapper.LikeMapper;
 import com.example.sool.mapper.TastingNoteMapper;
 import com.example.sool.mapper.TastingNoteMetricMapper;
@@ -23,21 +25,30 @@ public class TastingNoteService {
     private final DrinkService drinkService;
     private final LikeMapper likeMapper;
     private final CommentMapper commentMapper;
+    private final ImageMapper imageMapper;
+    private final S3Service s3Service;
 
     public TastingNoteService(TastingNoteMapper tastingNoteMapper,TastingNoteMetricMapper tastingNoteMetricMapper,
-            DrinkService drinkService, LikeMapper likeMapper, CommentMapper commentMapper){
+            DrinkService drinkService, LikeMapper likeMapper, CommentMapper commentMapper,ImageMapper imageMapper,S3Service s3Service){
         this.tastingNoteMapper = tastingNoteMapper;
         this.tastingNoteMetricMapper = tastingNoteMetricMapper;
         this.drinkService = drinkService;
         this.likeMapper = likeMapper;
         this.commentMapper = commentMapper;
+        this.imageMapper = imageMapper;
+        this.s3Service = s3Service;
     }
 
     //테이스팅 노트
 
     //최근 노트 3개 조회
     public List<TastingNoteDto> recentNote(){
-        return tastingNoteMapper.recentNote();
+        List<TastingNoteDto> list = tastingNoteMapper.recentNote();
+        for (TastingNoteDto note : list) {
+            ImageDto image = imageMapper.selectImageByDrinkId(note.getDrinkId());
+            note.setImage(image);
+        }
+        return list;
     }
 
     //주류 디테일 노트 목록
@@ -54,8 +65,7 @@ public class TastingNoteService {
     public TastingNoteDto getNoteDetail(Integer noteId){
         return tastingNoteMapper.getNoteDetail(noteId);
     }
-
-    //노트 수정 기본 정보
+    
     public TastingNoteDto findByNoteId(Integer noteId){
         return tastingNoteMapper.findByNoteId(noteId);
     }
@@ -64,8 +74,14 @@ public class TastingNoteService {
         return tastingNoteMapper.deleteTastingNote(noteId);
     }
 
+    //마이페이지 테이스팅 노트
     public List<TastingNoteDto> findByUserId(Integer userId){
-        return tastingNoteMapper.findByUserId(userId);
+        List<TastingNoteDto> list = tastingNoteMapper.findByUserId(userId);
+        for (TastingNoteDto note : list) {
+            ImageDto image = imageMapper.selectImageByDrinkId(note.getDrinkId());
+            note.setImage(image);
+        }
+        return list;
     }
 
     //테이스팅 노트 맛 점수
@@ -115,6 +131,13 @@ public class TastingNoteService {
             }
         }
 
+        if (dto.getImage() != null) {
+            ImageDto image = dto.getImage();
+            image.setObjId(dto.getNoteId());
+            image.setObjType("NOTE");
+            imageMapper.insertImage(image);
+        }
+
         return dto.getNoteId();
     }
 
@@ -143,6 +166,13 @@ public class TastingNoteService {
             }
         }
 
+        if (dto.getImage() != null) {
+            ImageDto image = dto.getImage();
+            image.setObjId(dto.getNoteId());
+            image.setObjType("NOTE");
+            imageMapper.updateImage(image);
+        }
+
         return dto.getNoteId();
     }
 
@@ -159,6 +189,11 @@ public class TastingNoteService {
         if (!note.getUserId().equals(userId)) {
             throw new IllegalArgumentException("본인이 작성한 노트만 삭제할 수 있습니다.");
         }
+
+        //이미지 삭제
+        ImageDto image = imageMapper.selectImageByNoteId(noteId);
+        imageMapper.deleteImage(image.getImageId());
+        s3Service.delete(image.getFileKey());
 
         //좋아요 삭제
         LikeDto lDto = new LikeDto();
@@ -201,6 +236,9 @@ public class TastingNoteService {
 
         if (dto.getRating() == null || dto.getRating() < 1 || dto.getRating() > 5) {
             throw new IllegalArgumentException("별점은 1점부터 5점까지 입력해주세요.");
+        }
+        if (dto.getImage() == null) {
+            throw new IllegalArgumentException("이미지는 필수입니다.");
         }
     }
 

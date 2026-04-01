@@ -1,7 +1,15 @@
 <template>
   <router-link class="feed-card" :to="`/notes/${displayItem.noteId}`">
     <div class="feed-card-top">
-      <div class="feed-drink-thumb">{{ displayItem.emoji }}</div>
+      <div class="feed-drink-thumb">
+        <img
+          v-if="displayItem.image?.fileUrl"
+          :src="displayItem.image?.fileUrl"
+          :alt="displayItem.drinkName"
+          class="feed-thumb-img"
+        />
+        <span v-else>{{ displayItem.emoji }}</span>
+      </div>
       <div class="feed-drink-info">
         <div class="feed-drink-cat">{{ displayItem.typeName }}</div>
         <div class="feed-drink-name">{{ displayItem.drinkName }}</div>
@@ -90,6 +98,13 @@ function formatDate(dateStr) {
   justify-content: center;
   font-size: 20px;
   flex-shrink: 0;
+}
+
+.feed-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
 }
 
 .feed-drink-cat {

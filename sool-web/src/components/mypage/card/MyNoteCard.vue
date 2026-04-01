@@ -1,7 +1,15 @@
 <template>
   <div class="my-note-card">
     <router-link class="my-note-link" :to="`/notes/${displayItem.noteId}`">
-      <div class="mn-thumb">{{ displayItem.emoji }}</div>
+      <div class="mn-thumb">
+        <img
+          v-if="displayItem.image?.fileUrl"
+          :src="displayItem.image?.fileUrl"
+          :alt="displayItem.drinkName"
+          class="mn-thumb-img"
+        />
+        <span v-else>{{ displayItem.emoji }}</span>
+      </div>
       <div class="mn-content">
         <div class="mn-drink">{{ displayItem.typeName }} - {{ displayItem.drinkName }}</div>
         <div class="mn-title">{{ displayItem.title }}</div>
@@ -80,6 +88,13 @@ function formatDate(value) {
   font-size: 24px;
   flex-shrink: 0;
   border: 1px solid var(--border);
+}
+
+.mn-thumb-img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  border-radius:8px;
 }
 
 .mn-drink {

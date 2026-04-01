@@ -26,6 +26,8 @@ public class DrinkDto {
 
     //추가
 
+    //이미지 저장
+    private ImageDto image;
     
     private Integer likeCount; //좋아요 수
     private boolean liked; //좋아요 표시

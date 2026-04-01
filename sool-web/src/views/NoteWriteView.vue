@@ -126,14 +126,37 @@
         </div>
 
         <div class="form-section">
-          <label class="form-label">사진 업로드</label>
-          <button type="button" class="upload-zone" @click="uploaded = !uploaded">
-            <div class="upload-icon-wrap">📷</div>
-            <p>
-              <em>{{ uploaded ? '사진 선택 완료' : '클릭해서 사진 업로드' }}</em><br />
-              테이스팅 순간을 함께 남겨보세요
-            </p>
-            <div class="up-small">JPG, PNG 파일 업로드 가능</div>
+          <label class="form-label">사진 업로드 *</label>
+
+          <input
+            ref="fileInput"
+            type="file"
+            accept="image/png,image/jpeg,image/jpg,image/webp"
+            style="display:none"
+            @change="handleImageUpload"
+          />
+
+          <button type="button" class="upload-zone" @click="openImageUpload">
+
+            <!-- 이미지 없는 상태 -->
+            <template v-if="!imagePreview">
+              <div class="upload-icon-wrap">📷</div>
+
+              <p>
+                <em>클릭해서 사진 업로드</em><br />
+                테이스팅 순간을 함께 남겨보세요
+              </p>
+
+              <div class="up-small">
+                JPG, JPEG, PNG, WEBP 파일 업로드 가능
+              </div>
+            </template>
+
+            <!-- 이미지 있는 상태 -->
+            <template v-else>
+              <img :src="imagePreview" class="upload-preview" />
+            </template>
+
           </button>
         </div>
       </div>
@@ -168,6 +191,7 @@ import { useRoute, useRouter } from 'vue-router'
 import PageNav from '../components/common/PageNav.vue'
 import { categories } from '@/mock/soolData'
 import { getNoteWriteForm, createNote, getNoteUpdateForm, updateNote } from '@/api/noteApi'
+import { uploadImage, deleteImage } from '@/api/imageApi'
 
 const route = useRoute()
 const router = useRouter()
@@ -177,10 +201,19 @@ const errorMsg = ref('')
 const drink = ref({})
 const title = ref('')
 const selectedStar = ref(1)
-const uploaded = ref(false)
 const memo = ref('')
 const scores = ref([])
 const isSaving = ref(false)
+
+const fileInput = ref(null)
+const selectedImageFile = ref(null)
+const imagePreview = ref('')
+const uploaded = ref(false)
+
+const noteImage = ref(null)
+
+let uploadedFileKey = ''
+let uploadedFileUrl = ''
 
 const isEditMode = computed(() => !!route.params.noteId)
 const drinkId = computed(() => Number(route.params.drinkId))
@@ -205,7 +238,6 @@ function resetForm() {
   drink.value = {}
   title.value = ''
   selectedStar.value = 1
-  uploaded.value = false
   memo.value = ''
   scores.value = []
 }
@@ -218,6 +250,7 @@ function normalizeMetricList(metricList) {
   }))
 }
 
+//작성 기초 정보
 async function fetchWriteForm() {
   try {
     const res = await getNoteWriteForm(drinkId.value)
@@ -231,6 +264,7 @@ async function fetchWriteForm() {
   }
 }
 
+//수정 기초정보 
 async function fetchEditForm() {
   try {
     const res = await getNoteUpdateForm(noteId.value)
@@ -239,6 +273,9 @@ async function fetchEditForm() {
     const drinkData = res.data?.drink || {}
     const noteData = res.data?.note || {}
     const metricList = res.data?.metricList || []
+    
+    noteImage.value = res.data?.image || null
+    imagePreview.value = res.data?.image?.fileUrl || ''
 
     drink.value = {
       drinkId: drinkData.drinkId,
@@ -260,12 +297,14 @@ async function fetchEditForm() {
   }
 }
 
+//주류 이미지 없을때 기본 이모티콘 표시
 const drinkEmoji = computed(() => {
   const code = drink.value?.categoryCode
   const emojiData = categories.find(e => e.name === code)
   return emojiData ? emojiData.emoji : '🍹'
 })
 
+//페이지 표시
 async function fetchPageData() {
   resetForm()
 
@@ -277,13 +316,41 @@ async function fetchPageData() {
   await fetchWriteForm()
 }
 
+//저장하기 버튼
 const saveNote = async () => {
   if (isSaving.value) return
+
+  if(!title.value){
+    alert("제목을 입력해주세요")
+    return
+  }
+
+  if(!memo.value){
+    alert("내용을 입력해주세요")
+    return
+  }
+
+  if (!imagePreview.value) {
+    alert("이미지를 추가해주세요")
+    return
+  }
 
   errorMsg.value = ''
 
   try {
     isSaving.value = true
+
+    if(selectedImageFile.value){
+      const formData = new FormData()
+      formData.append('file', selectedImageFile.value)
+      formData.append('dirName', 'NOTE')
+
+      const uploadRes = await uploadImage(formData)
+
+      uploadedFileKey = uploadRes.data.fileKey
+      uploadedFileUrl = uploadRes.data.fileUrl
+    }
+
 
     const payload = {
       drinkId: drink.value.drinkId,
@@ -293,11 +360,27 @@ const saveNote = async () => {
       metricList: scores.value.map(m => ({
         metricCode: m.code,
         score: m.value
-      }))
+      })),
+      image:{
+        fileUrl: uploadedFileUrl || noteImage.value?.fileUrl || '',
+        fileKey: uploadedFileKey || noteImage.value?.fileKey || ''
+      }
     }
 
     if (isEditMode.value) {
       await updateNote(noteId.value, payload)
+
+      // 새 이미지 업로드했으면 기존 이미지 삭제
+      if (uploadedFileKey && noteImage.value?.fileKey) {
+        try {
+          console.log("filekey : ",noteImage.value?.fileKey)
+          console.log("uploadedFileKey : ",uploadedFileKey)
+          await deleteImage(noteImage.value?.fileKey)
+        } catch (error) {
+          console.log('기존 이미지 삭제 실패', error)
+        }
+      }
+
       alert('노트가 수정되었습니다.')
       router.push(`/notes/${noteId.value}`)
       return
@@ -312,6 +395,14 @@ const saveNote = async () => {
       router.push(`/notes/${createdNoteId}`)
     }
   } catch (e) {
+    if (uploadedFileKey) {
+      try {
+        await deleteImage(uploadedFileKey)
+      } catch (deleteError) {
+        console.log('업로드 이미지 삭제 실패', deleteError)
+      }
+    }
+    
     errorMsg.value = e.response?.data?.message || '노트 저장 중 오류가 발생했습니다.'
     alert(errorMsg.value)
   } finally {
@@ -331,6 +422,21 @@ function goBack() {
   }
 
   router.back()
+}
+
+function openImageUpload() {
+  fileInput.value.click()
+}
+
+function handleImageUpload(e) {
+  const file = e.target.files[0]
+  console.log("file : ",file)
+
+  if (!file) return
+
+  selectedImageFile.value = file
+  imagePreview.value = URL.createObjectURL(file)
+  uploaded.value = true
 }
 
 onMounted(() => {
@@ -640,6 +746,14 @@ onMounted(() => {
 .cancel-btn:disabled {
   opacity: 0.65;
   cursor: not-allowed;
+}
+
+.upload-preview{
+  width:  400px;
+  height: 400px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
 }
 
 @media (max-width: 900px) {

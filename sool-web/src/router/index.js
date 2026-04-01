@@ -12,6 +12,7 @@ import FindIdView from "@/views/auth/FindIdView.vue"
 import ResetPasswordView from "@/views/auth/ResetPasswordView.vue"
 import NotFoundView from "@/views/NotFoundView.vue"
 
+
 const routes = [
   { path: "/", name: "home", component: HomeView },
   { path: "/drinks", name: "drink-list", component: DrinkListView },

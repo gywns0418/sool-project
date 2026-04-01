@@ -16,11 +16,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.sool.dto.CommonCodeDto;
 import com.example.sool.dto.DrinkDto;
+import com.example.sool.dto.ImageDto;
 import com.example.sool.dto.NoteSearchDto;
 import com.example.sool.dto.TastingNoteDto;
 import com.example.sool.dto.TastingNoteMetricDto;
 import com.example.sool.security.CustomUserDetails;
 import com.example.sool.service.DrinkService;
+import com.example.sool.service.ImageService;
 import com.example.sool.service.TastingNoteService;
 
 @RestController
@@ -29,10 +31,12 @@ public class TastingNoteController {
 
     private final TastingNoteService tastingNoteService;
     private final DrinkService drinkService;
+    private final ImageService imageService;
 
-    public TastingNoteController(TastingNoteService tastingNoteService, DrinkService drinkService){
+    public TastingNoteController(TastingNoteService tastingNoteService, DrinkService drinkService,ImageService imageService){
         this.tastingNoteService = tastingNoteService;
         this.drinkService = drinkService;
+        this.imageService = imageService;
     }
 
     //노트 목록
@@ -70,8 +74,10 @@ public class TastingNoteController {
         }
 
         List<TastingNoteMetricDto> metriclist = tastingNoteService.findMetricByNoteId(noteId);
-
         noteDetail.setMetricList(metriclist);
+
+        ImageDto image = imageService.selectImageByNoteId(noteId);
+        noteDetail.setImage(image);
 
         return ResponseEntity.ok(noteDetail);
     }
@@ -124,7 +130,7 @@ public class TastingNoteController {
                     .body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "노트 저장 중 오류가 발생했습니다."));
+                    .body(Map.of("message", e.getMessage()));
         }
     }
 
@@ -141,10 +147,13 @@ public class TastingNoteController {
         //저장된 카테고리별 맛 프로파일 항목
         List<TastingNoteMetricDto> metricList = tastingNoteService.findMetricByNoteId(noteId);
 
+        ImageDto image = imageService.selectImageByNoteId(noteId);
+
         Map<String, Object> result = new HashMap<>();
         result.put("drink", drink);
         result.put("note", note);
         result.put("metricList", metricList);
+        result.put("image",image);
 
         return ResponseEntity.ok(result);
     }

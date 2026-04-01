@@ -22,6 +22,9 @@ public class TastingNoteDto {
     //노트 작성
     private List<TastingNoteMetricDto> metricList;
 
+    //이미지 저장
+    private ImageDto image;
+
     //홈 최근 테이스팅 노트 
     private String userName;
     

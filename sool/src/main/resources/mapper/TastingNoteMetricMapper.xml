@@ -65,6 +65,7 @@
             AND cc.group_code = 'TASTE_METRIC'
             
         WHERE note_id = #{noteId}
+        ORDER BY cc.sort_seq
     </select>
 
     <!-- 주류 디테일 평균 맛 프로파일 -->

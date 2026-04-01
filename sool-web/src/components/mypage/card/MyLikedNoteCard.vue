@@ -5,9 +5,9 @@
       <div class="liked-card-top">
         <div class="thumb-wrap">
           <img
-            v-if="displayItem.imageUrl"
-            :src="displayItem.imageUrl"
-            :alt="displayItem.title || displayItem.drinkName"
+            v-if="displayItem.image?.fileUrl"
+            :src="displayItem.image?.fileUrl"
+            :alt="displayItem.title"
             class="thumb"
           />
           <div v-else class="thumb empty-thumb">
@@ -104,7 +104,7 @@ function formatDate(value) {
 .thumb {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
 }
 

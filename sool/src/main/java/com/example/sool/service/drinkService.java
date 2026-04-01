@@ -8,7 +8,10 @@ import org.springframework.stereotype.Service;
 
 import com.example.sool.dto.DrinkDto;
 import com.example.sool.dto.DrinkSearchDto;
+import com.example.sool.dto.ImageDto;
+import com.example.sool.dto.TastingNoteDto;
 import com.example.sool.mapper.DrinkMapper;
+import com.example.sool.mapper.ImageMapper;
 
 @Service
 public class DrinkService {
@@ -17,8 +20,12 @@ public class DrinkService {
 
     private final RedisTemplate<String, Object> redisTemplate;
 
-    public DrinkService(DrinkMapper drinkMapper,RedisTemplate<String, Object> redisTemplate) {
+    private final ImageMapper imageMapper;
+
+    public DrinkService(DrinkMapper drinkMapper,ImageMapper imageMapper,
+                            RedisTemplate<String, Object> redisTemplate) {
         this.drinkMapper = drinkMapper;
+        this.imageMapper = imageMapper;
         this.redisTemplate = redisTemplate;
     }
 
@@ -37,6 +44,10 @@ public class DrinkService {
 
         //redis에 데이터 없을 때 주류 top4
         List<DrinkDto> list = drinkMapper.drinkTop();
+        for (DrinkDto drink : list) {
+            ImageDto image = imageMapper.selectImageByDrinkId(drink.getDrinkId());
+            drink.setImage(image);
+        }
 
         //redis에 데이터 삽입
         redisTemplate.opsForValue().set(key, list, Duration.ofMinutes(10));
@@ -46,7 +57,12 @@ public class DrinkService {
 
     //검색
     public List<DrinkDto> searchDrinkList(DrinkSearchDto drinkSearchDto) {
-        return drinkMapper.searchDrinkList(drinkSearchDto);
+        List<DrinkDto> list = drinkMapper.searchDrinkList(drinkSearchDto);
+        for (DrinkDto drink : list) {
+            ImageDto image = imageMapper.selectImageByDrinkId(drink.getDrinkId());
+            drink.setImage(image);
+        }
+        return list;
     }
 
     //검색 총 갯수
@@ -56,7 +72,12 @@ public class DrinkService {
 
     //필터(카테고리, 도수, 가격)
     public List<DrinkDto> getFilterList(DrinkSearchDto drinkSearchDto) {
-        return drinkMapper.getFilterList(drinkSearchDto);
+        List<DrinkDto> list = drinkMapper.getFilterList(drinkSearchDto);
+        for (DrinkDto drink : list) {
+            ImageDto image = imageMapper.selectImageByDrinkId(drink.getDrinkId());
+            drink.setImage(image);
+        }
+        return list;
     }
 
     //필터 총 갯수
@@ -66,7 +87,12 @@ public class DrinkService {
 
     //주류 디테일 이동
     public DrinkDto findByDrinkId(Integer drinkId) {
-        return drinkMapper.findByDrinkId(drinkId);
+
+        DrinkDto drink = drinkMapper.findByDrinkId(drinkId);
+        ImageDto image = imageMapper.selectImageByDrinkId(drinkId);
+        drink.setImage(image);
+
+        return drink;
     }
 
     //노트 아이디로 주류 정보

@@ -64,13 +64,21 @@ public class S3Service {
     }
 
     //s3 파일 삭제
-    public void delete(String fileKey) {
-        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
-                .bucket(bucket)
-                .key(fileKey)
-                .build();
+    public boolean delete(String fileKey) {
+        try {
+            DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(fileKey)
+                    .build();
 
-        s3Client.deleteObject(deleteObjectRequest);
+            s3Client.deleteObject(deleteObjectRequest);
+            return true;
+
+        } catch (Exception e) {
+            System.out.println("S3 파일 삭제 실패 : " + fileKey);
+            e.printStackTrace();
+            return false;
+        }
     }
 
     //업로드 파일 형식 확인
@@ -93,7 +101,7 @@ public class S3Service {
         String extension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
 
         if (!ALLOWED_EXTENSIONS.contains(extension)) {
-            throw new IllegalArgumentException("지원하지 않는 파일 형식입니다. (png, jpg, jpeg, webp)");
+            throw new IllegalArgumentException("지원하지 않는 파일 형식입니다. (png, jpg, jpeg, webp만 사용가능)");
         }
     }
 }

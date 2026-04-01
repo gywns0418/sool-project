@@ -17,8 +17,8 @@
         VALUES (
             #{objId},
             #{objType},
-            #{file_key},
-            #{file_url},
+            #{fileKey},
+            #{fileUrl},
             NOW()
         )
     </insert>
@@ -27,25 +27,36 @@
     <select id="selectImageById" parameterType="int" resultType="com.example.sool.dto.ImageDto">
         SELECT *
         FROM image
-        WHERE image_id = #{image_id}
+        WHERE image_id = #{imageId}
     </select>
 
     <!-- 노트 이미지 조회 -->
-    <select id="selectImageListByNoteId" parameterType="int" resultType="com.example.sool.dto.ImageDto">
+    <select id="selectImageByNoteId" parameterType="int" resultType="com.example.sool.dto.ImageDto">
         SELECT *
         FROM image
-        WHERE obj_id = #{note_id}
+        WHERE obj_id = #{objId}
         AND obj_type = 'NOTE'
         ORDER BY image_id DESC
     </select>
 
     <!-- 주류 이미지 조회 -->
-    <select id="selectImageListByDrinkId" parameterType="int" resultType="com.example.sool.dto.ImageDto">
+    <select id="selectImageByDrinkId" parameterType="int" resultType="com.example.sool.dto.ImageDto">
         SELECT *
         FROM image
-        WHERE drink_id = #{drink_id}
+        WHERE obj_id = #{objId}
+        AND obj_type = 'DRINK'
         ORDER BY image_id DESC
     </select>
+
+    <!--이미지 업데이트-->
+    <update id="updateImage" parameterType="com.example.sool.dto.ImageDto">
+        UPDATE image
+        SET
+            file_key = #{fileKey},
+            file_url = #{fileUrl}
+        WHERE obj_type = #{objType}
+        AND obj_id = #{objId}
+    </update>
 
     <!-- 이미지 삭제 -->
     <delete id="deleteImage" parameterType="int">

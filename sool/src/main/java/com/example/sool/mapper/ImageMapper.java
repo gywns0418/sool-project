@@ -11,13 +11,15 @@ public interface ImageMapper {
 
     int insertImage(ImageDto imageDto);
 
-    ImageDto selectImageById(int image_id);
+    ImageDto selectImageByNoteId(int objId);
 
-    List<ImageDto> selectImageListByNoteId(int note_id);
+    ImageDto selectImageByDrinkId(int objId);
 
-    List<ImageDto> selectImageListByDrinkId(int drink_id);
+    ImageDto selectImageById(int imageId);
 
-    int deleteImage(int image_id);
+    int updateImage(ImageDto dto);
+
+    int deleteImage(int imageId);
 
     int deleteImageByUserId(int userId);
 }

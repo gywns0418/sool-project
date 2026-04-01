@@ -9,17 +9,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.sool.dto.DrinkDto;
+import com.example.sool.dto.ImageDto;
 import com.example.sool.dto.LikeDto;
 import com.example.sool.dto.TastingNoteDto;
+import com.example.sool.mapper.ImageMapper;
 import com.example.sool.mapper.LikeMapper;
 
 @Service
 public class LikeService {
     private final LikeMapper likeMapper;
+    private final ImageMapper imageMapper;
     private final RedisTemplate<String, Object> redisTemplate;
 
-    public LikeService(LikeMapper likeMapper, RedisTemplate<String, Object> redisTemplate){
+    public LikeService(LikeMapper likeMapper, ImageMapper imageMapper, RedisTemplate<String, Object> redisTemplate){
         this.likeMapper = likeMapper;
+        this.imageMapper = imageMapper;
         this.redisTemplate = redisTemplate;
     }
 
@@ -62,7 +66,16 @@ public class LikeService {
     public Map<String, Object> getMyLikes(int userId) {
         
         List<TastingNoteDto> likedNoteList = likeMapper.findLikedNoteList(userId);
+        for (TastingNoteDto note : likedNoteList) {
+            ImageDto image = imageMapper.selectImageByNoteId(note.getNoteId());
+            note.setImage(image);
+        }
+
         List<DrinkDto> likedDrinkList = likeMapper.findLikedDrinkList(userId);
+        for (DrinkDto drink : likedDrinkList) {
+            ImageDto image = imageMapper.selectImageByDrinkId(drink.getDrinkId());
+            drink.setImage(image);
+        }
 
         Map<String, Object> result = new HashMap<>();
         result.put("likedNoteList", likedNoteList);

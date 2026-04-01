@@ -179,9 +179,7 @@ const formattedDate = computed(() => {
 
 const drinkName = computed(() => {
   return (
-    noteDetail.value?.drinkName ||
-    noteDetail.value?.drink_name ||
-    '주류 정보 없음'
+    noteDetail.value?.drinkName ||'주류 정보 없음'
   )
 })
 
@@ -201,9 +199,10 @@ const star = computed(() => {
   return '★'.repeat(full) + '☆'.repeat(5 - full)
 })
 
+//이미지
 const noteImageUrl = computed(() => {
   return (
-    noteDetail.value?.imageUrl || ''
+    noteDetail.value?.image?.fileUrl || ''
   )
 })
 
@@ -300,9 +299,10 @@ const fetchNoteDetail = async () => {
   try {
     const noteId = route.params.id
     const res = await getNoteDetail(noteId)
+    console.log("note : ",res.data)
 
-    noteDetail.value = res.data?.noteDetail || res.data || null
-    metricList.value = res.data?.list || res.data?.metricList || []
+    noteDetail.value = res.data || null
+    metricList.value = res.data?.metricList || []
     likeCount.value = Number(
       res.data?.noteDetail?.likeCount ??
       res.data?.likeCount ??
@@ -323,7 +323,7 @@ const fetchComments = async () => {
   try {
     const noteId = route.params.id
     const res = await getComments(noteId)
-    console.log(res.data)
+    console.log("comment: ",res.data)
 
     commentList.value =  res.data || []
   } catch (error) {
@@ -509,14 +509,18 @@ onMounted(() => {
 }
 
 .nd-photo-img-wrap {
-  padding: 0;
+  width: 80%;
+  height: 400px;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .nd-photo-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
   display: block;
 }
 

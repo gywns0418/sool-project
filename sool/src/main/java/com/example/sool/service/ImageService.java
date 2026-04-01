@@ -39,12 +39,14 @@ public class ImageService {
         return imageMapper.selectImageById(image_id);
     }
 
-    public List<ImageDto> selectImageListByNoteId(int note_id) {
-        return imageMapper.selectImageListByNoteId(note_id);
+    //노트 이미지 선택
+    public ImageDto selectImageByNoteId(int objId) {
+        return imageMapper.selectImageByNoteId(objId);
     }
 
-    public List<ImageDto> selectImageListByDrinkId(int drink_id) {
-        return imageMapper.selectImageListByDrinkId(drink_id);
+    //주류 이미지 선택
+    public ImageDto selectImageByDrinkId(int objId) {
+        return imageMapper.selectImageByDrinkId(objId);
     }
 
 
