@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,52 +30,40 @@ public class DrinkController {
         this.commonCodeService = commonCodeService;
     }
 
+    //주류 목록 조회
     @GetMapping("")
-    public Map<String, Object> getDrinkList(DrinkSearchDto dto,Authentication authentication){
-        
+    public ResponseEntity<?> getDrinkList(DrinkSearchDto dto, Authentication authentication) {
+
+        //로그인 사용자 확인
         if (authentication != null
                 && authentication.isAuthenticated()
                 && authentication.getPrincipal() instanceof CustomUserDetails userDetails) {
+
+            //로그인 상태이면 userId 세팅
             dto.setUserId(userDetails.getUserId());
+
         } else {
+            //비회원일 경우 null 처리
             dto.setUserId(null);
         }
 
         System.out.println("dto = " + dto);
 
-        List<DrinkDto> list;
-        int totalCount;
+        //서비스 호출
+        Map<String, Object> result = drinkService.getDrinkList(dto);
 
-        if (dto.getKeyword() != null && !dto.getKeyword().trim().isEmpty()) {
-            //검색어 있는 경우
-            list = drinkService.searchDrinkList(dto);
-            totalCount = drinkService.searchDrinkCount(dto);
-        } else {
-            //없는 경우 필터
-            list = drinkService.getFilterList(dto);
-            totalCount = drinkService.getFilterCount(dto);
-        }
-
-        //페이지수 올림 처리
-        int totalPage = (int) Math.ceil((double) totalCount / dto.getSize());
-
-        Map<String, Object> result = new HashMap<>();
-        result.put("list", list);
-        result.put("totalCount", totalCount);
-        result.put("page", dto.getPage());
-        result.put("size", dto.getSize());
-        result.put("totalPage", totalPage);
-
-        return result;
+        //응답 반환
+        return ResponseEntity.ok(result);
     }
 
-    
+    //목록의 사이드바 카테고리
     @GetMapping("/categories")
     public List<CommonCodeDto> selectCategoryList() {
 
         return commonCodeService.selectCategoryList();
     }
 
+    //주류 디테일
     @GetMapping("/{drinkId}")
     public DrinkDto getDrinkDetail(@PathVariable Integer drinkId){
         return drinkService.findByDrinkId(drinkId);

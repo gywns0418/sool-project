@@ -1,7 +1,9 @@
 package com.example.sool.service;
 
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -55,34 +57,43 @@ public class DrinkService {
         return list;
     }
 
-    //검색
-    public List<DrinkDto> searchDrinkList(DrinkSearchDto drinkSearchDto) {
-        List<DrinkDto> list = drinkMapper.searchDrinkList(drinkSearchDto);
+    //주류 목록 조회 (검색 + 필터 + 페이지 처리)
+    public Map<String, Object> getDrinkList(DrinkSearchDto dto) {
+
+        List<DrinkDto> list;
+        int totalCount;
+
+        //검색어 존재 여부 확인
+        boolean hasKeyword = dto.getKeyword() != null && !dto.getKeyword().trim().isEmpty();
+
+        if (hasKeyword) {
+            //검색어 기반 조회
+            list = drinkMapper.searchDrinkList(dto);
+            totalCount = drinkMapper.searchDrinkCount(dto);
+        } else {
+            //필터 기반 조회 (카테고리, 도수, 가격)
+            list = drinkMapper.getFilterList(dto);
+            totalCount = drinkMapper.getFilterCount(dto);
+        }
+
+        //주류별 대표 이미지 조회 후 세팅
         for (DrinkDto drink : list) {
             ImageDto image = imageMapper.selectImageByDrinkId(drink.getDrinkId());
             drink.setImage(image);
         }
-        return list;
-    }
 
-    //검색 총 갯수
-    public int searchDrinkCount(DrinkSearchDto drinkSearchDto) {
-        return drinkMapper.searchDrinkCount(drinkSearchDto);
-    }
+        //총 페이지 계산 (올림 처리)
+        int totalPage = (int) Math.ceil((double) totalCount / dto.getSize());
 
-    //필터(카테고리, 도수, 가격)
-    public List<DrinkDto> getFilterList(DrinkSearchDto drinkSearchDto) {
-        List<DrinkDto> list = drinkMapper.getFilterList(drinkSearchDto);
-        for (DrinkDto drink : list) {
-            ImageDto image = imageMapper.selectImageByDrinkId(drink.getDrinkId());
-            drink.setImage(image);
-        }
-        return list;
-    }
+        //응답 데이터 구성
+        Map<String, Object> result = new HashMap<>();
+        result.put("list", list);
+        result.put("totalCount", totalCount);
+        result.put("page", dto.getPage());
+        result.put("size", dto.getSize());
+        result.put("totalPage", totalPage);
 
-    //필터 총 갯수
-    public int getFilterCount(DrinkSearchDto drinkSearchDto) {
-        return drinkMapper.getFilterCount(drinkSearchDto);
+        return result;
     }
 
     //주류 디테일 이동

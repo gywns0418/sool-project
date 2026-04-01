@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router"
+import { useAuthStore } from "@/stores/authStore"
 
 import HomeView from "@/views/HomeView.vue"
 import DrinkListView from "@/views/DrinkListView.vue"
@@ -18,9 +19,9 @@ const routes = [
   { path: "/drinks", name: "drink-list", component: DrinkListView },
   { path: "/drinks/:id", name: "drink-detail", component: DrinkDetailView },
   { path: "/notes/:id", name: "note-detail", component: NoteDetailView },
-  { path: "/write/:drinkId", name: "note-write", component: NoteWriteView },
-  { path: "/notes/:noteId/edit", name: "note-edit", component: NoteWriteView },
-  { path: "/mypage", name: "mypage", component: MyPageView },
+  { path: "/write/:drinkId", name: "note-write", component: NoteWriteView, meta: { requiresAuth: true } },
+  { path: "/notes/:noteId/edit", name: "note-edit", component: NoteWriteView, meta: { requiresAuth: true } },
+  { path: "/mypage", name: "mypage", component: MyPageView, meta: { requiresAuth: true } },
   { path: "/login", name: "login", component: LoginView },
   { path: "/signup", name: "signup", component: SignupView },
   { path: "/find-id", name: "find-id", component: FindIdView },
@@ -36,6 +37,17 @@ const router = createRouter({
   scrollBehavior() {
     return { top: 0 }
   }
+})
+
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore()
+
+  if (to.meta.requiresAuth && !authStore.isLogin) {
+    alert('로그인이 필요합니다.')
+    return next('/login')
+  }
+
+  next()
 })
 
 

@@ -410,6 +410,7 @@ const saveNote = async () => {
   }
 }
 
+//노트 취소
 function goBack() {
   if (isEditMode.value && noteId.value) {
     router.push(`/notes/${noteId.value}`)
@@ -424,17 +425,20 @@ function goBack() {
   router.back()
 }
 
+//이미지 업로드 창
 function openImageUpload() {
   fileInput.value.click()
 }
 
+//이미지 업로드 처리
 function handleImageUpload(e) {
-  const file = e.target.files[0]
+  const file = e.target.files[0]  //여러개 선택하더라도 첫번째 것만 선택
   console.log("file : ",file)
 
   if (!file) return
 
   selectedImageFile.value = file
+  //미리보기 url 생성
   imagePreview.value = URL.createObjectURL(file)
   uploaded.value = true
 }
