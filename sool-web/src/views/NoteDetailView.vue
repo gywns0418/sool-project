@@ -95,7 +95,7 @@
             <input
               v-model="newComment"
               type="text"
-              maxlength="500"
+              maxlength="100"
               placeholder="댓글을 입력하세요"
             />
             <button class="cm-send" :disabled="commentSubmitting">
@@ -153,7 +153,6 @@ const navLinks = computed(() => [
 const authorName = computed(() => {
   return (
     noteDetail.value?.userName ||
-    noteDetail.value?.name ||
     noteDetail.value?.loginId ||
     '작성자 미상'
   )

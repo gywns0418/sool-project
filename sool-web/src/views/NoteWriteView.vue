@@ -192,9 +192,12 @@ import PageNav from '../components/common/PageNav.vue'
 import { categories } from '@/mock/soolData'
 import { getNoteWriteForm, createNote, getNoteUpdateForm, updateNote } from '@/api/noteApi'
 import { uploadImage, deleteImage } from '@/api/imageApi'
+import { useAuthStore } from '@/stores/authStore'
+
 
 const route = useRoute()
 const router = useRouter()
+const authStore = useAuthStore()
 
 const errorMsg = ref('')
 
@@ -443,8 +446,20 @@ function handleImageUpload(e) {
   uploaded.value = true
 }
 
-onMounted(() => {
-  fetchPageData()
+onMounted(async () => {
+  const wasLogin = authStore.isLogin
+
+  await authStore.fetchMe()
+
+  if (!authStore.isLogin) {
+    if (wasLogin) {
+      alert('세션이 만료되었습니다. 다시 로그인해주세요.')
+    }
+    router.replace('/login')
+    return
+  }
+
+  await fetchPageData()
 })
 </script>
 

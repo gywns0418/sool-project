@@ -69,6 +69,7 @@ import MyReportsSection from '../components/mypage/MyReportsSection.vue'
 
 import { getMySidebarInfo, deleteUser } from '@/api/mypageApi'
 
+
 const authStore = useAuthStore()
 const router = useRouter()
 const activeTab = ref('notes')
@@ -128,8 +129,20 @@ const changeTab = (tab) => {
   goTop()
 }
 
-onMounted(() => {
-  fetchSidebarInfo()
+onMounted(async () => {
+  const wasLogin = authStore.isLogin
+
+  await authStore.fetchMe()
+
+  if (!authStore.isLogin) {
+    if (wasLogin) {
+      alert('세션이 만료되었습니다. 다시 로그인해주세요.')
+    }
+    router.replace('/login')
+    return
+  }
+
+  await fetchSidebarInfo()
 })
 </script>
 

@@ -49,7 +49,7 @@ public class ReportController {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         dto.setUserId(userDetails.getUserId());
 
-        //신고 정보 제대로 들어왔는지 확인
+        //신고 정보 확인
         validateReportRequest(dto);
 
         reportService.insertReport(dto);
@@ -95,6 +95,4 @@ public class ReportController {
         result.put("message", e.getMessage());
         return result;
     }
-
-
 }

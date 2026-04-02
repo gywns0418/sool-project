@@ -2,9 +2,12 @@
   <router-link class="note-card" :to="`/notes/${item.noteId}`">
     <div>
       <div class="note-author">
-        <div class="avatar" :class="item.avatarClass">{{ item.authorInitial }}</div>
+        <div class="avatar" :class="item.avatarClass" 
+        :style="{backgroundColor: avatarColor}">
+          {{ authorInitial }}
+        </div>
         <div>
-          <div class="author-name">{{ item.userName }}</div>
+          <div class="author-name">{{ authorName }}</div>
           <div class="note-date">{{ formatDate(item.createdAt) }}</div>
         </div>
       </div>
@@ -34,7 +37,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 import { useRouter, useRoute } from 'vue-router'
 import { getNoteLike, insertNoteLike, deleteNoteLike } from '@/api/likeApi'
@@ -69,6 +72,31 @@ function formatDate(dateStr) {
   return `${year}.${month}.${day}`
 }
 
+const authorName = computed(() => {
+  const name = props.item.userName
+  return name && name.trim() !== '' ? name : '작성자 미상'
+})
+
+const authorInitial = computed(() => {
+  const name = props.item.userName
+  if (!name || name.trim() === '') return '?'
+  return name.charAt(0)
+})
+
+const avatarColor = computed(() => {
+  const name = props.item.userName || '작성자 미상'
+
+  let hash = 0
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  }
+
+  const hue = hash % 360
+
+  return `hsl(${hue}, 30%, 40%)`
+})
+
+//좋아요 상태
 const fetchLikeStatus = async () => {
   try {
     const res = await getNoteLike(props.item.noteId)
@@ -78,6 +106,7 @@ const fetchLikeStatus = async () => {
   }
 }
 
+//좋아요 표시
 const toggleLike = async () => {
   if (loading.value) return
 
@@ -140,11 +169,12 @@ onMounted(() => {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: var(--ink);
+
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
+
   font-size: 11px;
   font-weight: 600;
 }

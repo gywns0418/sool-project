@@ -37,7 +37,7 @@ public class CommentController {
     @PostMapping("/notes/{noteId}/comments")
     public ResponseEntity<?> createComment(@PathVariable int noteId,@RequestBody CommentDto dto,
             Authentication authentication){
-
+        //로그인 확인
         if (authentication == null || !authentication.isAuthenticated()
                 || "anonymousUser".equals(authentication.getPrincipal())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
@@ -57,7 +57,7 @@ public class CommentController {
     @PostMapping("/notes/{noteId}/comments/reply")
     public ResponseEntity<?> createReply(@PathVariable int noteId, @RequestBody CommentDto dto,
             Authentication authentication){
-
+        //로그인 확인
         if (authentication == null || !authentication.isAuthenticated()
                 || "anonymousUser".equals(authentication.getPrincipal())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");

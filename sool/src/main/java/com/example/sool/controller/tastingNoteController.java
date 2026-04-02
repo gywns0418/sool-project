@@ -73,12 +73,6 @@ public class TastingNoteController {
                     .body("존재하지 않는 테이스팅 노트입니다.");
         }
 
-        List<TastingNoteMetricDto> metriclist = tastingNoteService.findMetricByNoteId(noteId);
-        noteDetail.setMetricList(metriclist);
-
-        ImageDto image = imageService.selectImageByNoteId(noteId);
-        noteDetail.setImage(image);
-
         return ResponseEntity.ok(noteDetail);
     }
 
@@ -86,7 +80,6 @@ public class TastingNoteController {
     //노트 작성 정보
     @GetMapping("/notes/write/{drinkId}")
     public ResponseEntity<Map<String, Object>> getNoteWriteForm(@PathVariable int drinkId) {
-        System.out.println(drinkId);
 
         //주류 정보
         DrinkDto drink = drinkService.findByDrinkId(drinkId);

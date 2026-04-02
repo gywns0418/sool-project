@@ -39,6 +39,7 @@ public class MyPageController {
         this.tastingNoteService = tastingNoteService;
     }
 
+    //사이드바 정보
     @GetMapping("/sidebar")
     public UserDto getMySidebar(Authentication authentication) {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
@@ -47,6 +48,7 @@ public class MyPageController {
         return userService.getMyPageSidebar(userId);
     }
 
+    //기본 정보 수정
     @PostMapping("/profile")
     public ResponseEntity<?> updateUser(@RequestBody @Validated UserDto dto,
         Authentication authentication) {
@@ -60,7 +62,7 @@ public class MyPageController {
         dto.setUserId(userDetails.getUserId());
 
         try {
-            userService.updateUser(dto);
+            userService.updateUser(dto);   
             return ResponseEntity.ok("기본 정보가 수정되었습니다.");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

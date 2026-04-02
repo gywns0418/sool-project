@@ -66,9 +66,23 @@ public class TastingNoteService {
         return tastingNoteMapper.countNoteByDrinkId(noteSearchDto);
     }
 
-    //노트 디테일 
-    public TastingNoteDto getNoteDetail(Integer noteId){
-        return tastingNoteMapper.getNoteDetail(noteId);
+    //노트 디테일
+    public TastingNoteDto getNoteDetail(Integer noteId) {
+        TastingNoteDto noteDetail = tastingNoteMapper.getNoteDetail(noteId); //노트의 저장 정보
+
+        if (noteDetail == null) {
+            return null;
+        }
+
+        //해당하는 노트의 맛 프로파일
+        List<TastingNoteMetricDto> metricList = tastingNoteMetricMapper.findByNoteId(noteId);
+        noteDetail.setMetricList(metricList);
+
+        //노트 이미지
+        ImageDto image = imageMapper.selectImageByNoteId(noteId);
+        noteDetail.setImage(image);
+
+        return noteDetail;
     }
     
     //노트 기본 정보
@@ -88,7 +102,7 @@ public class TastingNoteService {
         return list;
     }
 
-    //테이스팅 노트 맛 점수*******************************************************************
+    //****************************테이스팅 노트 맛 점수************************************
 
     //맛 프로파일 정보 가져오기
     public List<CommonCodeDto> getMetricCode(int drinkId){

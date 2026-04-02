@@ -14,10 +14,12 @@ export const useAuthStore = defineStore("auth", {
   actions: {
     setUser(user) {
       this.user = user
+      this.initialized = true
     },
 
     clearUser() {
       this.user = null
+      this.initialized = true
     },
 
     //로그인
@@ -29,9 +31,11 @@ export const useAuthStore = defineStore("auth", {
         })
 
         this.user = res.data
+        this.initialized = true
         return res.data
       } catch (error) {
         this.user = null
+        this.initialized = true
         throw error
       }
     },
@@ -41,11 +45,11 @@ export const useAuthStore = defineStore("auth", {
       try {
         await api.post("/auth/logout")
       } finally {
-        this.user = null
+        this.clearUser()
       }
     },
 
-    //로그인 시 확인
+    //로그인 상태 확인
     async fetchMe() {
       try {
         const res = await api.get("/auth/me")

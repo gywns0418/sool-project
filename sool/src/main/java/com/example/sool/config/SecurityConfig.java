@@ -34,17 +34,14 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
         http
             // Vue 프론트 요청 허용
             .cors(Customizer.withDefaults())
 
             // 세션 기반 REST API 방식 ->  csrf 비활성화
             .csrf(csrf -> csrf.disable())
-
             // 스프링 기본 로그인 페이지 사용 안 함
             .formLogin(form -> form.disable())
-
             // http basic 인증 사용 안 함
             .httpBasic(basic -> basic.disable())
 
@@ -89,6 +86,7 @@ public class SecurityConfig {
         return http.build();
     }
 
+    //아이디로 사용자 조회 / 암호화된 비밀번호 비교 *인증담당*
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         //UserDetailsService를 생성자에 바로 전달
@@ -100,6 +98,7 @@ public class SecurityConfig {
         return provider;
     }
 
+    //로그인 컨트롤러에서 사용할 객체 생성
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         // AuthController에서 사용할 AuthenticationManager 등록

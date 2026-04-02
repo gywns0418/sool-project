@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-
 import com.example.sool.dto.S3UploadResultDto;
 import com.example.sool.service.S3Service;
 
@@ -26,7 +25,8 @@ public class ImageController {
     @PostMapping("/upload")
     public ResponseEntity<S3UploadResultDto> uploadImage( 
         @RequestParam("file") MultipartFile file, @RequestParam("dirName") String dirName) throws IOException {
-
+        
+        //S3에 파일 업로드 및 fileKey, fileUrl 반환
         S3UploadResultDto result = s3Service.upload(file, dirName);
 
         return ResponseEntity.ok(result);
@@ -35,6 +35,7 @@ public class ImageController {
     @PostMapping("/delete")
     public ResponseEntity<?> deleteImage(@RequestParam("fileKey") String fileKey){
 
+        //S3 파일 삭제 및 성공 결과 반환
         boolean result = s3Service.delete(fileKey);
 
         return ResponseEntity.ok(result);

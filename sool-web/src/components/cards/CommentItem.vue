@@ -53,7 +53,7 @@
           <input
             v-model="replyContent"
             type="text"
-            maxlength="500"
+            maxlength="100"
             placeholder="답글을 입력하세요"
           />
           <button class="cm-send" :disabled="replySubmitting">

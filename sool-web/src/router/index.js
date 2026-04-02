@@ -39,16 +39,16 @@ const router = createRouter({
   }
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to) => {
   const authStore = useAuthStore()
 
-  if (to.meta.requiresAuth && !authStore.isLogin) {
-    alert('로그인이 필요합니다.')
-    return next('/login')
+  if (!authStore.initialized) {
+    await authStore.fetchMe()
   }
 
-  next()
+  if (to.meta.requiresAuth && !authStore.isLogin) {
+    return "/login"
+  }
 })
-
 
 export default router

@@ -33,11 +33,12 @@ public class AuthService {
     //아이디 값 존재 확인
     public boolean isLoginIdAvailable(String loginId) {
         
-        validateLoginId(loginId);
+        validateLoginId(loginId);   //유효성 검사
+
         return userService.findByLoginId(loginId) == null;
     }
     
-    //이메일 랜덤 번호 생성
+    //이메일 6자리 랜덤 번호 생성
     private String createAuthCode() {
         Random random = new Random();
         int number = 100000 + random.nextInt(900000);
@@ -73,9 +74,9 @@ public class AuthService {
     //최초 이메일 코드 전송
     public void sendEmailCode(String loginId, String name, String email) {
 
-        validateLoginId(loginId);
-        validateName(name);
-        validateEmail(email);
+        validateLoginId(loginId);   //로그인 아이디 입력 확인
+        validateName(name);         //이름 입력 확인
+        validateEmail(email);       //이메일 입력 확인
 
         if (userService.findByLoginId(loginId) != null) {
             throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");

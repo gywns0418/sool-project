@@ -99,6 +99,22 @@
       <div v-else class="empty-note">
         아직 등록된 테이스팅 노트가 없습니다.
       </div>
+
+      <div class="pagination" v-if="totalPage > 1">
+          <button class="page-btn" :disabled="page === 1" @click="movePage(page - 1)">이전</button>
+
+          <button
+            v-for="pageNum in visiblePages"
+            :key="pageNum"
+            class="page-btn"
+            :class="{ active: page === pageNum }"
+            @click="movePage(pageNum)"
+          >
+            {{ pageNum }}
+          </button>
+
+          <button class="page-btn" :disabled="page === totalPage" @click="movePage(page + 1)">다음</button>
+        </div>
     </section>
   </div>
 </template>
@@ -126,11 +142,11 @@ const drink = ref(null)
 const noteList = ref([])
 const totalCount = ref(0)
 const page = ref(1)
-const size = ref(12)
+const size = ref(5)
 const totalPage = ref(0)
 const sortBy = ref('latest')
 
-const avgMetric = ref([]);
+const avgMetric = ref([])
 
 const navLinks = computed(() => [
   { label: '홈', to: '/' },
@@ -147,17 +163,13 @@ const formatPrice = (price) => {
   return `₩ ${Number(price).toLocaleString()}`
 }
 
-
-
-//주류 정보 표시
+//주류 정보 조회
 const fetchDrinkDetail = async () => {
   const drinkId = route.params.id
   if (!drinkId) return
 
   try {
     const res = await getDrinkDetail(drinkId)
-    console.log(res.data)
-    
     drink.value = res.data
   } catch (e) {
     console.log('주류 상세 조회 실패', e)
@@ -171,6 +183,7 @@ const drinkEmoji = computed(() => {
   return emojiData ? emojiData.emoji : '🍹'
 })
 
+//주류 좋아요 조회
 const fetchLikeStatus = async () => {
   const drinkId = route.params.id
   if (!drinkId) return
@@ -183,6 +196,7 @@ const fetchLikeStatus = async () => {
   }
 }
 
+//노트 조회
 const fetchTastingNote = async () => {
   const drinkId = route.params.id
   if (!drinkId) return
@@ -193,13 +207,12 @@ const fetchTastingNote = async () => {
       size: size.value,
       sort: sortBy.value
     })
-    console.log(res.data)
 
     noteList.value = Array.isArray(res.data.list) ? res.data.list : []
     totalCount.value = res.data.totalCount ?? 0
     totalPage.value = res.data.totalPage ?? 0
     page.value = res.data.page ?? 1
-    size.value = res.data.size ?? 12
+    size.value = res.data.size ?? 5
     avgMetric.value = res.data.avgMetric ?? []
   } catch (e) {
     console.log('테이스팅 노트 조회 실패', e)
@@ -210,6 +223,28 @@ const fetchTastingNote = async () => {
   }
 }
 
+//페이지 이동
+const movePage = async (pageNum) => {
+  if (pageNum < 1 || pageNum > totalPage.value || pageNum === page.value) return
+
+  page.value = pageNum
+  await fetchTastingNote()
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+const visiblePages = computed(() => {
+  const pages = []
+  const startPage = Math.max(1, page.value - 2)
+  const endPage = Math.min(totalPage.value, startPage + 4)
+
+  for (let i = startPage; i <= endPage; i++) {
+    pages.push(i)
+  }
+
+  return pages
+})
+
+//좋아요 상태 변경
 const toggleLike = async () => {
   const drinkId = route.params.id
 
@@ -242,6 +277,7 @@ const toggleLike = async () => {
   }
 }
 
+//페이지 표시
 const initPage = async () => {
   page.value = 1
   await fetchDrinkDetail()
@@ -254,10 +290,6 @@ const initPage = async () => {
   }
 }
 
-onMounted(() => {
-  initPage()
-})
-
 watch(
   () => route.params.id,
   () => {
@@ -268,7 +300,11 @@ watch(
 watch(
   () => authStore.isLogin,
   () => {
-    fetchLikeStatus()
+    if (authStore.isLogin) {
+      fetchLikeStatus()
+    } else {
+      liked.value = false
+    }
   }
 )
 
@@ -284,6 +320,10 @@ const hasMyNote = computed(() => {
   const loginUserId = Number(authStore.user?.userId)
 
   return noteList.value.some(note => Number(note.userId) === loginUserId)
+})
+
+onMounted(() => {
+  initPage()
 })
 </script>
 
@@ -501,5 +541,35 @@ const hasMyNote = computed(() => {
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--surface);
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.page-btn {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  background: var(--white);
+  color: var(--sub);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.page-btn.active {
+  background: var(--point);
+  color: white;
+  border-color: var(--point);
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>
