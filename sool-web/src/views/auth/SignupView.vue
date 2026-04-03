@@ -544,7 +544,7 @@ onBeforeUnmount(() => {
   background: var(--bg);
   overflow: hidden;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
-  min-height: 700px;
+  min-height: 1000px;
 }
 
 .signup-body {

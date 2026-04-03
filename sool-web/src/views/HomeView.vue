@@ -5,7 +5,7 @@
         <div class="hero-left">
           <div class="hero-tag">Tasting Note</div>
           <h1 class="hero-title">당신의 한 잔을<br><em>기록하세요</em></h1>
-          <p class="hero-desc">와인, 위스키, 전통주까지. 마셨던 술의 맛과 향을 기록하고 취향을 발견하세요.</p>
+          <p class="hero-desc">와인, 위스키, 전통주까지. 마셨던 술의 맛과 향을 기록하고 취향을 발견하세요</p>
           <div class="hero-cta">
             <router-link to="/drinks" class="btn-primary">주류 목록 탐색하기 →</router-link>
           </div>

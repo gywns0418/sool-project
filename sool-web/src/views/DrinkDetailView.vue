@@ -166,14 +166,25 @@ const formatPrice = (price) => {
 //주류 정보 조회
 const fetchDrinkDetail = async () => {
   const drinkId = route.params.id
-  if (!drinkId) return
+  if (!drinkId) {
+    router.replace("/404")
+    return
+  }
 
   try {
     const res = await getDrinkDetail(drinkId)
+
+    // 데이터 없는 경우
+    if (!res.data) {
+      router.replace("/404")
+      return
+    }
+
     drink.value = res.data
   } catch (e) {
-    console.log('주류 상세 조회 실패', e)
+    console.log("주류 상세 조회 실패", e)
     drink.value = null
+    router.replace("/404")
   }
 }
 

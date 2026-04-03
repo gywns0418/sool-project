@@ -26,7 +26,8 @@ const routes = [
   { path: "/signup", name: "signup", component: SignupView },
   { path: "/find-id", name: "find-id", component: FindIdView },
   { path: "/reset-password", name: "reset-password", component: ResetPasswordView },
-  { path: "/:pathMatch(.*)*", name: "not-found", component: NotFoundView }
+  { path: "/404", name: "not-found", component: NotFoundView },
+  { path: "/:pathMatch(.*)*", redirect: "/404" }
 ]
 
 const router = createRouter({

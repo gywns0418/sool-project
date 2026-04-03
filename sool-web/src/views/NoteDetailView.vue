@@ -116,7 +116,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 import PageNav from '../components/common/PageNav.vue'
@@ -297,11 +297,23 @@ const toggleLike = async () => {
 const fetchNoteDetail = async () => {
   try {
     const noteId = route.params.id
-    const res = await getNoteDetail(noteId)
-    console.log("note : ",res.data)
 
-    noteDetail.value = res.data || null
+    if (!noteId) {
+      router.replace("/404")
+      return
+    }
+
+    const res = await getNoteDetail(noteId)
+
+    // 데이터 없으면 404
+    if (!res.data) {
+      router.replace("/404")
+      return
+    }
+
+    noteDetail.value = res.data
     metricList.value = res.data?.metricList || []
+
     likeCount.value = Number(
       res.data?.noteDetail?.likeCount ??
       res.data?.likeCount ??
@@ -312,9 +324,8 @@ const fetchNoteDetail = async () => {
       await fetchLikeStatus()
     }
   } catch (error) {
-    console.log('노트 상세 조회 실패', error)
-    noteDetail.value = null
-    likeCount.value = 0
+    console.log("노트 상세 조회 실패", error)
+    router.replace("/404")
   }
 }
 
@@ -409,6 +420,14 @@ onMounted(() => {
   fetchNoteDetail()
   fetchComments()
 })
+
+watch(
+  () => route.params.id,
+  () => {
+    fetchNoteDetail()
+    fetchComments()
+  }
+)
 </script>
 
 <style scoped>

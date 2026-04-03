@@ -5,7 +5,7 @@
 
 <mapper namespace="com.example.sool.mapper.TastingNoteMetricMapper">
 
-    <!-- 카테고리 별 지표 조회 -->
+    <!-- 카테고리 별 지표 조회 (공통 코드)-->
     <select id="getMetricCode" parameterType="int" resultType="com.example.sool.dto.CommonCodeDto">
         SELECT
             cc.code,

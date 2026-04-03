@@ -186,7 +186,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PageNav from '../components/common/PageNav.vue'
 import { categories } from '@/mock/soolData'
@@ -255,30 +255,49 @@ function normalizeMetricList(metricList) {
 
 //작성 기초 정보
 async function fetchWriteForm() {
+  if (!drinkId.value || Number.isNaN(drinkId.value)) {
+    router.replace('/404')
+    return
+  }
+
   try {
     const res = await getNoteWriteForm(drinkId.value)
 
-    drink.value = res.data?.drink || {}
-    scores.value = normalizeMetricList(res.data?.metricList)
+    if (!res.data || !res.data.drink) {
+      router.replace('/404')
+      return
+    }
+
+    drink.value = res.data.drink
+    scores.value = normalizeMetricList(res.data.metricList)
   } catch (error) {
     console.log('노트 작성 화면 데이터 조회 실패', error)
-    drink.value = {}
-    scores.value = []
+    router.replace('/404')
   }
 }
 
 //수정 기초정보 
 async function fetchEditForm() {
+  if (!noteId.value || Number.isNaN(noteId.value)) {
+    router.replace('/404')
+    return
+  }
+
   try {
     const res = await getNoteUpdateForm(noteId.value)
     console.log(res.data)
 
-    const drinkData = res.data?.drink || {}
-    const noteData = res.data?.note || {}
-    const metricList = res.data?.metricList || []
-    
-    noteImage.value = res.data?.image || null
-    imagePreview.value = res.data?.image?.fileUrl || ''
+    if (!res.data || !res.data.note || !res.data.drink) {
+      router.replace('/404')
+      return
+    }
+
+    const drinkData = res.data.drink || {}
+    const noteData = res.data.note || {}
+    const metricList = res.data.metricList || []
+
+    noteImage.value = res.data.image || null
+    imagePreview.value = res.data.image?.fileUrl || ''
 
     drink.value = {
       drinkId: drinkData.drinkId,
@@ -296,7 +315,7 @@ async function fetchEditForm() {
     scores.value = normalizeMetricList(metricList)
   } catch (error) {
     console.log('노트 수정 화면 데이터 조회 실패', error)
-    alert('수정할 노트 정보를 불러오지 못했습니다.')
+    router.replace('/404')
   }
 }
 
@@ -461,6 +480,14 @@ onMounted(async () => {
 
   await fetchPageData()
 })
+
+watch(
+  () => [route.params.drinkId, route.params.noteId],
+  async () => {
+    if (!authStore.isLogin) return
+    await fetchPageData()
+  }
+)
 </script>
 
 <style scoped>
