@@ -1,112 +1,96 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.example.sool.mapper.TastingNoteMetricMapper">
 
-    <!-- 카테고리 별 지표 조회 (공통 코드)-->
-    <select id="getMetricCode" parameterType="int" resultType="com.example.sool.dto.CommonCodeDto">
-        SELECT
-            cc.code,
-            cc.code_name
-        FROM drink d
-
-        JOIN common_code cc
-            ON cc.group_code = 'TASTE_METRIC'
-
-        WHERE d.drink_id = #{drinkId}
-
-        AND d.is_deleted = 'N'
-        AND cc.use_yn = 'Y'
-        AND cc.is_deleted = 'N'
-        AND (
-                cc.parent_code IS NULL
-                OR cc.parent_code = d.category_code
-            )
-
-        ORDER BY cc.sort_seq ASC, cc.code ASC
-    </select>
-
     <!-- 맛 프로파일 등록 -->
     <insert id="insertMetric" parameterType="com.example.sool.dto.TastingNoteMetricDto">
-        INSERT INTO tasting_note_metric
+        INSERT INTO tasting_note_metric     <!-- 맛 프로파일 테이블 -->
         (
-            note_id,
-            metric_code,
-            score
+            note_id         <!-- 테이스팅 노트 키 -->
+          , metric_code     <!-- 맛 프로파일 코드 키 -->
+          , score           <!-- 점수 -->
         )
         VALUES
         (
-            #{noteId},
-            #{metricCode},
-            #{score}
+            #{noteId}
+          , #{metricCode}
+          , #{score}
         )
     </insert>
 
+
     <!-- 점수 수정 -->
     <update id="updateMetric" parameterType="com.example.sool.dto.TastingNoteMetricDto">
-        UPDATE tasting_note_metric
-        SET score = #{score}
-        WHERE note_id = #{noteId}
-        AND metric_code = #{metricCode}
+        UPDATE tasting_note_metric          <!-- 맛 프로파일 테이블 -->
+           SET score = #{score}
+         WHERE note_id = #{noteId}
+           AND metric_code = #{metricCode}
     </update>
+
 
     <!-- 특정 노트의 맛 점수 조회 -->
     <select id="findByNoteId" parameterType="int" resultType="com.example.sool.dto.TastingNoteMetricDto">
-        SELECT 
-            tnm.*,
-            cc.code_name AS metricName
+        SELECT tnm.note_id AS noteId                <!-- 테이스팅 노트 키 -->
+             , tnm.metric_code AS metricCode        <!-- 맛 프로파일 코드 키 -->
+             , tnm.score                            <!-- 점수 -->
+             , cc.code_name AS metricName           <!-- 공통 코드 맛 프로파일 이름 -->
 
-        FROM tasting_note_metric tnm
+          FROM tasting_note_metric tnm         <!-- 맛 프로파일 테이블 -->
 
-        LEFT JOIN common_code cc
-            ON  tnm.metric_code = cc.code
-            AND cc.group_code = 'TASTE_METRIC'
-            
-        WHERE note_id = #{noteId}
-        ORDER BY cc.sort_seq
+     LEFT JOIN common_code cc                  <!-- 공통 코드 테이블 -->
+            ON tnm.metric_code = cc.code
+           AND cc.group_code = 'TASTE_METRIC'
+
+         WHERE tnm.note_id = #{noteId}
+
+      ORDER BY cc.sort_seq
     </select>
+
 
     <!-- 주류 디테일 평균 맛 프로파일 -->
     <select id="findAvgMetricByDrinkId" parameterType="int" resultType="com.example.sool.dto.TastingNoteMetricDto">
-        SELECT
-            tnm.metric_code,
-            cc.code_name AS metricName,
-            ROUND(AVG(tnm.score), 1) AS avgScore
+        SELECT tnm.metric_code AS metricCode        <!-- 맛 프로파일 코드 키 -->
+             , cc.code_name AS metricName           <!-- 공통 코드 맛 프로파일 이름 -->
+             , ROUND(AVG(tnm.score), 1) AS avgScore <!-- 평균 점수 집계 -->
 
-        FROM tasting_note_metric tnm
+          FROM tasting_note_metric tnm      <!-- 맛 프로파일 테이블 -->
 
-        JOIN tasting_note tn
+          JOIN tasting_note tn              <!-- 테이스팅 노트 테이블 -->
             ON tn.note_id = tnm.note_id
-        AND tn.drink_id = #{drinkId}
-        AND tn.is_deleted = 'N'
+           AND tn.drink_id = #{drinkId}
+           AND tn.is_deleted = 'N'
 
-        LEFT JOIN common_code cc
+     LEFT JOIN common_code cc               <!-- 공통 코드 테이블 -->
             ON cc.code = tnm.metric_code
-        AND cc.group_code = 'TASTE_METRIC'
+           AND cc.group_code = 'TASTE_METRIC'
 
-        GROUP BY tnm.metric_code, cc.code_name, cc.sort_seq
-        ORDER BY cc.sort_seq
+      GROUP BY tnm.metric_code
+
+      ORDER BY cc.sort_seq
     </select>
-
 
 
     <!-- 노트 전체 맛 점수 삭제 -->
     <delete id="deleteByNoteId" parameterType="int">
         DELETE
-        FROM tasting_note_metric
-        WHERE note_id = #{noteId}
+          FROM tasting_note_metric      <!-- 맛 프로파일 테이블 -->
+         WHERE note_id = #{noteId}
     </delete>
 
+
     <!-- 회원 삭제 시 맛 점수 삭제 -->
-    <delete id="deleteByUserId" >
-        DELETE FROM tasting_note_metric
-        WHERE note_id IN (
-            SELECT note_id
-            FROM tasting_note
-            WHERE user_id = #{userId}
-        )
+    <delete id="deleteByUserId">
+        DELETE
+          FROM tasting_note_metric      <!-- 맛 프로파일 테이블 -->
+         WHERE note_id IN
+               (
+                SELECT note_id
+                  FROM tasting_note     <!-- 노트 테이블 -->
+                 WHERE user_id = #{userId}
+               )
     </delete>
 
 </mapper>

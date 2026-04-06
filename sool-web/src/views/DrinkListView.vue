@@ -223,7 +223,7 @@ const sanitizeNumberInput = (field) => {
 }
 
 
-
+//카테고리 리스트
 const loadCategoryList = async () => {
   try {
     const res = await getDrinkCategoryList()
@@ -246,6 +246,7 @@ const loadCategoryList = async () => {
   }
 }
 
+//검색 결과 
 const loadDrinkList = async () => {
   try {
     normalizeRange()
@@ -301,17 +302,21 @@ const updateRoute = () => {
   } else {
     if (selectedCategory.value) query.categoryCode = selectedCategory.value
 
-    if (abvLow.value && abvLow.value !== "0")
+    if (abvLow.value !== null && abvLow.value !== undefined && abvLow.value !== '' && abvLow.value !== '0') {
       query.abvLow = abvLow.value
+    }
 
-    if (abvHigh.value && abvHigh.value !== "60")
+    if (abvHigh.value !== null && abvHigh.value !== undefined && abvHigh.value !== '' && abvHigh.value !== '60') {
       query.abvHigh = abvHigh.value
+    }
 
-    if (priceLow.value && priceLow.value !== "0")
+    if (priceLow.value !== null && priceLow.value !== undefined && priceLow.value !== '' && priceLow.value !== '0') {
       query.priceLow = priceLow.value
+    }
 
-    if (priceHigh.value && priceHigh.value !== "500000")
+    if (priceHigh.value !== null && priceHigh.value !== undefined && priceHigh.value !== '' && priceHigh.value !== '500000') {
       query.priceHigh = priceHigh.value
+    }
   }
 
   if (sortBy.value && sortBy.value !== "latest")

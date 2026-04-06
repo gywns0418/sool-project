@@ -1,88 +1,84 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.example.sool.mapper.ReportMapper">
 
-    <!-- 신고 사유 가져오기 -->
-     <select id="getReportReasons" resultType="com.example.sool.dto.CommonCodeDto">
-        SELECT
-            code,
-            code_name
-        FROM common_code
-        WHERE group_code = 'REPORT_REASON'
-        AND use_yn = 'Y'
-        ORDER BY sort_seq
-     </select>
-
     <!-- 신고 등록 -->
     <insert id="insertReport" parameterType="com.example.sool.dto.ReportDto">
-        INSERT INTO report (
-            user_id,
-            obj_id,
-            obj_type,
-            reason_code,
-            status_code,
-            created_at
+        INSERT INTO report          <!-- 신고 테이블 -->
+        (   
+            user_id                 <!-- 회원 키( 신고자 ) -->
+          , obj_id                  <!-- 대상 ID -->
+          , obj_type                <!-- 대상 타입 -->
+          , reason_code             <!-- 신고 사유 코드 -->
+          , status_code             <!-- 신고 상태 코드 -->
+          , created_at              <!-- 등록 일시 -->
         )
-        VALUES (
-            #{userId},
-            #{objId},
-            #{objType},
-            #{reasonCode},
-            'RECEIVED',
-            NOW()
+        VALUES
+        (
+            #{userId}
+          , #{objId}
+          , #{objType}
+          , #{reasonCode}
+          , 'RECEIVED'
+          , NOW()
         )
     </insert>
 
     <!-- 신고 존재 확인 -->
     <select id="existsReport" parameterType="com.example.sool.dto.ReportDto" resultType="int">
         SELECT COUNT(*)
-        FROM report
-        WHERE user_id = #{userId}
-        AND obj_id = #{objId}
-        AND obj_type = #{objType}
-        AND is_deleted = 'N'
+          FROM report           <!-- 신고 테이블 -->
+         WHERE user_id = #{userId}
+           AND obj_id = #{objId}
+           AND obj_type = #{objType}
+           AND is_deleted = 'N'
     </select>
 
     <!-- 마이페이지 신고 조회 -->
     <select id="selectReportByUserid" parameterType="int" resultType="com.example.sool.dto.ReportDto">
-        SELECT 
-            r.*,
-            cc1.code_name AS reportStatus,
-            cc2.code_name AS reportReason,
+        SELECT r.report_id AS reportId              <!-- 신고 키 -->
+             , r.user_id AS userId                  <!-- 회원 키 -->
+             , r.obj_id AS objId                    <!-- 대상 ID -->
+             , r.obj_type AS objType                <!-- 대상 타입 -->
+             , r.reason_code AS reasonCode          <!-- 신고 사유 코드 -->
+             , r.status_code AS statusCode          <!-- 신고 상태 코드 -->
+             , r.created_at AS createdAt            <!-- 등록 일시 -->
+             , cc1.code_name AS reportStatus        <!-- 신고 상태 이름 -->
+             , cc2.code_name AS reportReason        <!-- 신고 사유 이름 -->
+             , tn.title AS noteTitle                <!-- 노트 제목 -->
+             , c.content AS commentContent          <!-- 댓글 내용 -->
 
-            tn.title AS noteTitle,
-            c.content AS commentContent
-
-        FROM report r
+          FROM report r                 <!-- 신고 테이블 -->
         
         <!--신고 상태-->
-        LEFT JOIN common_code cc1
+     LEFT JOIN common_code cc1          <!-- 공통 코드 테이블 -->
             ON r.status_code = cc1.code
-            AND cc1.group_code = 'REPORT_STATUS'
-            AND cc1.use_yn = 'Y'
+           AND cc1.group_code = 'REPORT_STATUS'
+           AND cc1.use_yn = 'Y'
 
         <!--신고 사유-->
-        LEFT JOIN common_code cc2
+     LEFT JOIN common_code cc2          <!-- 공통 코드 테이블 -->
             ON r.reason_code = cc2.code
-            AND cc2.group_code = 'REPORT_REASON'
-            AND cc2.use_yn = 'Y'
+           AND cc2.group_code = 'REPORT_REASON'
+           AND cc2.use_yn = 'Y'
         
-            <!--노트 제목-->
-        LEFT JOIN tasting_note tn
+        <!--노트 제목-->
+     LEFT JOIN tasting_note tn          <!-- 테이스팅 노트 테이블 -->
             ON r.obj_type = 'NOTE'
-            AND r.obj_id = tn.note_id
+           AND r.obj_id = tn.note_id
 
         <!-- 댓글 내용 -->
-        LEFT JOIN comment c
+     LEFT JOIN comment c                <!-- 댓글 테이블 -->
             ON r.obj_type = 'COMMENT'
-            AND r.obj_id = c.comment_id
+           AND r.obj_id = c.comment_id
 
-        WHERE r.user_id = #{userId}
-        AND r.is_deleted = 'N'
+         WHERE r.user_id = #{userId}
+           AND r.is_deleted = 'N'
 
-        ORDER BY r.created_at DESC
+      ORDER BY r.created_at DESC
     </select>
+
 </mapper>

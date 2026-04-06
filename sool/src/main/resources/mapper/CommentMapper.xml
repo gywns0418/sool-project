@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
@@ -7,117 +7,131 @@
 
     <!-- 댓글 등록 -->
     <insert id="insertComment" parameterType="com.example.sool.dto.CommentDto" useGeneratedKeys="true" keyProperty="commentId">
-        INSERT INTO comment
+        INSERT INTO comment     <!-- 댓글 테이블 -->
         (
-            note_id,
-            user_id,
-            parent_comment_id,
-            group_id,
-            depth,
-            content,
-            created_at
+            note_id             <!-- 테이스팅 노트 키 -->
+          , user_id             <!-- 회원 키 -->
+          , parent_comment_id   <!-- 부모 댓글 키 -->
+          , group_id            <!-- 댓글 그룹 ID -->
+          , depth               <!-- 댓글 깊이 -->
+          , content             <!-- 댓글 내용 -->
+          , created_at          <!-- 등록 일시 -->
         )
         VALUES
         (
-            #{noteId},
-            #{userId},
-            #{parentCommentId},
-            0,
-            0,
-            #{content},
-            NOW()
+            #{noteId}
+          , #{userId}
+          , #{parentCommentId}
+          , 0
+          , 0
+          , #{content}
+          , NOW()
         )
     </insert>
 
+    <!-- 댓글 등록 후 group_id 갱신 -->
     <update id="updateGroupId">
-        UPDATE comment
-        SET group_id = #{commentId}
-        WHERE comment_id = #{commentId}
+        UPDATE comment      <!-- 댓글 테이블 -->
+           SET group_id = #{commentId}      <!-- 댓글 그룹 ID-->
+         WHERE comment_id = #{commentId}    <!-- 댓글 키 -->
     </update>
-
-    <!-- 특정 노트의 댓글 목록 조회 -->
-    <select id="findByNoteId" parameterType="int" resultType="com.example.sool.dto.CommentDto">
-        SELECT 
-            c.*,
-            u.name AS userName,
-            u.login_id AS loginId
-        FROM comment c
-        JOIN user u
-            ON c.user_id = u.user_id
-        WHERE c.note_id = #{noteId}
-        ORDER BY c.group_id ASC, c.created_at ASC
-    </select>
 
     <!-- 대댓글 등록 -->
     <insert id="insertReplyComment" parameterType="com.example.sool.dto.CommentDto">
-        INSERT INTO comment
+        INSERT INTO comment        <!-- 댓글 테이블 -->
         (
-            note_id,
-            user_id,
-            parent_comment_id,
-            group_id,
-            depth,
-            content,
-            created_at
+            note_id             <!-- 테이스팅 노트 키 -->
+          , user_id             <!-- 회원 키 -->
+          , parent_comment_id   <!-- 부모 댓글 키 -->
+          , group_id            <!-- 댓글 그룹 ID -->
+          , depth               <!-- 댓글 깊이 -->
+          , content             <!-- 댓글 내용 -->
+          , created_at          <!-- 등록 일시 -->
         )
         VALUES
         (
-            #{noteId},
-            #{userId},
-            #{parentCommentId},
-            #{groupId},
-            #{depth},
-            #{content},
-            NOW()
+            #{noteId}
+          , #{userId}
+          , #{parentCommentId}
+          , #{groupId}
+          , #{depth}
+          , #{content}
+          , NOW()
         )
     </insert>
 
-    <!-- 특정 댓글의 대댓글 조회 -->
-    <select id="findByCommentId" resultType="com.example.sool.dto.CommentDto">
-        SELECT *
-        FROM comment
-        WHERE comment_id = #{commentId}
-        AND is_deleted = 'N'
-        ORDER BY created_at ASC
+    <!-- 특정 노트의 댓글 목록 조회 -->
+    <select id="findByNoteId" parameterType="int" resultType="com.example.sool.dto.CommentDto">
+        SELECT c.comment_id AS commentId                <!-- 댓글 키-->
+             , c.note_id AS noteId                      <!-- 테이스팅 노트 키 -->
+             , c.user_id AS userId                      <!-- 회원 키 -->
+             , c.parent_comment_id AS parentCommentId   <!-- 부모 댓글 키 -->
+             , c.group_id AS groupId                    <!-- 댓글 그룹 ID -->
+             , c.depth                                  <!-- 댓글 깊이 -->
+             , c.content                                <!-- 댓글 내용 -->
+             , c.created_at AS createdAt                <!-- 등록 일시 -->
+             , c.updated_at AS updatedAt                <!-- 수정 일시 -->
+             , c.is_deleted AS isDeleted                <!-- 삭제 여부 -->
+             , u.name AS userName                       <!-- 회원 이름 -->
+             , u.login_id AS loginId                    <!-- 회원 로그인 ID -->
+          FROM comment c            <!-- 댓글 테이블 -->
+          JOIN user u               <!-- 회원 테이블 -->
+            ON c.user_id = u.user_id
+         WHERE c.note_id = #{noteId}
+         ORDER BY c.group_id ASC
+                , c.created_at ASC
     </select>
 
+    <!-- 특정 댓글 조회 -->
+    <select id="findByCommentId" resultType="com.example.sool.dto.CommentDto">
+        SELECT c.comment_id AS commentId                <!-- 댓글 키-->
+             , c.note_id AS noteId                      <!-- 테이스팅 노트 키 -->
+             , c.user_id AS userId                      <!-- 회원 키 -->
+             , c.parent_comment_id AS parentCommentId   <!-- 부모 댓글 키 -->
+             , c.group_id AS groupId                    <!-- 댓글 그룹 ID -->
+             , c.depth                                  <!-- 댓글 깊이 -->
+             , c.content                                <!-- 댓글 내용 -->
+             , c.created_at AS createdAt                <!-- 등록 일시 -->
+             , c.updated_at AS updatedAt                <!-- 수정 일시 -->
+             , c.is_deleted AS isDeleted                <!-- 삭제 여부 -->
+          FROM comment              <!-- 댓글 테이블 -->
+         WHERE comment_id = #{commentId}
+           AND is_deleted = 'N'
+         ORDER BY created_at ASC
+    </select>
 
     <!-- 댓글 수정 -->
     <update id="updateComment" parameterType="com.example.sool.dto.CommentDto">
-        UPDATE comment
-        SET
-            content = #{content},
-            updated_at = NOW()
-        WHERE comment_id = #{commentId}
-        AND user_id = #{userId}
-        AND is_deleted = 'N'
+        UPDATE comment                      <!-- 댓글 테이블 -->
+           SET content    = #{content}      <!-- 댓글 내용 -->
+             , updated_at = NOW()           <!-- 수정 일시 -->
+         WHERE comment_id = #{commentId}
+           AND user_id    = #{userId}
+           AND is_deleted = 'N'
     </update>
 
-    <!-- 댓글 삭제(t) -->
+    <!-- 댓글 삭제 -->
     <update id="deleteComment">
-        UPDATE comment
-        SET
-            is_deleted = 'Y',
-            updated_at = NOW()
-        WHERE comment_id = #{commentId}
+        UPDATE comment                      <!-- 댓글 테이블 -->
+           SET is_deleted = 'Y'
+             , updated_at = NOW()
+         WHERE comment_id = #{commentId}
     </update>
 
-    <!-- 노트 삭제시 댓글 전체 삭제-->
+    <!-- 노트 삭제 시 댓글 전체 삭제 -->
     <update id="deleteAllComment">
-        UPDATE comment
-        SET
-            is_deleted = 'Y',
-            updated_at = NOW()
-        WHERE note_id = #{noteId}
+        UPDATE comment                      <!-- 댓글 테이블 -->
+           SET is_deleted = 'Y'
+             , updated_at = NOW()
+         WHERE note_id = #{noteId}
     </update>
 
-    <!-- 회원 탈퇴 시 댓글 삭제-->
+    <!-- 회원 탈퇴 시 댓글 삭제 -->
     <update id="deleteByUserId">
-        UPDATE comment
-        SET
-            is_deleted = 'Y',
-            updated_at = NOW()
-        WHERE user_id = #{userId}
+        UPDATE comment                      <!-- 댓글 테이블 -->
+           SET is_deleted = 'Y'
+             , updated_at = NOW()
+         WHERE user_id = #{userId}
     </update>
 
 </mapper>

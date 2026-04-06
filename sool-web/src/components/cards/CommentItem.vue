@@ -32,10 +32,12 @@
           {{ showReply ? '취소' : '답글' }}
         </button>
 
-        <button class="cm-btn report-btn" @click="reportComment">
-          신고
-        </button>
-
+        <template v-if="!isOwner">
+          <button class="cm-btn report-btn" @click="reportComment">
+            신고
+          </button>
+        </template>
+        
         <template v-if="isOwner">
           <button class="cm-btn reply-btn" @click="startEdit">
             수정

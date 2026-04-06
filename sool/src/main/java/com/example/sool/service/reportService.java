@@ -6,19 +6,23 @@ import org.springframework.stereotype.Service;
 
 import com.example.sool.dto.CommonCodeDto;
 import com.example.sool.dto.ReportDto;
+import com.example.sool.mapper.CommonCodeMapper;
 import com.example.sool.mapper.ReportMapper;
 
 @Service
 public class ReportService {
 
     private final ReportMapper reportMapper;
+    private final CommonCodeMapper commonCodeMapper;
 
-    public ReportService(ReportMapper reportMapper) {
+    public ReportService(ReportMapper reportMapper, CommonCodeMapper commonCodeMapper) {
         this.reportMapper = reportMapper;
+        this.commonCodeMapper = commonCodeMapper;
     }
 
+    //공통 코드에서 신고 사유 가져오기 
     public List<CommonCodeDto> getReportReasons(){
-        return reportMapper.getReportReasons();
+        return commonCodeMapper.getReportReasons();
     }
 
     //신고 등록 (이미 등록 되어있으면 실패)

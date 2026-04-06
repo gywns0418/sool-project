@@ -1,122 +1,138 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.example.sool.mapper.LikeMapper">
+
     <!-- 좋아요 추가 -->
     <insert id="insertLike" parameterType="com.example.sool.dto.LikeDto">
-        INSERT INTO `like`
+        INSERT INTO `like`          <!-- 좋아요 테이블 -->
         (
-            user_id,
-            obj_id,
-            obj_type,
-            created_at
+            user_id                 <!-- 회원 키 -->
+          , obj_id                  <!-- 대상 ID -->
+          , obj_type                <!-- 대상 타입 -->
+          , created_at              <!-- 등록 일시 -->
         )
         VALUES
         (
-            #{userId},
-            #{objId},
-            #{objType},
-            NOW()
+            #{userId}
+          , #{objId}
+          , #{objType}
+          , NOW()
         )
     </insert>
-    
+
     <!-- 좋아요 존재 확인 -->
     <select id="existsLike" parameterType="com.example.sool.dto.LikeDto" resultType="int">
-        SELECT count(*)
-        FROM `like`
-        WHERE user_id = #{userId}
-        AND obj_id = #{objId}
-        AND obj_type = #{objType}
+        SELECT COUNT(*) 
+          FROM `like`         <!-- 좋아요 테이블 -->
+         WHERE user_id = #{userId}
+           AND obj_id  = #{objId}
+           AND obj_type = #{objType}
     </select>
 
-    <!--좋아요 삭제-->
+    <!-- 좋아요 삭제 -->
     <delete id="deleteLike" parameterType="com.example.sool.dto.LikeDto">
-        DELETE FROM `like`
-        WHERE user_id = #{userId}
-          AND obj_id = #{objId}
-          AND obj_type = #{objType}
+        DELETE
+          FROM `like`       <!-- 좋아요 테이블 -->
+         WHERE user_id = #{userId}
+           AND obj_id  = #{objId}
+           AND obj_type = #{objType}
     </delete>
 
-    <!-- 마이페이지 좋아요 목록 -->
+    <!-- 마이페이지 좋아요 술 목록 -->
     <select id="findLikedDrinkList" parameterType="int" resultType="com.example.sool.dto.DrinkDto">
-        SELECT
-            d.*,
-            cc1.code_name AS categoryName,
-            cc2.code_name AS typeName,
-            i.file_url AS imageUrl,
-            IFNULL(
-                (
-                    SELECT ROUND(AVG(tn.rating), 1)
-                    FROM tasting_note tn
-                    WHERE tn.drink_id = d.drink_id
-                    AND tn.is_deleted = 'N'
-                ), 0
-            ) AS avgRating
-        FROM `like` l
+        SELECT d.drink_id AS drinkId                    <!-- 주류 키 -->
+             , d.category_code AS categoryCode          <!-- 주류 카테고리 대분류 -->
+             , d.type_code AS typeCode                  <!-- 주류 카테고리 소분류 -->
+             , d.drink_name AS drinkName                <!-- 주류 한글 이름 -->
+             , d.drink_name_en AS drinkNameEn           <!-- 주류 영문 이름 -->
+             , d.abv                                    <!-- 주류 도수 -->
+             , d.price                                  <!-- 주류 가격 -->
+             , d.country                                <!-- 주류 생산 국가 -->
+             , cc1.code_name AS categoryName            <!-- 공통 코드 카테고리 대분류 한글 이름 -->
+             , cc2.code_name AS typeName                <!-- 공통코드 카테고리 소분류 한글 이름 -->
+             , i.file_url AS imageUrl                   <!-- 이미지 파일 URL -->
+             , IFNULL(ar.avgRating,0) AS avgRating      <!-- 평균 별점 집계 -->
+          FROM `like` l                 <!-- 좋아요 테이블 -->
 
-        JOIN drink d
-        ON l.obj_id = d.drink_id
+          JOIN drink d                  <!-- 주류 테이블 -->
+            ON l.obj_id = d.drink_id
 
-        LEFT JOIN image i
-            ON i.obj_type = 'NOTE'
-            AND i.obj_id = d.drink_id
+     LEFT JOIN (
+                SELECT drink_id
+                     , ROUND(AVG(rating),1) AS avgRating
+                  FROM tasting_note     <!-- 테이스팅 노트 테이블 -->
+                 WHERE is_deleted = 'N'
+              GROUP BY drink_id
+               ) ar
+            ON d.drink_id = ar.drink_id
 
-        <!-- 카테고리 대분류 한글 이름 -->
-        LEFT JOIN common_code cc1
+     LEFT JOIN image i                  <!-- 이미지 테이블 -->
+            ON i.obj_type = 'DRINK'
+           AND i.obj_id   = d.drink_id
+
+     LEFT JOIN common_code cc1          <!-- 공통 코드 테이블 -->
             ON d.category_code = cc1.code
-            AND cc1.group_code = 'DRINK_CATEGORY'
-            AND cc1.use_yn = 'Y'
+           AND cc1.group_code  = 'DRINK_CATEGORY'
+           AND cc1.use_yn      = 'Y'
 
-        <!-- 카테고리 소분류 한글 이름 -->
-        LEFT JOIN common_code cc2
-            ON d.type_code = cc2.code
-            AND cc2.group_code = 'DRINK_TYPE'
-            AND cc2.use_yn = 'Y'
+     LEFT JOIN common_code cc2          <!-- 공통 코드 테이블 -->
+            ON d.type_code    = cc2.code
+           AND cc2.group_code = 'DRINK_TYPE'
+           AND cc2.use_yn     = 'Y'
 
-        WHERE l.user_id = #{userId}
-            AND l.obj_type = 'DRINK'
-            AND d.is_deleted = 'N'
+         WHERE l.user_id    = #{userId}
+           AND l.obj_type   = 'DRINK'
+           AND d.is_deleted = 'N'
 
-        ORDER BY l.created_at DESC
+      ORDER BY l.created_at DESC
     </select>
 
-    <!-- 노트 좋아요 찾기 -->
+    <!-- 마이페이지 좋아요 노트 목록 -->
     <select id="findLikedNoteList" parameterType="int" resultType="com.example.sool.dto.TastingNoteDto">
-        SELECT
-            tn.*,
-            d.drink_name,
-            d.category_code AS categoryCode,
-            i.file_url AS imageUrl
-        FROM `like` l
+        SELECT tn.note_id AS noteId                 <!-- 노트 키 -->
+             , tn.drink_id AS drinkId               <!-- 주류 키 -->
+             , tn.user_id AS userId                 <!-- 회원 키 -->
+             , tn.rating                            <!-- 노트 별점 -->
+             , tn.content                           <!-- 노트 내용 -->
+             , tn.created_at AS createdAt           <!-- 등록 일시 -->
+             , d.drink_name AS drinkName            <!-- 주류 이름 -->
+             , d.category_code AS categoryCode      <!-- 주류 카테고리 대분류 -->
+             , i.file_url AS imageUrl               <!-- 이미지 파일 URL -->
+          FROM `like` l             <!-- 좋아요 테이블 -->
 
-        JOIN tasting_note tn
-        ON l.obj_id = tn.note_id
+          JOIN tasting_note tn      <!-- 테이스팅 노트 테이블 -->
+            ON l.obj_id = tn.note_id
 
-        JOIN drink d
-        ON tn.drink_id = d.drink_id
+          JOIN drink d              <!-- 주류 테이블 -->
+            ON tn.drink_id = d.drink_id
 
-        LEFT JOIN image i
-        ON i.obj_type = 'NOTE'
-        AND i.obj_id = tn.note_id
+     LEFT JOIN image i              <!-- 이미지 테이블 -->
+            ON i.obj_type = 'NOTE'
+           AND i.obj_id = tn.note_id
 
-        WHERE l.user_id = #{userId}
-            AND l.obj_type = 'NOTE'
-            AND tn.is_deleted = 'N'
+         WHERE l.user_id = #{userId}
+           AND l.obj_type = 'NOTE'
+           AND tn.is_deleted = 'N'
+
+      ORDER BY l.created_at DESC
     </select>
 
-    <!-- 노트 삭제시 좋아요 모두 삭제-->
+    <!-- 노트 삭제 시 좋아요 삭제 -->
     <delete id="deleteAllLike">
-        DELETE FROM `like`
-        WHERE obj_id = #{objId}
-          AND obj_type = #{objType}
+        DELETE
+          FROM `like`       <!-- 좋아요 테이블 -->
+         WHERE obj_id = #{objId}
+           AND obj_type = #{objType}
     </delete>
 
-    <!--회원 삭제 시 좋아요 삭제-->
+    <!-- 회원 삭제 시 좋아요 삭제 -->
     <delete id="deleteByUserId">
-        DELETE FROM `like`
-        WHERE user_id = #{userId}
+        DELETE
+          FROM `like`       <!-- 좋아요 테이블-->
+         WHERE user_id = #{userId}
     </delete>
+
 </mapper>

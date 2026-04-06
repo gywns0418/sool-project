@@ -36,14 +36,15 @@
           >
             {{ liked ? '♥' : '♡' }} {{ likeCount }}
           </button>
-
-          <button class="report-btn" @click="openReportModal({
-            objType: 'NOTE',
-            objId: route.params.id
-          })">
-            신고
-          </button>
-
+          <template v-if="!isOwner">
+            <button class="report-btn" @click="openReportModal({
+              objType: 'NOTE',
+              objId: route.params.id
+            })">
+              신고
+            </button>
+          </template>
+          
           <template v-if="isOwner">
             <button type="button" class="nd-action-btn" @click="goEdit">
               수정

@@ -4,14 +4,10 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
-import com.example.sool.dto.CommonCodeDto;
 import com.example.sool.dto.ReportDto;
 
 @Mapper
 public interface ReportMapper {
-
-    //신고 사유 가져오기
-    List<CommonCodeDto> getReportReasons();
 
     //신고 등록
     int insertReport(ReportDto reportDto);

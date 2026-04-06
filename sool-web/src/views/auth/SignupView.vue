@@ -39,6 +39,7 @@
                   maxlength="20"
                   placeholder="아이디"
                   @input="onChangeLoginId"
+                  :disabled="emailCodeSent"
                 />
                 <button type="button" class="btn-side" @click="handleCheckLoginId">
                   중복확인
@@ -50,15 +51,16 @@
             </div>
 
             <div class="field-group">
-              <label class="field-label">이름</label>
+              <label class="field-label">닉네임</label>
               <div class="field-inline">
                 <input
                   v-model.trim="name"
                   type="text"
                   class="field-input"
-                  maxlength="6"
-                  placeholder="이름"
+                  maxlength="10"
+                  placeholder="닉네임"
                   @input="onChangeName"
+                  :disabled="emailCodeSent"
                 />
               </div>
               <p v-if="nameMsg" class="field-msg" :class="{ success: nameChecked, error: !nameChecked }">
@@ -75,6 +77,7 @@
                 maxlength="100"
                 placeholder="이메일 주소를 입력하세요"
                 @input="onChangeEmail"
+                :disabled="emailCodeSent"
               />
               <p v-if="emailMsg" class="field-msg" :class="{ success: emailValid, error: !emailValid }">
                 {{ emailMsg }}
@@ -236,6 +239,8 @@ const emailCode = ref('')
 const emailVerified = ref(false)
 const emailVerifyMsg = ref('')
 
+const emailCodeSent = ref(false)
+
 const resendSeconds = ref(0)
 let resendTimer = null
 
@@ -247,7 +252,7 @@ const passwordConfirmMsg = ref('')
 const loginIdRegex = /^[a-z0-9]{1,20}$/
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?])[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]{8,20}$/
-const koreanRegex = /^[가-힣]{1,6}$/
+const koreanRegex = /^[가-힣0-9]{1,10}$/
 
 function resetEmailFlow() {
   emailVerified.value = false
@@ -306,7 +311,7 @@ function validateName() {
   if (!koreanRegex.test(name.value)) {
     nameValid.value = false
     nameChecked.value = false
-    nameMsg.value = '이름은 한글 1~6자만 입력 가능합니다.'
+    nameMsg.value = '닉네임은 한글 1~10자만 입력 가능합니다.'
     return
   }
 
@@ -402,6 +407,7 @@ async function handleSendEmailCode() {
   if (!canSendEmail.value) return
 
   loading.value = true
+  emailCodeSent.value = true
   try {
     await sendEmailCode({
       loginId: loginId.value,
@@ -411,6 +417,7 @@ async function handleSendEmailCode() {
     emailVerifyMsg.value = ''
     step.value = 2
     startResendCountdown(10)
+    
     alert('인증번호를 발송했습니다.')
   } catch (e) {
     emailVerifyMsg.value = e.response?.data?.message || ''
@@ -680,7 +687,7 @@ onBeforeUnmount(() => {
 .field-input:focus {
   border-color: var(--point);
   box-shadow: 0 0 0 3px rgba(200, 96, 58, 0.10);
-  background: var(--white);
+  background: var(--bg);
 }
 
 .field-inline {

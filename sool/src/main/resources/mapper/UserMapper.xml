@@ -1,127 +1,169 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.example.sool.mapper.UserMapper">
+
     <!-- 로그인 아이디로 회원 조회 -->
-    <select id="findByLoginId" parameterType="String" resultType="com.example.sool.dto.UserDto">
-        SELECT *
-        FROM user
-        WHERE login_id = #{loginId}
+    <select id="findByLoginId" parameterType="string" resultType="com.example.sool.dto.UserDto">
+        SELECT user_id AS userId            <!-- 회원 키 -->
+             , login_id AS loginId          <!-- 로그인 ID -->
+             , password                     <!-- 비밀번호 -->
+             , name                         <!-- 닉네임 -->
+             , email                        <!-- 이메일 -->
+             , role_code AS roleCode        <!-- 권한 코드 -->
+             , created_at AS createdAt      <!-- 등록 일시 -->
+             , updated_at AS updatedAt      <!-- 수정 일시 -->
+             , is_deleted AS isDeleted      <!-- 삭제 여부 -->
+
+          FROM user         <!-- 회원 테이블 -->
+         WHERE login_id = #{loginId}
     </select>
 
 
     <!-- 회원 등록 -->
     <insert id="insertUser" parameterType="com.example.sool.dto.UserDto">
-        INSERT INTO user (
-            login_id,
-            password,
-            name,
-            email,
-            role_code,
-            created_at
+        INSERT INTO user        <!-- 회원 테이블 -->
+        (
+            login_id            <!-- 로그인 ID -->
+          , password            <!-- 비밀번호 -->
+          , name                <!-- 닉네임 -->
+          , email               <!-- 이메일 -->
+          , role_code           <!-- 권한 코드 -->
+          , created_at          <!-- 등록 일시 -->
         )
-        VALUES (
-            #{loginId},
-            #{password},
-            #{name},
-            #{email},
-            #{roleCode},
-            NOW()
+        VALUES
+        (
+            #{loginId}
+          , #{password}
+          , #{name}
+          , #{email}
+          , #{roleCode}
+          , NOW()
         )
     </insert>
 
+
     <!-- 회원 단건 조회 -->
     <select id="selectUserById" parameterType="int" resultType="com.example.sool.dto.UserDto">
-        SELECT *
-        FROM user
-        WHERE user_id = #{userId}
-        AND is_deleted = 'N'
+        SELECT user_id AS userId            <!-- 회원 키 -->
+             , login_id AS loginId          <!-- 로그인 ID -->
+             , password                     <!-- 비밀번호 -->
+             , name                         <!-- 닉네임 -->
+             , email                        <!-- 이메일 -->
+             , role_code AS roleCode        <!-- 권한 코드 -->
+             , created_at AS createdAt      <!-- 등록 일시 -->
+             , updated_at AS updatedAt      <!-- 수정 일시 -->
+             , is_deleted AS isDeleted      <!-- 삭제 여부 -->
+
+          FROM user         <!-- 회원 테이블 -->
+         WHERE user_id = #{userId}  
+           AND is_deleted = 'N'
     </select>
+
 
     <!-- 이름/이메일로 아이디 찾기 -->
     <select id="findByNameAndEmail" parameterType="com.example.sool.dto.UserDto" resultType="com.example.sool.dto.UserDto">
-        SELECT login_id
-        FROM user
-        WHERE email = #{email}
-        AND name = #{name}
-        AND is_deleted = 'N'
+        SELECT login_id AS loginId  <!-- 로그인 ID -->
+          FROM user         <!-- 회원 테이블 -->
+         WHERE email = #{email}
+           AND name = #{name}
+           AND is_deleted = 'N'
     </select>
 
+
     <!-- 이메일로 회원 조회 -->
-    <select id="selectUserByEmail" parameterType="String" resultType="com.example.sool.dto.UserDto">
-        SELECT *
-        FROM user
-        WHERE email = #{email}
-        AND is_deleted = 'N'
+    <select id="selectUserByEmail" parameterType="string" resultType="com.example.sool.dto.UserDto">
+        SELECT user_id AS userId            <!-- 회원 키 -->
+             , login_id AS loginId          <!-- 로그인 ID -->
+             , password                     <!-- 비밀번호 -->
+             , name                         <!-- 닉네임 -->
+             , email                        <!-- 이메일 -->
+             , role_code AS roleCode        <!-- 권한 코드 -->
+             , created_at AS createdAt      <!-- 등록 일시 -->
+             , updated_at AS updatedAt      <!-- 수정 일시 -->
+             , is_deleted AS isDeleted      <!-- 삭제 여부 -->
+
+          FROM user     <!-- 회원 테이블 -->
+         WHERE email = #{email}
+           AND is_deleted = 'N'
     </select>
+
 
     <!-- 회원 비밀번호 수정 -->
     <update id="updateUserPassword" parameterType="com.example.sool.dto.UserDto">
-        UPDATE user
-        SET
-            password = #{password},
-            updated_at = NOW()
-        WHERE user_id = #{userId}
+        UPDATE user         <!-- 회원 테이블 -->
+           SET password = #{password}   <!-- 비밀번호 -->
+             , updated_at = NOW()       <!-- 수정 일시 -->
+         WHERE user_id = #{userId}
     </update>
+
 
     <!-- 마이페이지 사이드바 -->
     <select id="selectMyPageSidebar" parameterType="int" resultType="com.example.sool.dto.UserDto">
-        SELECT
-            u.user_id,
-            u.login_id,
-            u.name,
-            u.email,
-            (
-                SELECT COUNT(*)
-                FROM tasting_note tn
-                WHERE tn.user_id = u.user_id
-                AND tn.is_deleted = 'N'
-            ) AS noteCount,
-            (
-                SELECT COUNT(*)
-                FROM `like` l
-                WHERE l.user_id = u.user_id
-            ) AS likeCount
+        SELECT u.user_id AS userId                      <!-- 회원 키 -->
+             , u.login_id AS loginId                    <!-- 로그인 ID -->
+             , u.name                                   <!-- 닉네임 -->
+             , u.email                                  <!-- 이메일 -->
+             , IFNULL(nc.noteCount,0) AS noteCount      <!-- 노트 수 집계 -->
+             , IFNULL(lc.likeCount,0) AS likeCount      <!-- 좋아요 수 집계-->
 
-        FROM user u
-        WHERE u.user_id = #{userId}
+          FROM user u                   <!--회원 테이블 -->
+
+     LEFT JOIN (
+                SELECT user_id
+                     , COUNT(*) AS noteCount
+                  FROM tasting_note     <!-- 테이스팅 노트 테이블 -->
+                 WHERE is_deleted = 'N'
+              GROUP BY user_id
+               ) nc
+            ON u.user_id = nc.user_id
+
+     LEFT JOIN (
+                SELECT user_id          
+                     , COUNT(*) AS likeCount
+                  FROM `like`           <!-- 좋아요 테이블 -->
+              GROUP BY user_id
+               ) lc
+            ON u.user_id = lc.user_id
+
+         WHERE u.user_id = #{userId}
     </select>
 
 
     <select id="findPasswordByUserId" resultType="string">
         SELECT password
-        FROM user
-        WHERE user_id = #{userId}
+          FROM user     <!-- 회원 테이블 -->
+         WHERE user_id = #{userId}
     </select>
+
 
     <!-- 회원 정보 수정 -->
     <update id="updateUser" parameterType="com.example.sool.dto.UserDto">
-        UPDATE user
-        SET
-            login_id = #{loginId},
-            name = #{name},
-            email = #{email},
-            updated_at = NOW()
-        WHERE user_id = #{userId}
+        UPDATE user         <!-- 회원 테이블 -->
+           SET login_id = #{loginId}        <!-- 로그인 ID -->
+             , name = #{name}               <!-- 닉네임 -->
+             , email = #{email}             <!-- 이메일 -->
+             , updated_at = NOW()           <!-- 수정 일시 -->
+         WHERE user_id = #{userId}
     </update>
 
 
     <!-- 회원 삭제 -->
     <update id="deleteUser" parameterType="int">
-        UPDATE user
-        SET
-            is_deleted = 'Y',
-            updated_at = NOW()
-        WHERE user_id = #{userId}
+        UPDATE user         <!-- 회원 테이블 -->
+           SET is_deleted = 'Y'
+             , updated_at = NOW()
+         WHERE user_id = #{userId}
     </update>
+
 
     <!-- 이메일 존재 확인-->
     <select id="existsByEmail" parameterType="string" resultType="int">
         SELECT COUNT(*)
-        FROM user
-        WHERE email = #{email}
+          FROM user         <!-- 회원 테이블 -->
+         WHERE email = #{email}
     </select>
 
 </mapper>

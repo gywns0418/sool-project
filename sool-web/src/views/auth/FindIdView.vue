@@ -30,17 +30,6 @@
         <form class="form-body" @submit.prevent>
           <template v-if="step === 1">
             <div class="field-group">
-              <label class="field-label">이름</label>
-              <input
-                v-model.trim="name"
-                type="text"
-                class="field-input"
-                placeholder="이름"
-                @input="onChangeName"
-              />
-            </div>
-
-            <div class="field-group">
               <label class="field-label">이메일</label>
               <input
                 v-model.trim="email"
@@ -171,7 +160,6 @@ const navLinks = [
 const step = ref(1)
 const loading = ref(false)
 
-const name = ref('')
 const email = ref('')
 const emailValid = ref(false)
 const emailMsg = ref('')
@@ -179,8 +167,6 @@ const emailMsg = ref('')
 const emailCode = ref('')
 const emailVerified = ref(false)
 const emailVerifyMsg = ref('')
-
-const foundLoginId = ref('')
 
 const resendSeconds = ref(0)
 let resendTimer = null
@@ -213,7 +199,6 @@ function resetEmailFlow() {
   emailCode.value = ''
   emailVerified.value = false
   emailVerifyMsg.value = ''
-  foundLoginId.value = ''
   clearResendTimer()
   resendSeconds.value = 0
 
@@ -222,9 +207,6 @@ function resetEmailFlow() {
   }
 }
 
-function onChangeName() {
-  resetEmailFlow()
-}
 
 function validateEmail() {
   if (!email.value) {
@@ -249,15 +231,10 @@ function onChangeEmail() {
 }
 
 const canSendEmail = computed(() => {
-  return !!name.value && emailValid.value
+  return !!emailValid.value
 })
 
 async function handleSendEmailCode() {
-  if (!name.value) {
-    alert('이름을 입력하세요.')
-    return
-  }
-
   if (!emailValid.value) {
     alert('이메일 형식을 확인하세요.')
     return
@@ -343,7 +320,7 @@ onBeforeUnmount(() => {
   background: var(--bg);
   overflow: hidden;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
-  min-height: 700px;
+  min-height: 1000px;
 }
 
 .resetpassword-body {

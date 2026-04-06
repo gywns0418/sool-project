@@ -19,13 +19,16 @@ const routes = [
   { path: "/drinks", name: "drink-list", component: DrinkListView },
   { path: "/drinks/:id", name: "drink-detail", component: DrinkDetailView },
   { path: "/notes/:id", name: "note-detail", component: NoteDetailView },
+
   { path: "/write/:drinkId", name: "note-write", component: NoteWriteView, meta: { requiresAuth: true } },
   { path: "/notes/:noteId/edit", name: "note-edit", component: NoteWriteView, meta: { requiresAuth: true } },
   { path: "/mypage", name: "mypage", component: MyPageView, meta: { requiresAuth: true } },
-  { path: "/login", name: "login", component: LoginView },
-  { path: "/signup", name: "signup", component: SignupView },
-  { path: "/find-id", name: "find-id", component: FindIdView },
-  { path: "/reset-password", name: "reset-password", component: ResetPasswordView },
+
+  { path: "/login", name: "login", component: LoginView, meta: { guestOnly: true }},
+  { path: "/signup", name: "signup", component: SignupView, meta: { guestOnly: true } },
+  { path: "/find-id", name: "find-id", component: FindIdView, meta: { guestOnly: true } },
+  { path: "/reset-password", name: "reset-password", component: ResetPasswordView, meta: { guestOnly: true } },
+
   { path: "/404", name: "not-found", component: NotFoundView },
   { path: "/:pathMatch(.*)*", redirect: "/404" }
 ]
@@ -47,6 +50,12 @@ router.beforeEach(async (to) => {
     await authStore.fetchMe()
   }
 
+  // 이미 로그인한 상태에서 로그인 관련 페이지 접근 시 홈으로 이동
+  if (to.meta.guestOnly && authStore.isLogin) {
+    return "/"
+  }
+
+  //로그인이 필요한 페이지 이동 시 로그인으로 이동
   if (to.meta.requiresAuth && !authStore.isLogin) {
     return "/login"
   }

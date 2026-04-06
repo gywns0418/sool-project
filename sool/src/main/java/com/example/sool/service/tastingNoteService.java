@@ -13,6 +13,7 @@ import com.example.sool.dto.NoteSearchDto;
 import com.example.sool.dto.TastingNoteDto;
 import com.example.sool.dto.TastingNoteMetricDto;
 import com.example.sool.mapper.CommentMapper;
+import com.example.sool.mapper.CommonCodeMapper;
 import com.example.sool.mapper.ImageMapper;
 import com.example.sool.mapper.LikeMapper;
 import com.example.sool.mapper.TastingNoteMapper;
@@ -22,16 +23,18 @@ import com.example.sool.mapper.TastingNoteMetricMapper;
 public class TastingNoteService {
     private final TastingNoteMapper tastingNoteMapper;
     private final TastingNoteMetricMapper tastingNoteMetricMapper;
+    private final CommonCodeMapper commonCodeMapper;
     private final DrinkService drinkService;
     private final LikeMapper likeMapper;
     private final CommentMapper commentMapper;
     private final ImageMapper imageMapper;
     private final S3Service s3Service;
 
-    public TastingNoteService(TastingNoteMapper tastingNoteMapper,TastingNoteMetricMapper tastingNoteMetricMapper,
+    public TastingNoteService(TastingNoteMapper tastingNoteMapper,TastingNoteMetricMapper tastingNoteMetricMapper,CommonCodeMapper commonCodeMapper,
             DrinkService drinkService, LikeMapper likeMapper, CommentMapper commentMapper,ImageMapper imageMapper,S3Service s3Service){
         this.tastingNoteMapper = tastingNoteMapper;
         this.tastingNoteMetricMapper = tastingNoteMetricMapper;
+        this.commonCodeMapper = commonCodeMapper;
         this.drinkService = drinkService;
         this.likeMapper = likeMapper;
         this.commentMapper = commentMapper;
@@ -106,7 +109,7 @@ public class TastingNoteService {
 
     //맛 프로파일 정보 가져오기
     public List<CommonCodeDto> getMetricCode(int drinkId){
-        return tastingNoteMetricMapper.getMetricCode(drinkId);
+        return commonCodeMapper.getMetricCode(drinkId);
     }
 
     //노트 디테일 맛 프로파일

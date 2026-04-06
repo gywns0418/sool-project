@@ -38,6 +38,7 @@
                   class="field-input"
                   placeholder="아이디"
                   @input="onChangeLoginId"
+                  :disabled="emailCodeSent"
                 />
                 <button
                   type="button" class="btn-side" @click="handleExistLoginId">
@@ -61,6 +62,7 @@
                 class="field-input"
                 placeholder="이메일 주소를 입력하세요"
                 @input="onChangeEmail"
+                :disabled="emailCodeSent"
               />
               <p
                 v-if="emailMsg"
@@ -225,6 +227,8 @@ const emailCode = ref('')
 const emailVerified = ref(false)
 const emailVerifyMsg = ref('')
 
+const emailCodeSent = ref(false)
+
 const resendSeconds = ref(0)
 let resendTimer = null
 
@@ -353,6 +357,7 @@ async function handleSendEmailCode() {
   }
 
   loading.value = true
+  emailCodeSent.value = true
   try {
     const res = await sendResetPasswordEmailCode({
       loginId: loginId.value,

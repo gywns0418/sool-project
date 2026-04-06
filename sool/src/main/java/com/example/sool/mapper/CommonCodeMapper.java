@@ -15,4 +15,10 @@ public interface CommonCodeMapper {
     //주류 카테고리 리스트 조회
     List<CommonCodeDto> getDrinkCategoryList();
 
+    //신고 사유 가져오기
+    List<CommonCodeDto> getReportReasons();
+
+    //카테고리 별 지표 조회
+    List<CommonCodeDto> getMetricCode(Integer drinkId);
+
 }

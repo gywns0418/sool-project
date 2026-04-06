@@ -4,14 +4,10 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
-import com.example.sool.dto.CommonCodeDto;
 import com.example.sool.dto.TastingNoteMetricDto;
 
 @Mapper
 public interface TastingNoteMetricMapper {
-
-    //카테고리 별 지표 조회
-    List<CommonCodeDto> getMetricCode(Integer drinkId);
 
     //맛 프로파일 등록
     int insertMetric(TastingNoteMetricDto tastingNoteMetricDto);
