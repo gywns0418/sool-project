@@ -74,26 +74,40 @@
              , c.is_deleted AS isDeleted                <!-- 삭제 여부 -->
              , u.name AS userName                       <!-- 회원 이름 -->
              , u.login_id AS loginId                    <!-- 회원 로그인 ID -->
+             , (r.obj_id IS NOT NULL) AS reported 
+             , 'COMMENT' AS objType
+
           FROM comment c            <!-- 댓글 테이블 -->
+
           JOIN user u               <!-- 회원 테이블 -->
             ON c.user_id = u.user_id
+     LEFT JOIN (
+                SELECT DISTINCT obj_id
+                  FROM report
+                 WHERE obj_type = 'COMMENT'
+                   AND status_code = 'COMPLETED'
+                   AND is_deleted = 'N'
+               ) r
+        ON r.obj_id = c.comment_id
+
          WHERE c.note_id = #{noteId}
+
          ORDER BY c.group_id ASC
                 , c.created_at ASC
     </select>
 
     <!-- 특정 댓글 조회 -->
     <select id="findByCommentId" resultType="com.example.sool.dto.CommentDto">
-        SELECT c.comment_id AS commentId                <!-- 댓글 키-->
-             , c.note_id AS noteId                      <!-- 테이스팅 노트 키 -->
-             , c.user_id AS userId                      <!-- 회원 키 -->
-             , c.parent_comment_id AS parentCommentId   <!-- 부모 댓글 키 -->
-             , c.group_id AS groupId                    <!-- 댓글 그룹 ID -->
-             , c.depth                                  <!-- 댓글 깊이 -->
-             , c.content                                <!-- 댓글 내용 -->
-             , c.created_at AS createdAt                <!-- 등록 일시 -->
-             , c.updated_at AS updatedAt                <!-- 수정 일시 -->
-             , c.is_deleted AS isDeleted                <!-- 삭제 여부 -->
+        SELECT comment_id AS commentId                <!-- 댓글 키-->
+             , note_id AS noteId                      <!-- 테이스팅 노트 키 -->
+             , user_id AS userId                      <!-- 회원 키 -->
+             , parent_comment_id AS parentCommentId   <!-- 부모 댓글 키 -->
+             , group_id AS groupId                    <!-- 댓글 그룹 ID -->
+             , depth                                  <!-- 댓글 깊이 -->
+             , content                                <!-- 댓글 내용 -->
+             , created_at AS createdAt                <!-- 등록 일시 -->
+             , updated_at AS updatedAt                <!-- 수정 일시 -->
+             , is_deleted AS isDeleted                <!-- 삭제 여부 -->
           FROM comment              <!-- 댓글 테이블 -->
          WHERE comment_id = #{commentId}
            AND is_deleted = 'N'

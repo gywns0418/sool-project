@@ -55,6 +55,7 @@
              , tn.is_deleted AS isDeleted           <!-- 노트 삭제 여부 -->
              , u.name AS userName                   <!-- 회원 이름 -->
              , IFNULL(l.likeCount, 0) AS likeCount  <!-- 노트 좋아요 수 집계 -->
+             , (r.obj_id IS NOT NULL) AS reported   <!-- 신고 완료 여부 -->
 
           FROM tasting_note tn      <!-- 테이스팅 노트 테이블 -->
 
@@ -70,6 +71,16 @@
               GROUP BY obj_id
                ) l
             ON l.obj_id = tn.note_id
+
+      <!-- 신고 완료된 노트 -->
+    LEFT JOIN (
+                SELECT DISTINCT obj_id
+                  FROM report
+                 WHERE obj_type = 'NOTE'
+                   AND status_code = 'COMPLETED'
+                   AND is_deleted = 'N'
+              ) r
+           ON r.obj_id = tn.note_id
 
          WHERE tn.drink_id = #{drinkId}
            AND tn.is_deleted = 'N'
@@ -121,6 +132,8 @@
              , d.category_code AS categoryCode      <!-- 주류 카테고리 대분류 -->
              , cc.code_name AS typeName             <!-- 공통 코드 카테고리 소분류 이름 -->
              , IFNULL(l.likeCount, 0) AS likeCount  <!-- 좋아요 수 집계 -->
+             , (r.obj_id IS NOT NULL) AS reported 
+             , 'NOTE' AS objType
 
           FROM tasting_note tn          <!-- 테이스팅 노트 테이블 -->
 
@@ -149,6 +162,16 @@
               GROUP BY obj_id
                ) l
             ON l.obj_id = tn.note_id
+      
+      <!-- 신고 완료 처리 -->
+     LEFT JOIN (
+                SELECT DISTINCT obj_id
+                  FROM report
+                 WHERE obj_type = 'NOTE'
+                   AND status_code = 'COMPLETED'
+                   AND is_deleted = 'N'
+               ) r
+            ON r.obj_id = tn.note_id
 
          WHERE tn.note_id = #{noteId}
            AND tn.is_deleted = 'N'

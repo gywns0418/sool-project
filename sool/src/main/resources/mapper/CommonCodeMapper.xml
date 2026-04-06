@@ -43,8 +43,8 @@
 
     <!-- 신고 사유 목록 -->
     <select id="getReportReasons" resultType="com.example.sool.dto.CommonCodeDto">
-        SELECT cc.code                              <!-- 상세 코드 값 -->
-             , cc.code_name AS codeName             <!-- 상세 코드 이름 -->
+        SELECT code                              <!-- 상세 코드 값 -->
+             , code_name AS codeName             <!-- 상세 코드 이름 -->
 
           FROM common_code        <!-- 공통 코드 테이블 -->
           

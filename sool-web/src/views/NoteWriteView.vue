@@ -3,7 +3,10 @@
     <PageNav :links="navLinks" />
 
     <section class="write-hero">
-      <div class="write-hero-drink-thumb">{{ drinkEmoji }}</div>
+      <div class="write-hero-drink-thumb">
+          <img v-if="drink?.image?.fileUrl" :src="drink.image.fileUrl" alt="주류 이미지" />
+          <div v-else class="detail-placeholder">{{ drinkEmoji }}</div>
+      </div>
       <div>
         <div class="write-hero-tag">{{ isEditMode ? 'Edit Note' : 'Tasting Note' }}</div>
         <div class="write-hero-title">{{ drink.drinkName || '-' }}</div>
@@ -262,6 +265,7 @@ async function fetchWriteForm() {
 
   try {
     const res = await getNoteWriteForm(drinkId.value)
+    console.log(res.data)
 
     if (!res.data || !res.data.drink) {
       router.replace('/404')
@@ -516,6 +520,15 @@ watch(
   align-items: center;
   justify-content: center;
   font-size: 36px;
+}
+
+.write-hero-drink-thumb img {
+  width: 100%;
+  height: 100;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  display: block;
 }
 
 .write-hero-tag {

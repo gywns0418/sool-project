@@ -1,23 +1,43 @@
 <template>
-  <router-link class="note-card" :to="`/notes/${item.noteId}`">
+  <component
+    :is="item.reported ? 'div' : 'router-link'"
+    class="note-card"
+    :class="{ reported: item.reported }"
+    v-bind="item.reported ? {} : { to: `/notes/${item.noteId}` }"
+  >
     <div>
-      <div class="note-author">
-        <div class="avatar" :class="item.avatarClass" 
-        :style="{backgroundColor: avatarColor}">
-          {{ authorInitial }}
+      <template v-if="item.reported">
+        <div class="reported-box">
+          <div class="reported-title">🚫 신고 처리된 노트입니다</div>
+          <div class="reported-meta">작성자: {{ authorName }}</div>
+          <div class="reported-meta">작성일: {{ formatDate(item.createdAt) }}</div>
         </div>
-        <div>
-          <div class="author-name">{{ authorName }}</div>
-          <div class="note-date">{{ formatDate(item.createdAt) }}</div>
+      </template>
+
+      <template v-else>
+        <div class="note-author">
+          <div
+            class="avatar"
+            :class="item.avatarClass"
+            :style="{ backgroundColor: avatarColor }"
+          >
+            {{ authorInitial }}
+          </div>
+          <div>
+            <div class="author-name">{{ authorName }}</div>
+            <div class="note-date">{{ formatDate(item.createdAt) }}</div>
+          </div>
         </div>
-      </div>
-      <div class="note-stars">{{ getStars(item.rating) }}</div>
-      <div class="note-text">{{ item.content }}</div>
+
+        <div class="note-stars">{{ getStars(item.rating) }}</div>
+        <div class="note-text">{{ item.content }}</div>
+      </template>
     </div>
+
     <div class="note-side">
-      <div class="note-img">
+      <div class="note-img" :class="{ reported: item.reported }">
         <img
-          v-if="item?.image?.fileUrl"
+          v-if="item?.image?.fileUrl && !item.reported"
           :src="item?.image?.fileUrl"
           alt="note image"
         />
@@ -26,14 +46,14 @@
 
       <button
         class="note-like"
-        :class="{ liked }"
-        :disabled="loading"
+        :class="{ liked, reported: item.reported }"
+        :disabled="loading || item.reported"
         @click.prevent="toggleLike"
       >
-        {{ liked ? '♥' : '♡' }} {{ likeCount }}
+        {{ liked ? '♥' : '♡' }} {{ item.reported ? '-' : likeCount }}
       </button>
     </div>
-  </router-link>
+  </component>
 </template>
 
 <script setup>
@@ -56,6 +76,12 @@ const route = useRoute()
 const liked = ref(false)
 const likeCount = ref(props.item.likeCount || 0)
 const loading = ref(false)
+
+const drinkEmoji = computed(() => {
+  const code = drink.value?.categoryCode
+  const emojiData = categories.find(item => item.name === code)
+  return emojiData ? emojiData.emoji : '🍹'
+})
 
 function getStars(rating) {
   const maxStars = 5
@@ -91,13 +117,23 @@ const avatarColor = computed(() => {
     hash = name.charCodeAt(i) + ((hash << 5) - hash)
   }
 
-  const hue = hash % 360
+  const hue = ((hash % 360) + 360) % 360
 
   return `hsl(${hue}, 30%, 40%)`
 })
 
-//좋아요 상태
+const handleClick = (e) => {
+  if (props.item.reported) {
+    e.preventDefault()
+  }
+}
+
 const fetchLikeStatus = async () => {
+  if (props.item.reported) {
+    liked.value = false
+    return
+  }
+
   try {
     const res = await getNoteLike(props.item.noteId)
     liked.value = !!res.data.liked
@@ -106,8 +142,8 @@ const fetchLikeStatus = async () => {
   }
 }
 
-//좋아요 표시
 const toggleLike = async () => {
+  if (props.item.reported) return
   if (loading.value) return
 
   if (!authStore.isLogin) {
@@ -139,7 +175,7 @@ const toggleLike = async () => {
 }
 
 onMounted(() => {
-  if (authStore.isLogin) {
+  if (authStore.isLogin && !props.item.reported) {
     fetchLikeStatus()
   }
 })
@@ -158,6 +194,12 @@ onMounted(() => {
   align-items: flex-start;
 }
 
+.note-card.reported {
+  background: #f3f3f3;
+  border-color: #d9d9d9;
+  cursor: default;
+}
+
 .note-author {
   display: flex;
   align-items: center;
@@ -169,12 +211,10 @@ onMounted(() => {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-
   font-size: 11px;
   font-weight: 600;
 }
@@ -226,10 +266,15 @@ onMounted(() => {
   font-size: 26px;
 }
 
-.note-img img{
+.note-img img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.note-img.reported {
+  background: #e3e3e3;
+  color: #9a9a9a;
 }
 
 .note-like {
@@ -245,15 +290,43 @@ onMounted(() => {
   cursor: pointer;
 }
 
-.note-like.liked{
+.note-like.liked {
   border-color: var(--point);
   color: var(--point);
   background: #fdf3ef;
 }
 
-.note-like:hover{
+.note-like:hover {
   border-color: var(--point);
   color: var(--point);
   background: #fdf3ef;
+}
+
+.note-like.reported,
+.note-like.reported:hover {
+  border-color: #d9d9d9;
+  color: #9a9a9a;
+  background: #ececec;
+  cursor: default;
+}
+
+.reported-box {
+  background: #e7e7e7;
+  border: 1px solid #d6d6d6;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.reported-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.reported-meta {
+  font-size: 12px;
+  color: #7b7b7b;
+  line-height: 1.6;
 }
 </style>

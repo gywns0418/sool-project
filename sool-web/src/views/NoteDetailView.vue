@@ -3,58 +3,85 @@
     <PageNav :links="navLinks" />
 
     <div class="nd-wrap">
-      <main class="nd-main">
-        <div class="nd-top">
-          <div>
-            <div class="nd-author-row">
-              <div class="avatar">{{ authorInitial }}</div>
-              <div>
-                <div class="nd-author-name">{{ authorName }}</div>
-                <div class="nd-date">{{ formattedDate }}</div>
+      <main class="nd-main" :class="{ reported: isReportedNote }">
+        <template v-if="isReportedNote">
+          <div class="reported-box">
+            <div class="reported-title">{{ getReportedMessage(noteDetail?.objType) }}</div>
+            <div class="reported-meta">작성자: {{ authorName }}</div>
+            <div class="reported-meta">작성일: {{ formattedDate }}</div>
+          </div>
+
+          <div class="nd-drink-pill reported-pill">{{ drinkEmoji }} {{ drinkName }}</div>
+
+          <div v-if="noteImageUrl" class="nd-photo nd-photo-img-wrap reported-photo">
+            <img :src="noteImageUrl" alt="테이스팅 노트 이미지" class="nd-photo-img" />
+          </div>
+          <div v-else class="nd-photo reported-photo">{{ drinkEmoji }}</div>
+
+          <div class="nd-like-row">
+            <button class="like-btn reported-like" disabled>
+              ♥ -
+            </button>
+          </div>
+        </template>
+
+        <template v-else>
+          <div class="nd-top">
+            <div>
+              <div class="nd-author-row">
+                <div class="avatar">{{ authorInitial }}</div>
+                <div>
+                  <div class="nd-author-name">{{ authorName }}</div>
+                  <div class="nd-date">{{ formattedDate }}</div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="nd-drink-pill">{{ drinkEmoji }} {{ drinkName }}</div>
-        <div class="nd-title">{{ noteTitle }}</div>
-        <div class="nd-stars">{{ star }}</div>
+          <div class="nd-drink-pill">{{ drinkEmoji }} {{ drinkName }}</div>
+          <div class="nd-title">{{ noteTitle }}</div>
+          <div class="nd-stars">{{ star }}</div>
 
-        <div v-if="noteImageUrl" class="nd-photo nd-photo-img-wrap">
-          <img :src="noteImageUrl" alt="테이스팅 노트 이미지" class="nd-photo-img" />
-        </div>
-        <div v-else class="nd-photo">{{ drinkEmoji }}</div>
+          <div v-if="noteImageUrl" class="nd-photo nd-photo-img-wrap">
+            <img :src="noteImageUrl" alt="테이스팅 노트 이미지" class="nd-photo-img" />
+          </div>
+          <div v-else class="nd-photo">{{ drinkEmoji }}</div>
 
-        <div class="nd-text">{{ noteContent }}</div>
+          <div class="nd-text">{{ noteContent }}</div>
 
-        <div class="nd-like-row">
-          <button
-            class="like-btn"
-            :class="{ liked }"
-            :disabled="likeLoading"
-            @click="toggleLike"
-          >
-            {{ liked ? '♥' : '♡' }} {{ likeCount }}
-          </button>
-          <template v-if="!isOwner">
-            <button class="report-btn" @click="openReportModal({
-              objType: 'NOTE',
-              objId: route.params.id
-            })">
-              신고
-            </button>
-          </template>
-          
-          <template v-if="isOwner">
-            <button type="button" class="nd-action-btn" @click="goEdit">
-              수정
+          <div class="nd-like-row">
+            <button
+              class="like-btn"
+              :class="{ liked }"
+              :disabled="likeLoading"
+              @click="toggleLike"
+            >
+              {{ liked ? '♥' : '♡' }} {{ likeCount }}
             </button>
 
-            <button type="button" class="nd-action-btn danger" @click="removeNote">
-              삭제
-            </button>
-          </template>
-        </div>
+            <template v-if="!isOwner">
+              <button
+                class="report-btn"
+                @click="openReportModal({
+                  objType: 'NOTE',
+                  objId: route.params.id
+                })"
+              >
+                신고
+              </button>
+            </template>
+
+            <template v-if="isOwner">
+              <button type="button" class="nd-action-btn" @click="goEdit">
+                수정
+              </button>
+
+              <button type="button" class="nd-action-btn danger" @click="removeNote">
+                삭제
+              </button>
+            </template>
+          </div>
+        </template>
       </main>
 
       <aside class="nd-side">
@@ -78,28 +105,37 @@
 
         <div class="nd-comments">
           <h4>댓글</h4>
+
           <div class="comment-list">
             <div v-if="commentTree.length === 0" class="nd-comment-empty">
               아직 댓글이 없습니다.
             </div>
 
-            <CommentItem
-              v-for="comment in commentTree"
-              :key="comment.commentId"
-              :item="comment"
-              :noteId="Number(route.params.id)"
-              @refresh="fetchComments"
-              @report="openReportModal"
-            />
+            <template v-else>
+              <div
+                v-for="comment in commentTree"
+                :key="comment.commentId"
+                class="comment-block"
+              >
+              <CommentItem
+                :item="comment"
+                :noteId="Number(route.params.id)"
+                @refresh="fetchComments"
+                @report="openReportModal"
+              />
+              </div>
+            </template>
           </div>
+
           <form class="comment-inp" @submit.prevent="submitComment">
             <input
               v-model="newComment"
               type="text"
               maxlength="100"
               placeholder="댓글을 입력하세요"
+              :disabled="isReportedNote"
             />
-            <button class="cm-send" :disabled="commentSubmitting">
+            <button class="cm-send" :disabled="commentSubmitting || isReportedNote">
               등록
             </button>
           </form>
@@ -112,7 +148,7 @@
     v-model="reportModalOpen"
     :objType="reportObjType"
     :objId="reportObjId"
-    @success="fetchNoteDetail"
+    @success="handleReportSuccess"
   />
 </template>
 
@@ -143,7 +179,9 @@ const newComment = ref('')
 const commentList = ref([])
 const commentSubmitting = ref(false)
 
-
+const reportModalOpen = ref(false)
+const reportObjType = ref('')
+const reportObjId = ref(null)
 
 const navLinks = computed(() => [
   { label: '홈', to: '/' },
@@ -151,12 +189,12 @@ const navLinks = computed(() => [
   { label: `${noteDetail.value?.drinkName || ''} 테이스팅 노트`, to: route.fullPath, active: true }
 ])
 
+const isReportedNote = computed(() => {
+  return !!noteDetail.value?.reported
+})
+
 const authorName = computed(() => {
-  return (
-    noteDetail.value?.userName ||
-    noteDetail.value?.loginId ||
-    '작성자 미상'
-  )
+  return noteDetail.value?.userName || noteDetail.value?.loginId || '작성자 미상'
 })
 
 const authorInitial = computed(() => {
@@ -178,9 +216,7 @@ const formattedDate = computed(() => {
 })
 
 const drinkName = computed(() => {
-  return (
-    noteDetail.value?.drinkName ||'주류 정보 없음'
-  )
+  return noteDetail.value?.drinkName || '주류 정보 없음'
 })
 
 const noteTitle = computed(() => {
@@ -199,11 +235,8 @@ const star = computed(() => {
   return '★'.repeat(full) + '☆'.repeat(5 - full)
 })
 
-//이미지
 const noteImageUrl = computed(() => {
-  return (
-    noteDetail.value?.image?.fileUrl || ''
-  )
+  return noteDetail.value?.image?.fileUrl || ''
 })
 
 const drinkEmoji = computed(() => {
@@ -250,9 +283,32 @@ const commentTree = computed(() => {
   return roots
 })
 
+const getReportedMessage = (objType) => {
+  return objType === 'COMMENT'
+    ? '🚫 신고 처리된 댓글입니다'
+    : '🚫 신고 처리된 노트입니다'
+}
+
+const getCommentAuthorName = (comment) => {
+  return comment?.userName || comment?.loginId || '작성자 미상'
+}
+
+const formatCommentDate = (value) => {
+  if (!value) return '날짜 정보 없음'
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '날짜 정보 없음'
+
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+
+  return `${year}. ${month}. ${day}`
+}
+
 const fetchLikeStatus = async () => {
   const noteId = route.params.id
-  if (!noteId || !authStore.isLogin) return
+  if (!noteId || !authStore.isLogin || isReportedNote.value) return
 
   try {
     const res = await getNoteLike(noteId)
@@ -265,7 +321,7 @@ const fetchLikeStatus = async () => {
 
 const toggleLike = async () => {
   const noteId = route.params.id
-  if (!noteId || likeLoading.value) return
+  if (!noteId || likeLoading.value || isReportedNote.value) return
 
   if (!authStore.isLogin) {
     alert('로그인을 먼저 해주세요.')
@@ -300,15 +356,14 @@ const fetchNoteDetail = async () => {
     const noteId = route.params.id
 
     if (!noteId) {
-      router.replace("/404")
+      router.replace('/404')
       return
     }
 
     const res = await getNoteDetail(noteId)
 
-    // 데이터 없으면 404
     if (!res.data) {
-      router.replace("/404")
+      router.replace('/404')
       return
     }
 
@@ -321,12 +376,17 @@ const fetchNoteDetail = async () => {
       0
     )
 
+    if (isReportedNote.value) {
+      liked.value = false
+      return
+    }
+
     if (authStore.isLogin) {
       await fetchLikeStatus()
     }
   } catch (error) {
-    console.log("노트 상세 조회 실패", error)
-    router.replace("/404")
+    console.log('노트 상세 조회 실패', error)
+    router.replace('/404')
   }
 }
 
@@ -334,9 +394,7 @@ const fetchComments = async () => {
   try {
     const noteId = route.params.id
     const res = await getComments(noteId)
-    console.log("comment: ",res.data)
-
-    commentList.value =  res.data || []
+    commentList.value = res.data || []
   } catch (error) {
     console.log('댓글 조회 실패', error)
     commentList.value = []
@@ -344,6 +402,8 @@ const fetchComments = async () => {
 }
 
 const submitComment = async () => {
+  if (isReportedNote.value) return
+
   const content = newComment.value.trim()
   if (!content) return
 
@@ -369,10 +429,6 @@ const submitComment = async () => {
   }
 }
 
-const reportModalOpen = ref(false)
-const reportObjType = ref('')
-const reportObjId = ref(null)
-
 const openReportModal = (payload) => {
   if (!authStore.isLogin) {
     alert('로그인을 먼저 해주세요.')
@@ -382,27 +438,30 @@ const openReportModal = (payload) => {
     })
     return
   }
-  console.log("부모",payload)
+
   reportObjType.value = payload.objType
   reportObjId.value = payload.objId
-
   reportModalOpen.value = true
+}
+
+const handleReportSuccess = async () => {
+  await fetchNoteDetail()
+  await fetchComments()
 }
 
 const isOwner = computed(() => {
   if (!authStore.isLogin) return false
   if (!noteDetail.value) return false
-
   return authStore.user?.userId === noteDetail.value.userId
 })
 
 function goEdit() {
-  if (!noteDetail.value?.noteId) return
+  if (!noteDetail.value?.noteId || isReportedNote.value) return
   router.push(`/notes/${noteDetail.value.noteId}/edit`)
 }
 
 async function removeNote() {
-  if (!noteDetail.value?.noteId) return
+  if (!noteDetail.value?.noteId || isReportedNote.value) return
 
   const ok = window.confirm('정말 삭제하시겠습니까?')
   if (!ok) return
@@ -447,6 +506,10 @@ watch(
 .nd-main {
   padding: 40px 48px;
   border-right: 1px solid var(--border);
+}
+
+.nd-main.reported {
+  background: #f7f7f7;
 }
 
 .nd-top {
@@ -500,6 +563,12 @@ watch(
   margin-bottom: 16px;
 }
 
+.reported-pill {
+  background: #ececec;
+  border-color: #d8d8d8;
+  color: #777;
+}
+
 .nd-title {
   font-size: 24px;
   font-weight: 700;
@@ -543,6 +612,12 @@ watch(
   display: block;
 }
 
+.reported-photo {
+  background: #ececec;
+  border-color: #d7d7d7;
+  opacity: 0.8;
+}
+
 .nd-text {
   font-size: 14.5px;
   color: var(--sub);
@@ -575,6 +650,14 @@ watch(
   border: 1.5px solid var(--point);
   background: #fdf3ef;
   color: var(--point);
+}
+
+.reported-like,
+.reported-like:hover {
+  border-color: #d7d7d7;
+  background: #ececec;
+  color: #999;
+  cursor: default;
 }
 
 .report-btn {
@@ -636,6 +719,24 @@ watch(
 
 .nd-comments {
   margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  height: 420px;
+}
+
+.comment-list {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.comment-block {
+  margin-bottom: 10px;
+}
+
+.reply-wrap {
+  margin-left: 28px;
+  margin-top: 8px;
 }
 
 .comment-inp {
@@ -705,16 +806,28 @@ watch(
   border-color: #f1b5ae;
 }
 
-.nd-comments {
-  margin-top: 28px;
-  display: flex;
-  flex-direction: column;
-  height: 420px;
+.reported-box,
+.comment-reported-box {
+  background: #e7e7e7;
+  border: 1px solid #d6d6d6;
+  border-radius: 8px;
+  padding: 14px 16px;
 }
 
-.comment-list {
-  flex: 1;
-  overflow-y: auto;
-  padding-right: 6px;
+.comment-reported-box {
+  background: #f1f1f1;
+}
+
+.reported-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.reported-meta {
+  font-size: 12px;
+  color: #7b7b7b;
+  line-height: 1.6;
 }
 </style>

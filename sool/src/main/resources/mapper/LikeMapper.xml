@@ -95,6 +95,7 @@
         SELECT tn.note_id AS noteId                 <!-- 노트 키 -->
              , tn.drink_id AS drinkId               <!-- 주류 키 -->
              , tn.user_id AS userId                 <!-- 회원 키 -->
+             , tn.title                             <!-- 노트 제목 -->
              , tn.rating                            <!-- 노트 별점 -->
              , tn.content                           <!-- 노트 내용 -->
              , tn.created_at AS createdAt           <!-- 등록 일시 -->

@@ -25,6 +25,7 @@
             type="number"
             min="0"
             max="99.9"
+            :placeholder="0"
             class="range-inp"
             @keydown="preventMinusInput"
             @input="sanitizeNumberInput('abvLow')"
@@ -38,6 +39,7 @@
             type="number"
             min="0"
             max="99.9"
+            :placeholder="60"
             class="range-inp"
             @keydown="preventMinusInput"
             @input="sanitizeNumberInput('abvHigh')"
@@ -51,6 +53,7 @@
             v-model="priceLow"
             type="number"
             min="0"
+            :placeholder="0"
             class="range-inp"
             @keydown="preventMinusInput"
             @input="sanitizeNumberInput('priceLow')"
@@ -61,6 +64,7 @@
             v-model="priceHigh"
             type="number"
             min="0"
+            :placeholder="500000"
             class="range-inp"
             @keydown="preventMinusInput"
             @input="sanitizeNumberInput('priceHigh')"
@@ -134,6 +138,7 @@ import DrinkGridCard from "../components/cards/DrinkGridCard.vue"
 import { getDrinkList, getDrinkCategoryList } from "@/api/drinkApi"
 import { categories } from "@/mock/soolData"
 
+// 상단 네비게이션 링크
 const navLinks = [
   { label: "홈", to: "/" },
   { label: "주류 목록", to: "/drinks", active: true }
@@ -142,32 +147,53 @@ const navLinks = [
 const route = useRoute()
 const router = useRouter()
 
+// 목록 데이터
 const drinkList = ref([])
+
+// 카테고리 필터 목록
 const categoryOptions = ref([])
+
+// 전체 개수 / 전체 페이지
 const totalCount = ref(0)
 const totalPage = ref(1)
 
+// 검색 / 필터 상태
 const selectedCategory = ref("")
 const searchKeyword = ref("")
 const sortBy = ref("latest")
 
+// 도수 범위
 const abvLow = ref("0")
 const abvHigh = ref("60")
+
+// 가격 범위
 const priceLow = ref("0")
 const priceHigh = ref("500000")
 
+// 페이지 정보
 const page = ref(1)
 const size = ref(12)
 
+
+// 카테고리 코드에 맞는 이모지 + 이름 생성
 const makeCategoryLabel = (item) => {
   if (!item.code) return item.codeName
+
   const emojiData = categories.find(e => e.name === item.code)
-  return emojiData ? `${emojiData.emoji} ${item.codeName}` : item.codeName
+
+  return emojiData
+    ? `${emojiData.emoji} ${item.codeName}`
+    : item.codeName
 }
 
+
+// 도수 / 가격 범위가 뒤집혀 있을 경우 자동 교정
+// ex) 30 ~ 10 입력 → 10 ~ 30으로 변경
 const normalizeRange = () => {
+
   const lowAbv = Number(abvLow.value || 0)
   const highAbv = Number(abvHigh.value || 0)
+
   const lowPrice = Number(priceLow.value || 0)
   const highPrice = Number(priceHigh.value || 0)
 
@@ -182,14 +208,20 @@ const normalizeRange = () => {
   }
 }
 
+// 음수 입력 방지
+// - , e 입력을 막아서 음수나 지수표기 방지
 const preventMinusInput = (e) => {
+
   if (e.key === "-" || e.key === "e" || e.key === "E") {
     e.preventDefault()
     alert("0보다 작은 값은 입력할 수 없습니다.")
   }
 }
 
+// 숫자 입력값 검증
+// 음수 방지 / 도수 최대값 제한 / 소수점 처리
 const sanitizeNumberInput = (field) => {
+
   if (field === "abvLow" && Number(abvLow.value) < 0) {
     abvLow.value = "0"
     alert("0보다 작은 값은 입력할 수 없습니다.")
@@ -211,11 +243,14 @@ const sanitizeNumberInput = (field) => {
   }
 
   let value = parseFloat(eval(field).value)
+
   if (isNaN(value)) return
 
-  // 도수만 제한
+  // 도수 최대값 제한
   if (field === "abvLow" || field === "abvHigh") {
+
     if (value > 99.9) value = 99.9
+
     value = Math.floor(value * 10) / 10
   }
 
@@ -223,7 +258,8 @@ const sanitizeNumberInput = (field) => {
 }
 
 
-//카테고리 리스트
+// 카테고리 목록 조회
+// 필터 영역에 표시할 카테고리 데이터 로드
 const loadCategoryList = async () => {
   try {
     const res = await getDrinkCategoryList()
@@ -234,19 +270,26 @@ const loadCategoryList = async () => {
         code: "",
         codeName: "전체",
         label: "전체",
-        drinkCount: list.reduce((sum, item) => sum + (item.drinkCount || 0), 0)
+        drinkCount: list.reduce(
+          (sum, item) => sum + (item.drinkCount || 0),
+          0
+        )
       },
       ...list.map(item => ({
         ...item,
         label: makeCategoryLabel(item)
       }))
     ]
+
   } catch (error) {
     console.log(error)
   }
+
 }
 
-//검색 결과 
+
+// 주류 목록 조회
+// 키워드 검색 / 필터 검색 조건에 따라 API 호출
 const loadDrinkList = async () => {
   try {
     normalizeRange()
@@ -256,30 +299,30 @@ const loadDrinkList = async () => {
       size: size.value,
       sort: sortBy.value
     }
-
     const keyword = searchKeyword.value.trim()
-
+    // 키워드 검색
     if (keyword) {
       params.keyword = keyword
     } else {
+      // 필터 검색
       params.categoryCode = selectedCategory.value || null
       params.abvLow = Number(abvLow.value)
       params.abvHigh = Number(abvHigh.value)
       params.priceLow = Number(priceLow.value)
       params.priceHigh = Number(priceHigh.value)
     }
-
     const res = await getDrinkList(params)
-    console.log(res.data)
 
     drinkList.value = res.data.list || []
     totalCount.value = res.data.totalCount || 0
     totalPage.value = res.data.totalPage || 1
+
   } catch (error) {
     console.log(error)
   }
 }
 
+// 새로고침 시 필터 상태 유지
 const syncFromRoute = () => {
   selectedCategory.value = typeof route.query.categoryCode === "string" ? route.query.categoryCode : ""
   searchKeyword.value = typeof route.query.keyword === "string" ? route.query.keyword : ""
@@ -291,6 +334,7 @@ const syncFromRoute = () => {
   page.value = route.query.page ? Number(route.query.page) : 1
 }
 
+// 현재 필터 상태 → URL에 반영
 const updateRoute = () => {
   normalizeRange()
 
@@ -302,21 +346,17 @@ const updateRoute = () => {
   } else {
     if (selectedCategory.value) query.categoryCode = selectedCategory.value
 
-    if (abvLow.value !== null && abvLow.value !== undefined && abvLow.value !== '' && abvLow.value !== '0') {
+    if (abvLow.value !== '' && abvLow.value !== '0')
       query.abvLow = abvLow.value
-    }
 
-    if (abvHigh.value !== null && abvHigh.value !== undefined && abvHigh.value !== '' && abvHigh.value !== '60') {
+    if (abvHigh.value !== '' && abvHigh.value !== '60')
       query.abvHigh = abvHigh.value
-    }
 
-    if (priceLow.value !== null && priceLow.value !== undefined && priceLow.value !== '' && priceLow.value !== '0') {
+    if (priceLow.value !== '' && priceLow.value !== '0')
       query.priceLow = priceLow.value
-    }
 
-    if (priceHigh.value !== null && priceHigh.value !== undefined && priceHigh.value !== '' && priceHigh.value !== '500000') {
+    if (priceHigh.value !== '' && priceHigh.value !== '500000')
       query.priceHigh = priceHigh.value
-    }
   }
 
   if (sortBy.value && sortBy.value !== "latest")
@@ -328,50 +368,72 @@ const updateRoute = () => {
   router.replace({ path: "/drinks", query })
 }
 
+
+// 카테고리 클릭 시 필터 변경
 const changeCategory = (code) => {
   selectedCategory.value = code
   searchKeyword.value = ""
   page.value = 1
+
   updateRoute()
 }
 
+// 검색 실행
 const applySearch = () => {
   selectedCategory.value = ""
   page.value = 1
+
   updateRoute()
 }
 
+
+// 필터 적용
 const applyFilter = () => {
   searchKeyword.value = ""
   page.value = 1
+
   updateRoute()
 }
 
+
+// 필터 초기화
 const resetFilter = () => {
   selectedCategory.value = ""
   searchKeyword.value = ""
   sortBy.value = "latest"
+
   abvLow.value = "0"
   abvHigh.value = "60"
+
   priceLow.value = "0"
   priceHigh.value = "500000"
+
   page.value = 1
+
   updateRoute()
 }
 
+
+// 정렬 변경
 const changeSort = () => {
   page.value = 1
+
   updateRoute()
 }
 
+
+// 페이지 이동
 const movePage = (pageNum) => {
   if (pageNum < 1 || pageNum > totalPage.value) return
   page.value = pageNum
+
   updateRoute()
 
   goTop()
 }
 
+
+// route query 변경 감지 → 목록 다시 조회
 watch(
   () => route.query,
   async () => {
@@ -381,8 +443,11 @@ watch(
   { immediate: true }
 )
 
+// 카테고리 목록 최초 로딩
 loadCategoryList()
 
+
+// 페이지 제목 계산
 const titleLabel = computed(() => {
   if (searchKeyword.value.trim()) {
     return "검색 결과"
@@ -392,13 +457,23 @@ const titleLabel = computed(() => {
     return "전체 주류"
   }
 
-  const found = categoryOptions.value.find(item => item.code === selectedCategory.value)
-  return found ? found.codeName : "전체 주류"
+  const found =
+    categoryOptions.value.find(
+      item => item.code === selectedCategory.value
+    )
+
+  return found
+    ? found.codeName
+    : "전체 주류"
 })
 
+
+// 페이지네이션 버튼 목록 계산
 const visiblePages = computed(() => {
+
   const start = Math.max(1, page.value - 2)
   const end = Math.min(totalPage.value, start + 4)
+
   const pages = []
 
   for (let i = start; i <= end; i++) {
@@ -408,9 +483,11 @@ const visiblePages = computed(() => {
   return pages
 })
 
-//스크롤 최상위로
+
+// 목록 영역 스크롤 최상단 이동
 const goTop = () => {
   const el = document.querySelector('.list-main')
+
   if (el) {
     el.scrollTop = 0
   }

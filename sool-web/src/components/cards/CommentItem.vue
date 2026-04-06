@@ -1,68 +1,74 @@
 <template>
   <div class="comment-item">
-    <div class="comment" :class="{ deleted: isDeleted }">
+    <div class="comment" :class="{ deleted: isDeleted, reported: isReported }">
       <div class="cm-head">
         <div class="avatar">{{ authorInitial }}</div>
         <span class="cm-name">{{ authorName }}</span>
         <span class="cm-date">{{ formattedDate }}</span>
       </div>
 
-      <div v-if="editing" class="comment-inp edit-inp">
-        <input
-          v-model="editContent"
-          type="text"
-          maxlength="500"
-          placeholder="댓글을 수정하세요"
-        />
-        <button class="cm-send" :disabled="editSubmitting" @click="submitEdit">
-          저장
-        </button>
-        <button class="cm-cancel" :disabled="editSubmitting" @click="cancelEdit">
-          취소
-        </button>
+      <div v-if="isReported" class="reported-box">
+        <div class="reported-title">{{ reportedMessage }}</div>
+        <div class="reported-meta">작성자: {{ authorName }}</div>
+        <div class="reported-meta">작성일: {{ formattedDate }}</div>
       </div>
 
-      <div v-else class="cm-text">
-        {{ displayContent }}
-      </div>
-
-      <div class="cm-actions" v-if="!isDeleted && !editing">
-
-        <button v-if="item.depth === 0" class="cm-btn reply-btn" @click="toggleReply">
-          {{ showReply ? '취소' : '답글' }}
-        </button>
-
-        <template v-if="!isOwner">
-          <button class="cm-btn report-btn" @click="reportComment">
-            신고
-          </button>
-        </template>
-        
-        <template v-if="isOwner">
-          <button class="cm-btn reply-btn" @click="startEdit">
-            수정
-          </button>
-
-          <button class="cm-btn reply-btn" @click="deleteComment">
-            삭제
-          </button>
-        </template>
-
-      </div>
-
-      <div v-if="showReply" class="reply-box">
-        <form class="comment-inp" @submit.prevent="submitReply">
+      <template v-else>
+        <div v-if="editing" class="comment-inp edit-inp">
           <input
-            v-model="replyContent"
+            v-model="editContent"
             type="text"
-            maxlength="100"
-            placeholder="답글을 입력하세요"
+            maxlength="500"
+            placeholder="댓글을 수정하세요"
           />
-          <button class="cm-send" :disabled="replySubmitting">
-            등록
+          <button class="cm-send" :disabled="editSubmitting" @click="submitEdit">
+            저장
           </button>
-        </form>
-      </div>
+          <button class="cm-cancel" :disabled="editSubmitting" @click="cancelEdit">
+            취소
+          </button>
+        </div>
+
+        <div v-else class="cm-text">
+          {{ displayContent }}
+        </div>
+
+        <div class="cm-actions" v-if="!isDeleted && !editing">
+          <button v-if="item.depth === 0" class="cm-btn reply-btn" @click="toggleReply">
+            {{ showReply ? '취소' : '답글' }}
+          </button>
+
+          <template v-if="!isOwner">
+            <button class="cm-btn report-btn" @click="reportComment">
+              신고
+            </button>
+          </template>
+
+          <template v-if="isOwner">
+            <button class="cm-btn reply-btn" @click="startEdit">
+              수정
+            </button>
+
+            <button class="cm-btn reply-btn" @click="deleteComment">
+              삭제
+            </button>
+          </template>
+        </div>
+
+        <div v-if="showReply" class="reply-box">
+          <form class="comment-inp" @submit.prevent="submitReply">
+            <input
+              v-model="replyContent"
+              type="text"
+              maxlength="100"
+              placeholder="답글을 입력하세요"
+            />
+            <button class="cm-send" :disabled="replySubmitting">
+              등록
+            </button>
+          </form>
+        </div>
+      </template>
     </div>
 
     <div v-if="item.replies?.length" class="replies">
@@ -82,7 +88,7 @@
 import { computed, ref } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 import { useRoute, useRouter } from 'vue-router'
-import { createReply,updateCommentApi,deleteCommentApi } from '@/api/commentApi'
+import { createReply, updateCommentApi, deleteCommentApi } from '@/api/commentApi'
 
 const props = defineProps({
   item: {
@@ -95,7 +101,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['refresh','report'])
+const emit = defineEmits(['refresh', 'report'])
 
 const authStore = useAuthStore()
 const route = useRoute()
@@ -110,6 +116,7 @@ const editContent = ref('')
 const editSubmitting = ref(false)
 
 const isDeleted = computed(() => props.item.isDeleted === 'Y')
+const isReported = computed(() => !!props.item.reported)
 
 const authorName = computed(() => {
   return props.item.userName || props.item.name || props.item.loginId || '알 수 없음'
@@ -119,7 +126,6 @@ const authorInitial = computed(() => {
   return String(authorName.value || '익').trim().charAt(0) || '익'
 })
 
-//삭제된 댓글 표시
 const displayContent = computed(() => {
   if (isDeleted.value) {
     return '삭제된 댓글입니다.'
@@ -141,7 +147,12 @@ const formattedDate = computed(() => {
   return `${year}. ${month}. ${day}`
 })
 
-//로그인 확인
+const reportedMessage = computed(() => {
+  return props.item.objType === 'NOTE'
+    ? '🚫 신고 처리된 노트입니다'
+    : '🚫 신고 처리된 댓글입니다'
+})
+
 function requireLogin() {
   if (!authStore.isLogin) {
     alert('로그인을 먼저 해주세요.')
@@ -154,21 +165,18 @@ function requireLogin() {
   return true
 }
 
-
-//대댓글 표시
 function toggleReply() {
+  if (isReported.value) return
   if (!requireLogin()) return
 
   showReply.value = !showReply.value
 }
 
-//대댓글 작성
 async function submitReply() {
   const content = replyContent.value.trim()
   if (!content) return
-
+  if (isReported.value) return
   if (!requireLogin()) return
-  
 
   try {
     replySubmitting.value = true
@@ -189,27 +197,28 @@ async function submitReply() {
   }
 }
 
-//댓글 수정 창 표시
 function startEdit() {
+  if (isReported.value) return
   if (!requireLogin()) return
+
   editing.value = true
   editContent.value = props.item.content || ''
   showReply.value = false
 }
 
-//댓글 수정 취소
 function cancelEdit() {
   editing.value = false
   editContent.value = props.item.content || ''
 }
 
-//댓글 수정
 async function submitEdit() {
   const content = editContent.value.trim()
   if (!content) {
     alert('댓글 내용을 입력해주세요.')
     return
   }
+
+  if (isReported.value) return
 
   try {
     editSubmitting.value = true
@@ -228,8 +237,8 @@ async function submitEdit() {
   }
 }
 
-//댓글 삭제
 async function deleteComment() {
+  if (isReported.value) return
   if (!confirm('댓글을 삭제하시겠습니까?')) return
 
   try {
@@ -240,15 +249,15 @@ async function deleteComment() {
   }
 }
 
-//신고 모달을 위한 emit
 function reportComment() {
+  if (isReported.value) return
+
   emit('report', {
     objType: 'COMMENT',
     objId: props.item.commentId
   })
 }
 
-//작성자 확인
 const isOwner = computed(() => {
   if (!authStore.isLogin) return false
   if (!props.item) return false
@@ -265,6 +274,10 @@ const isOwner = computed(() => {
 
 .comment.deleted .cm-text {
   color: var(--muted);
+}
+
+.comment.reported {
+  padding: 12px 0 8px;
 }
 
 .cm-head {
@@ -385,5 +398,26 @@ const isOwner = computed(() => {
 .cm-cancel:disabled {
   opacity: 0.6;
   cursor: default;
+}
+
+.reported-box {
+  background: #e7e7e7;
+  border: 1px solid #d6d6d6;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+
+.reported-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #666;
+  margin-bottom: 6px;
+}
+
+.reported-meta {
+  font-size: 11.5px;
+  color: #7b7b7b;
+  line-height: 1.6;
 }
 </style>

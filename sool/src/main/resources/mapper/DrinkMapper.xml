@@ -43,11 +43,11 @@
              , d.created_at AS createdAt                <!-- 주류 등록 일시 -->
              , cc1.code_name AS categoryName            <!-- 공통코드 카테고리 대분류 한글 이름 -->
              , cc2.code_name AS typeName                <!-- 공통코드 카테고리 소분류 한글 이름 -->
-             , IFNULL(lc.likeCount, 0) AS likeCount     <!-- 주류 좋아요 수-->
-             , IFNULL(ar.avgRating, 0) AS avgRating     <!-- 평균 별점 -->
+             , IFNULL(lc.likeCount, 0) AS likeCount     <!-- 주류 좋아요 수 집계 -->
+             , IFNULL(ar.avgRating, 0) AS avgRating     <!-- 평균 별점 집계 -->
         <choose>
             <when test="userId != null">
-             , (ul.user_id IS NOT NULL) AS liked        <!-- 유저의 좋아요 -->
+             , (ul.user_id IS NOT NULL) AS liked        <!-- 유저의 좋아요 표시-->
             </when>
 
             <otherwise>
@@ -117,7 +117,7 @@
 
                 UNION
 
-                <!-- 카테고리 대분류 -->
+                <!-- 카테고리 대분류 한글 이름 -->
                 SELECT d3.drink_id
                   FROM drink d3             <!-- 주류 테이블 -->
             INNER JOIN common_code c1       <!-- 공통 코드 테이블 -->
@@ -129,7 +129,7 @@
 
                 UNION
 
-                <!-- 카테고리 소분류 -->
+                <!-- 카테고리 소분류 한글 이름 -->
                 SELECT d4.drink_id
                   FROM drink d4             <!-- 주류 테이블 -->
             INNER JOIN common_code c2       <!-- 공통 코드 테이블 -->
@@ -144,16 +144,22 @@
 
          WHERE d.is_deleted = 'N'
 
+    <!-- 정렬 -->
     <choose>
+        <!-- 좋아요 순서 -->
         <when test="sort == 'like'">
       ORDER BY IFNULL(lc.likeCount, 0) DESC
              , d.drink_id DESC
         </when>
+        <!-- 이름 순서 -->
         <when test="sort == 'name'">
       ORDER BY d.drink_name ASC
+             , d.drink_id DESC
         </when>
+        <!-- 기본 : 최신 순서-->
         <otherwise>
-      ORDER BY d.drink_id DESC
+      ORDER BY d.created_at DESC
+             , d.drink_id DESC
         </otherwise>
     </choose>
 

@@ -24,13 +24,12 @@ public class DrinkDto {
     private LocalDateTime updatedAt;
     private String isDeleted;
 
-    //추가
-
-    //이미지 저장
-    private ImageDto image;
+    
+    private ImageDto image; //이미지 저장
     
     private Integer likeCount; //좋아요 수
     private boolean liked; //좋아요 표시
+
     private Integer noteCount; //노트 수
     private Double avgRating; //평균 별점
 

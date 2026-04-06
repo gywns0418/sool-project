@@ -34,4 +34,8 @@ public class TastingNoteDto {
 
     //목록
     private int likeCount;
+
+    //신고 상태
+    private boolean reported;
+    private String objType;
 }

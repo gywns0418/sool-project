@@ -5,7 +5,7 @@
     <div class="detail-wrap">
       <div class="detail-header">
         <div class="detail-img">
-          <img v-if="drink?.image?.fileUrl" :src="drink?.image?.fileUrl" alt="주류 이미지" />
+          <img v-if="drink?.image?.fileUrl" :src="drink.image.fileUrl" alt="주류 이미지" />
           <div v-else class="detail-placeholder">{{ drinkEmoji }}</div>
         </div>
 
@@ -17,9 +17,10 @@
           <h1 class="detail-name">
             {{ drink?.drinkName || '-' }}
           </h1>
-          <h1 class="detail-name">
+
+          <h2 class="detail-name-en">
             {{ drink?.drinkNameEn || '-' }}
-          </h1>
+          </h2>
 
           <div class="detail-origin">
             {{ drink?.country || '-' }}
@@ -81,6 +82,7 @@
     <section class="notes-section">
       <div class="notes-head">
         <h3>테이스팅 노트</h3>
+
         <select v-model="sortBy" class="sort-select">
           <option value="latest">최신순</option>
           <option value="ratingDesc">별점 높은순</option>
@@ -100,21 +102,33 @@
         아직 등록된 테이스팅 노트가 없습니다.
       </div>
 
-      <div class="pagination" v-if="totalPage > 1">
-          <button class="page-btn" :disabled="page === 1" @click="movePage(page - 1)">이전</button>
+      <div v-if="totalPage > 1" class="pagination">
+        <button
+          class="page-btn"
+          :disabled="page === 1"
+          @click="movePage(page - 1)"
+        >
+          이전
+        </button>
 
-          <button
-            v-for="pageNum in visiblePages"
-            :key="pageNum"
-            class="page-btn"
-            :class="{ active: page === pageNum }"
-            @click="movePage(pageNum)"
-          >
-            {{ pageNum }}
-          </button>
+        <button
+          v-for="pageNum in visiblePages"
+          :key="pageNum"
+          class="page-btn"
+          :class="{ active: page === pageNum }"
+          @click="movePage(pageNum)"
+        >
+          {{ pageNum }}
+        </button>
 
-          <button class="page-btn" :disabled="page === totalPage" @click="movePage(page + 1)">다음</button>
-        </div>
+        <button
+          class="page-btn"
+          :disabled="page === totalPage"
+          @click="movePage(page + 1)"
+        >
+          다음
+        </button>
+      </div>
     </section>
   </div>
 </template>
@@ -145,8 +159,12 @@ const page = ref(1)
 const size = ref(5)
 const totalPage = ref(0)
 const sortBy = ref('latest')
-
 const avgMetric = ref([])
+
+const currentDrinkId = computed(() => {
+  const id = Number(route.params.id)
+  return Number.isInteger(id) && id > 0 ? id : null
+})
 
 const navLinks = computed(() => [
   { label: '홈', to: '/' },
@@ -163,68 +181,84 @@ const formatPrice = (price) => {
   return `₩ ${Number(price).toLocaleString()}`
 }
 
-//주류 정보 조회
+const drinkEmoji = computed(() => {
+  const code = drink.value?.categoryCode
+  const emojiData = categories.find(item => item.name === code)
+  return emojiData ? emojiData.emoji : '🍹'
+})
+
+const visiblePages = computed(() => {
+  const pages = []
+  const startPage = Math.max(1, page.value - 2)
+  const endPage = Math.min(totalPage.value, startPage + 4)
+
+  for (let i = startPage; i <= endPage; i += 1) {
+    pages.push(i)
+  }
+
+  return pages
+})
+
+const hasMyNote = computed(() => {
+  if (!authStore.isLogin) return false
+  if (!Array.isArray(noteList.value)) return false
+
+  const loginUserId = Number(authStore.user?.userId)
+  if (!loginUserId) return false
+
+  return noteList.value.some(note => Number(note.userId) === loginUserId)
+})
+
 const fetchDrinkDetail = async () => {
-  const drinkId = route.params.id
-  if (!drinkId) {
-    router.replace("/404")
+  if (!currentDrinkId.value) {
+    router.replace('/404')
     return
   }
 
   try {
-    const res = await getDrinkDetail(drinkId)
+    const res = await getDrinkDetail(currentDrinkId.value)
 
-    // 데이터 없는 경우
     if (!res.data) {
-      router.replace("/404")
+      drink.value = null
+      router.replace('/404')
       return
     }
 
     drink.value = res.data
   } catch (e) {
-    console.log("주류 상세 조회 실패", e)
+    console.log('주류 상세 조회 실패', e)
     drink.value = null
-    router.replace("/404")
+    router.replace('/404')
   }
 }
 
-const drinkEmoji = computed(() => {
-  const code = drink.value?.categoryCode
-  const emojiData = categories.find(e => e.name === code)
-  return emojiData ? emojiData.emoji : '🍹'
-})
-
-//주류 좋아요 조회
 const fetchLikeStatus = async () => {
-  const drinkId = route.params.id
-  if (!drinkId) return
+  if (!currentDrinkId.value) return
 
   try {
-    const res = await getDrinkLike(drinkId)
-    liked.value = !!res.data.liked
+    const res = await getDrinkLike(currentDrinkId.value)
+    liked.value = !!res.data?.liked
   } catch (e) {
     liked.value = false
   }
 }
 
-//노트 조회
 const fetchTastingNote = async () => {
-  const drinkId = route.params.id
-  if (!drinkId) return
+  if (!currentDrinkId.value) return
 
   try {
-    const res = await getNoteList(drinkId, {
+    const res = await getNoteList(currentDrinkId.value, {
       page: page.value,
       size: size.value,
       sort: sortBy.value
     })
 
-    noteList.value = Array.isArray(res.data.list) ? res.data.list : []
-    totalCount.value = res.data.totalCount ?? 0
-    totalPage.value = res.data.totalPage ?? 0
-    page.value = res.data.page ?? 1
-    size.value = res.data.size ?? 5
-    avgMetric.value = res.data.avgMetric ?? []
+    noteList.value = Array.isArray(res.data?.list) ? res.data.list : []
+    totalCount.value = Number(res.data?.totalCount ?? 0)
+    totalPage.value = Number(res.data?.totalPage ?? 0)
+    page.value = Number(res.data?.page ?? 1)
+    size.value = Number(res.data?.size ?? 5)
+    avgMetric.value = Array.isArray(res.data?.avgMetric) ? res.data.avgMetric : []
   } catch (e) {
     console.log('테이스팅 노트 조회 실패', e)
     noteList.value = []
@@ -234,7 +268,6 @@ const fetchTastingNote = async () => {
   }
 }
 
-//페이지 이동
 const movePage = async (pageNum) => {
   if (pageNum < 1 || pageNum > totalPage.value || pageNum === page.value) return
 
@@ -243,23 +276,8 @@ const movePage = async (pageNum) => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-const visiblePages = computed(() => {
-  const pages = []
-  const startPage = Math.max(1, page.value - 2)
-  const endPage = Math.min(totalPage.value, startPage + 4)
-
-  for (let i = startPage; i <= endPage; i++) {
-    pages.push(i)
-  }
-
-  return pages
-})
-
-//좋아요 상태 변경
 const toggleLike = async () => {
-  const drinkId = route.params.id
-
-  if (!drinkId || likeLoading.value) return
+  if (!currentDrinkId.value || likeLoading.value) return
 
   if (!authStore.isLogin) {
     alert('로그인을 먼저 해주세요.')
@@ -274,9 +292,9 @@ const toggleLike = async () => {
 
   try {
     if (liked.value) {
-      await deleteDrinkLike(drinkId)
+      await deleteDrinkLike(currentDrinkId.value)
     } else {
-      await insertDrinkLike(drinkId)
+      await insertDrinkLike(currentDrinkId.value)
     }
 
     await fetchDrinkDetail()
@@ -288,31 +306,39 @@ const toggleLike = async () => {
   }
 }
 
-//페이지 표시
+const resetNoteState = () => {
+  noteList.value = []
+  totalCount.value = 0
+  totalPage.value = 0
+  avgMetric.value = []
+}
+
 const initPage = async () => {
   page.value = 1
+  liked.value = false
+  drink.value = null
+  resetNoteState()
+
   await fetchDrinkDetail()
   await fetchTastingNote()
 
   if (authStore.isLogin) {
     await fetchLikeStatus()
-  } else {
-    liked.value = false
   }
 }
 
 watch(
   () => route.params.id,
-  () => {
-    initPage()
+  async () => {
+    await initPage()
   }
 )
 
 watch(
   () => authStore.isLogin,
-  () => {
-    if (authStore.isLogin) {
-      fetchLikeStatus()
+  async (isLogin) => {
+    if (isLogin) {
+      await fetchLikeStatus()
     } else {
       liked.value = false
     }
@@ -324,17 +350,8 @@ watch(sortBy, async () => {
   await fetchTastingNote()
 })
 
-const hasMyNote = computed(() => {
-  if (!authStore.isLogin) return false
-  if (!Array.isArray(noteList.value)) return false
-
-  const loginUserId = Number(authStore.user?.userId)
-
-  return noteList.value.some(note => Number(note.userId) === loginUserId)
-})
-
-onMounted(() => {
-  initPage()
+onMounted(async () => {
+  await initPage()
 })
 </script>
 
@@ -404,6 +421,13 @@ onMounted(() => {
   margin-bottom: 6px;
 }
 
+.detail-name-en {
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
 .detail-origin {
   font-size: 13px;
   color: var(--muted);
@@ -446,6 +470,7 @@ onMounted(() => {
 .detail-actions {
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .btn-primary,

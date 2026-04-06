@@ -23,4 +23,8 @@ public class CommentDto {
 
     private String userName;
     private String loginId;
+
+    //신고 상태
+    private boolean reported;
+    private String objType;
 }

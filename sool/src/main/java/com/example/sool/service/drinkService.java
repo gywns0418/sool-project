@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import com.example.sool.dto.DrinkDto;
 import com.example.sool.dto.DrinkSearchDto;
 import com.example.sool.dto.ImageDto;
-import com.example.sool.dto.TastingNoteDto;
 import com.example.sool.mapper.DrinkMapper;
 import com.example.sool.mapper.ImageMapper;
 
@@ -67,7 +66,7 @@ public class DrinkService {
         boolean hasKeyword = dto.getKeyword() != null && !dto.getKeyword().trim().isEmpty();
 
         if (hasKeyword) {
-            //검색어 기반 조회
+            //검색어 기반 조회 ( 주류 한글, 영문 이름, 카테고리 대,소분류 )
             list = drinkMapper.searchDrinkList(dto);
             totalCount = drinkMapper.searchDrinkCount(dto);
         } else {
@@ -82,10 +81,9 @@ public class DrinkService {
             drink.setImage(image);
         }
 
-        //총 페이지 계산 (올림 처리)
+        //총 페이지 계산
         int totalPage = (int) Math.ceil((double) totalCount / dto.getSize());
 
-        //응답 데이터 구성
         Map<String, Object> result = new HashMap<>();
         result.put("list", list);
         result.put("totalCount", totalCount);
