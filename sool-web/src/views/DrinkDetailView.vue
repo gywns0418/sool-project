@@ -217,6 +217,7 @@ const fetchDrinkDetail = async () => {
 
   try {
     const res = await getDrinkDetail(currentDrinkId.value)
+    console.log(res.data)
 
     if (!res.data) {
       drink.value = null

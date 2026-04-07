@@ -1,9 +1,11 @@
 package com.example.sool.controller;
 
 import java.io.IOException;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,11 +35,13 @@ public class ImageController {
     }
 
     @PostMapping("/delete")
-    public ResponseEntity<?> deleteImage(@RequestParam("fileKey") String fileKey){
+    public ResponseEntity<?> deleteImage(@RequestBody Map<String, String> param){
+        String fileKey = param.get("fileKey");
 
         //S3 파일 삭제 및 성공 결과 반환
         boolean result = s3Service.delete(fileKey);
-
+        System.out.println(result);
+        
         return ResponseEntity.ok(result);
     }
 }

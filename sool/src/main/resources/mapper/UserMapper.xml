@@ -64,11 +64,10 @@
 
 
     <!-- 이름/이메일로 아이디 찾기 -->
-    <select id="findByNameAndEmail" parameterType="com.example.sool.dto.UserDto" resultType="com.example.sool.dto.UserDto">
+    <select id="findByEmail" parameterType="com.example.sool.dto.UserDto" resultType="com.example.sool.dto.UserDto">
         SELECT login_id AS loginId  <!-- 로그인 ID -->
           FROM user         <!-- 회원 테이블 -->
          WHERE email = #{email}
-           AND name = #{name}
            AND is_deleted = 'N'
     </select>
 

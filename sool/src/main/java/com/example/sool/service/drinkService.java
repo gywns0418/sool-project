@@ -106,6 +106,11 @@ public class DrinkService {
 
     //노트 아이디로 주류 정보
     public DrinkDto findDrinkByNoteId(Integer noteId){
-        return drinkMapper.findDrinkByNoteId(noteId);
+        
+        DrinkDto drink = drinkMapper.findDrinkByNoteId(noteId);
+        ImageDto image = imageMapper.selectImageByDrinkId(drink.getDrinkId());
+        drink.setImage(image);
+
+        return drink;
     }
 }

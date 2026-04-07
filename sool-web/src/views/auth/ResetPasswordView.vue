@@ -629,7 +629,7 @@ onBeforeUnmount(() => {
 .field-input:focus {
   border-color: var(--point);
   box-shadow: 0 0 0 3px rgba(200, 96, 58, 0.10);
-  background: var(--white);
+  background: var(--bg);
 }
 
 .field-inline {

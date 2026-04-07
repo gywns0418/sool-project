@@ -47,6 +47,7 @@
         <MyProfileSection
           v-else-if="activeTab === 'profile'"
           :user-info="sidebarInfo"
+          @updateProfile="updateProfile"
         />
 
         <MyReportsSection v-else-if="activeTab === 'reports'" />
@@ -81,6 +82,14 @@ const sidebarInfo = ref({
   noteCount: 0,
   likeCount: 0
 })
+
+function updateProfile(data) {
+  sidebarInfo.value.name = data.name
+
+  if (authStore.user) {
+    authStore.user.name = data.name
+  }
+}
 
 const userInitial = computed(() => {
   return sidebarInfo.value.name ? sidebarInfo.value.name.charAt(0) : 'U'

@@ -9,7 +9,5 @@ export function uploadImage(formData) {
 }
 
 export function deleteImage(fileKey) {
-  return api.post('/image/delete', {
-    params: { fileKey }
-  })
+  return api.post('/image/delete', {fileKey})
 }

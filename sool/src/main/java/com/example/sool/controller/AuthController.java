@@ -195,7 +195,7 @@ public class AuthController {
     //아이디 찾기
     @PostMapping("/find-id")
     public ResponseEntity<Map<String, Object>> findLoginId(@RequestBody UserDto userDto) {
-        String loginId = authService.findLoginId(userDto.getName(), userDto.getEmail());
+        String loginId = authService.findLoginId(userDto.getEmail());
 
         Map<String, Object> result = new HashMap<>();
         result.put("loginId", loginId);

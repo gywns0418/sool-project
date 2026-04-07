@@ -310,7 +310,8 @@ async function fetchEditForm() {
       categoryCode: drinkData.categoryCode,
       categoryName: drinkData.categoryName,
       typeName: drinkData.typeName,
-      country: drinkData.country
+      country: drinkData.country,
+      image: drinkData.image
     }
 
     title.value = noteData.title || ''
@@ -396,6 +397,7 @@ const saveNote = async () => {
     if (isEditMode.value) {
       await updateNote(noteId.value, payload)
       console.log("payload",payload)
+      
       // 새 이미지 업로드했으면 기존 이미지 삭제
       if (uploadedFileKey && noteImage.value?.fileKey) {
         try {

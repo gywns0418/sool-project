@@ -37,6 +37,7 @@
                 class="field-input"
                 placeholder="이메일 주소를 입력하세요"
                 @input="onChangeEmail"
+                :disabled="emailCodeSent"
               />
               <p
                 v-if="emailMsg"
@@ -168,6 +169,10 @@ const emailCode = ref('')
 const emailVerified = ref(false)
 const emailVerifyMsg = ref('')
 
+const emailCodeSent = ref(false)
+
+const foundLoginId = ref('')
+
 const resendSeconds = ref(0)
 let resendTimer = null
 
@@ -241,6 +246,7 @@ async function handleSendEmailCode() {
   }
 
   loading.value = true
+  emailCodeSent.value = true
   try {
     const res = await sendFindLoginIdEmailCode({
       email: email.value
@@ -290,9 +296,10 @@ async function handleVerifyEmailCode() {
 
     if (res.data?.verified) {
       const findRes = await findLoginId({
-        name: name.value,
         email: email.value
       })
+      console.log(res.data)
+      console.log(findRes.data)
 
       foundLoginId.value = findRes.data?.loginId || ''
       emailVerified.value = true
@@ -456,7 +463,7 @@ onBeforeUnmount(() => {
 .field-input:focus {
   border-color: var(--point);
   box-shadow: 0 0 0 3px rgba(200, 96, 58, 0.10);
-  background: var(--white);
+  background: var(--bg);
 }
 
 .field-msg {

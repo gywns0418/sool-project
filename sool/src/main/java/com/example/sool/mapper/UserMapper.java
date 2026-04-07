@@ -17,7 +17,7 @@ public interface UserMapper {
     UserDto selectUserById(int userId);
 
     //이름과 이메일로 회원 정보
-    UserDto findByNameAndEmail(UserDto dto);
+    UserDto findByEmail(UserDto dto);
 
     //이메일로 회원 정보
     UserDto selectUserByEmail(String email);

@@ -235,8 +235,7 @@ public class AuthService {
     }
 
     //아이디 찾기
-    public String findLoginId(String name, String email) {
-        validateName(name);
+    public String findLoginId(String email) {
         validateEmail(email);
 
         String verified = redisTemplate.opsForValue().get(getVerifiedKey(email));
@@ -245,13 +244,9 @@ public class AuthService {
         }
 
         UserDto dto = new UserDto();
-        dto.setName(name);
         dto.setEmail(email);
-        UserDto user = userService.findByNameAndEmail(dto);
+        UserDto user = userService.findByEmail(dto);
 
-        if (user == null) {
-            throw new IllegalArgumentException("일치하는 회원정보가 없습니다.");
-        }
 
         redisTemplate.delete(getVerifiedKey(email));
 

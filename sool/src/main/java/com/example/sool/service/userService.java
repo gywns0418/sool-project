@@ -38,8 +38,8 @@ public class UserService {
         return userMapper.findByLoginId(loginId);
     }
 
-    public UserDto findByNameAndEmail(UserDto dto){
-        return userMapper.findByNameAndEmail(dto);
+    public UserDto findByEmail(UserDto dto){
+        return userMapper.findByEmail(dto);
     }
 
     public int insertUser(UserDto userDto) {

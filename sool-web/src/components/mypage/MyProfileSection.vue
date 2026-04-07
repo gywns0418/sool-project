@@ -186,6 +186,8 @@ import {
   checkEmailApi
 } from '@/api/mypageApi'
 
+const emit = defineEmits(['updateProfile'])
+
 const props = defineProps({
   userInfo: {
     type: Object,
@@ -472,6 +474,10 @@ async function saveProfile() {
     })
 
     alert('기본 정보가 수정되었습니다.')
+
+    emit('updateProfile', {
+      name: profileForm.name
+    })
 
     applyProfile({
       loginId: profileForm.loginId,

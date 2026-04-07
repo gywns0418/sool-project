@@ -7,38 +7,48 @@
 
     <!-- 최근 노트 3개 조회 -->
     <select id="recentNote" resultType="com.example.sool.dto.TastingNoteDto">
-        SELECT tn.note_id AS noteId                 <!-- 노트 키 -->
-             , tn.user_id AS userId                 <!-- 회원 키 -->
-             , tn.drink_id AS drinkId               <!-- 주류 키 -->
-             , tn.title                             <!-- 노트 제목 -->
-             , tn.content                           <!-- 노트 내용 -->
-             , tn.rating                            <!-- 노트 별점 -->
-             , tn.created_at AS createdAt           <!-- 노트 등록 일시 -->
-             , tn.updated_at AS updatedAt           <!-- 노트 수정 일시 -->
-             , tn.is_deleted AS isDeleted           <!-- 노트 삭제 여부 -->
-             , u.name AS userName                   <!-- 회원 이름 -->
-             , d.drink_name AS drinkName            <!-- 주류 이름 -->
-             , d.category_code AS categoryCode      <!-- 주류 카테고리 대분류 -->
-             , cc.code_name AS typeName             <!-- 공통 코드 카테고리 소분류 이름 -->
+       SELECT tn.note_id AS noteId                 <!-- 노트 키 -->
+            , tn.user_id AS userId                 <!-- 회원 키 -->
+            , tn.drink_id AS drinkId               <!-- 주류 키 -->
+            , tn.title                             <!-- 노트 제목 -->
+            , tn.content                           <!-- 노트 내용 -->
+            , tn.rating                            <!-- 노트 별점 -->
+            , tn.created_at AS createdAt           <!-- 노트 등록 일시 -->
+            , tn.updated_at AS updatedAt           <!-- 노트 수정 일시 -->
+            , tn.is_deleted AS isDeleted           <!-- 노트 삭제 여부 -->
+            , u.name AS userName                   <!-- 회원 이름 -->
+            , d.drink_name AS drinkName            <!-- 주류 이름 -->
+            , d.category_code AS categoryCode      <!-- 주류 카테고리 대분류 -->
+            , cc.code_name AS typeName             <!-- 공통 코드 카테고리 소분류 이름 -->
 
-          FROM tasting_note tn          <!-- 테이스팅 노트 테이블 -->
+         FROM tasting_note tn   <!-- 테이스팅 노트 테이블 -->
 
-     LEFT JOIN user u                   <!-- 회원 테이블 -->
-            ON tn.user_id = u.user_id
-           AND u.is_deleted = 'N'
+    LEFT JOIN user u            <!-- 회원 테이블 -->
+           ON tn.user_id = u.user_id
+          AND u.is_deleted = 'N'
 
-     LEFT JOIN drink d                  <!-- 주류 테이블 -->
-            ON tn.drink_id = d.drink_id
-           AND d.is_deleted = 'N'
+    LEFT JOIN drink d           <!-- 주류 테이블 -->
+           ON tn.drink_id = d.drink_id
+          AND d.is_deleted = 'N'
 
-     LEFT JOIN common_code cc           <!-- 공통 코드 테이블 -->
-            ON d.type_code = cc.code
-           AND cc.group_code = 'DRINK_TYPE'
-           AND cc.use_yn = 'Y'
+    LEFT JOIN common_code cc    <!-- 공통 코드 테이블 -->
+           ON d.type_code = cc.code
+          AND cc.group_code = 'DRINK_TYPE'
+          AND cc.use_yn = 'Y'
 
-         WHERE tn.is_deleted = 'N'
+        WHERE tn.is_deleted = 'N'
+        <!-- 신고 처리완료 되었을 경우 선택 X -->
+          AND NOT EXISTS (
+               SELECT 1
+                 FROM report r    <!-- 신고 테이블 -->
+                WHERE r.obj_id = tn.note_id
+                  AND r.obj_type = 'NOTE'
+                  AND r.status_code = 'COMPLETED'
+                  AND r.is_deleted = 'N'
+          )
+
       ORDER BY tn.created_at DESC
-         LIMIT 3
+        LIMIT 3
     </select>
 
 
