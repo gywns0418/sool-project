@@ -300,17 +300,14 @@ const loadDrinkList = async () => {
       sort: sortBy.value
     }
     const keyword = searchKeyword.value.trim()
-    // 키워드 검색
-    if (keyword) {
-      params.keyword = keyword
-    } else {
-      // 필터 검색
-      params.categoryCode = selectedCategory.value || null
-      params.abvLow = Number(abvLow.value)
-      params.abvHigh = Number(abvHigh.value)
-      params.priceLow = Number(priceLow.value)
-      params.priceHigh = Number(priceHigh.value)
-    }
+
+    params.keyword = keyword
+    params.categoryCode = selectedCategory.value || null
+    params.abvLow = Number(abvLow.value)
+    params.abvHigh = Number(abvHigh.value)
+    params.priceLow = Number(priceLow.value)
+    params.priceHigh = Number(priceHigh.value)
+
     const res = await getDrinkList(params)
 
     drinkList.value = res.data.list || []
@@ -341,23 +338,23 @@ const updateRoute = () => {
   const query = {}
   const keyword = searchKeyword.value.trim()
 
-  if (keyword) {
+  if (keyword)
     query.keyword = keyword
-  } else {
-    if (selectedCategory.value) query.categoryCode = selectedCategory.value
 
-    if (abvLow.value !== '' && abvLow.value !== '0')
-      query.abvLow = abvLow.value
+  if (selectedCategory.value)
+    query.categoryCode = selectedCategory.value
 
-    if (abvHigh.value !== '' && abvHigh.value !== '60')
-      query.abvHigh = abvHigh.value
+  if (abvLow.value !== '' && abvLow.value !== '0')
+    query.abvLow = abvLow.value
 
-    if (priceLow.value !== '' && priceLow.value !== '0')
-      query.priceLow = priceLow.value
+  if (abvHigh.value !== '' && abvHigh.value !== '60')
+    query.abvHigh = abvHigh.value
 
-    if (priceHigh.value !== '' && priceHigh.value !== '500000')
-      query.priceHigh = priceHigh.value
-  }
+  if (priceLow.value !== '' && priceLow.value !== '0')
+    query.priceLow = priceLow.value
+
+  if (priceHigh.value !== '' && priceHigh.value !== '500000')
+    query.priceHigh = priceHigh.value
 
   if (sortBy.value && sortBy.value !== "latest")
     query.sort = sortBy.value
@@ -372,7 +369,6 @@ const updateRoute = () => {
 // 카테고리 클릭 시 필터 변경
 const changeCategory = (code) => {
   selectedCategory.value = code
-  searchKeyword.value = ""
   page.value = 1
 
   updateRoute()
@@ -380,7 +376,6 @@ const changeCategory = (code) => {
 
 // 검색 실행
 const applySearch = () => {
-  selectedCategory.value = ""
   page.value = 1
 
   updateRoute()
@@ -389,7 +384,6 @@ const applySearch = () => {
 
 // 필터 적용
 const applyFilter = () => {
-  searchKeyword.value = ""
   page.value = 1
 
   updateRoute()

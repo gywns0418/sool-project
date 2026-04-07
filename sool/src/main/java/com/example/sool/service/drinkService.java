@@ -59,21 +59,11 @@ public class DrinkService {
     //주류 목록 조회 (검색 + 필터 + 페이지 처리)
     public Map<String, Object> getDrinkList(DrinkSearchDto dto) {
 
-        List<DrinkDto> list;
-        int totalCount;
+        //목록 조회
+        List<DrinkDto> list = drinkMapper.searchDrinkList(dto);
 
-        //검색어 존재 여부 확인
-        boolean hasKeyword = dto.getKeyword() != null && !dto.getKeyword().trim().isEmpty();
-
-        if (hasKeyword) {
-            //검색어 기반 조회 ( 주류 한글, 영문 이름, 카테고리 대,소분류 )
-            list = drinkMapper.searchDrinkList(dto);
-            totalCount = drinkMapper.searchDrinkCount(dto);
-        } else {
-            //필터 기반 조회 (카테고리, 도수, 가격)
-            list = drinkMapper.getFilterList(dto);
-            totalCount = drinkMapper.getFilterCount(dto);
-        }
+        //총 갯수 조회
+        int totalCount = drinkMapper.searchDrinkCount(dto);
 
         //주류별 대표 이미지 조회 후 세팅
         for (DrinkDto drink : list) {

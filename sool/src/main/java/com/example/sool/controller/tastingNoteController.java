@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.example.sool.dto.CommonCodeDto;
 import com.example.sool.dto.DrinkDto;
@@ -79,13 +80,23 @@ public class TastingNoteController {
 
     //노트 작성 정보
     @GetMapping("/notes/write/{drinkId}")
-    public ResponseEntity<Map<String, Object>> getNoteWriteForm(@PathVariable int drinkId) {
+    public ResponseEntity<Map<String, Object>> getNoteWriteForm(@PathVariable int drinkId, Authentication authentication) {
+
+         if (authentication == null || !authentication.isAuthenticated() || !(authentication.getPrincipal() instanceof CustomUserDetails userDetails)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+
 
         //주류 정보
         DrinkDto drink = drinkService.findByDrinkId(drinkId);
 
         if (drink == null) {
             throw new IllegalArgumentException("존재하지 않는 주류입니다.");
+        }
+
+        boolean exists = tastingNoteService.existsMyNoteByDrinkId(userDetails.getUserId(), drinkId);
+        if (exists) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 해당 주류에 대한 테이스팅 노트를 작성했습니다.");
         }
 
         //카테고리별 맛 프로파일 항목
@@ -129,7 +140,10 @@ public class TastingNoteController {
 
     //노트 수정 기본 정보 
     @GetMapping("/notes/edit/{noteId}")
-    public ResponseEntity<Map<String, Object>> getNoteUpdateForm(@PathVariable int noteId) {
+    public ResponseEntity<Map<String, Object>> getNoteUpdateForm(@PathVariable int noteId, Authentication authentication) {
+         if (authentication == null || !authentication.isAuthenticated() || !(authentication.getPrincipal() instanceof CustomUserDetails userDetails)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
         
         //노트수정 주류 기본 정보 
         DrinkDto drink = drinkService.findDrinkByNoteId(noteId);
@@ -139,6 +153,10 @@ public class TastingNoteController {
 
         //저장된 카테고리별 맛 프로파일 항목
         List<TastingNoteMetricDto> metricList = tastingNoteService.findMetricByNoteId(noteId);
+
+        if (note.getUserId() != userDetails.getUserId()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인 노트만 수정할 수 있습니다.");
+        }
 
         ImageDto image = imageService.selectImageByNoteId(noteId);
 

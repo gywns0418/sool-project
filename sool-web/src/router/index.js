@@ -52,11 +52,13 @@ router.beforeEach(async (to) => {
 
   // 이미 로그인한 상태에서 로그인 관련 페이지 접근 시 홈으로 이동
   if (to.meta.guestOnly && authStore.isLogin) {
+    alert('이미 로그인 한 상태입니다')
     return "/"
   }
 
   //로그인이 필요한 페이지 이동 시 로그인으로 이동
   if (to.meta.requiresAuth && !authStore.isLogin) {
+    alert('로그인이 필요한 페이지입니다 로그인 페이지로 이동합니다')
     return "/login"
   }
 })

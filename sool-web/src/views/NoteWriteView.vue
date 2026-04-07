@@ -124,6 +124,7 @@
           <textarea
             v-model="memo"
             class="write-textarea"
+            maxlength="500"
             placeholder="향, 맛, 피니시, 함께 먹은 음식 등을 기록해보세요."
           ></textarea>
         </div>
@@ -275,6 +276,13 @@ async function fetchWriteForm() {
     drink.value = res.data.drink
     scores.value = normalizeMetricList(res.data.metricList)
   } catch (error) {
+    const status = error.response?.status
+    if (status === 409) {
+      alert(error.response?.data?.message || '이미 작성한 노트가 있습니다.')
+      router.replace(`/drinks/${drinkId.value}`)
+      return
+    }
+
     console.log('노트 작성 화면 데이터 조회 실패', error)
     router.replace('/404')
   }
@@ -319,6 +327,15 @@ async function fetchEditForm() {
     memo.value = noteData.content || ''
     scores.value = normalizeMetricList(metricList)
   } catch (error) {
+
+    const status = error.response?.status
+
+    if (status === 403) {
+      alert(error.response?.data?.message || '자신의 노트만 수정 할 수 있습니다.')
+      router.replace(`/notes/${noteId.value}`)
+      return
+    }
+
     console.log('노트 수정 화면 데이터 조회 실패', error)
     router.replace('/404')
   }

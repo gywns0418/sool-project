@@ -19,12 +19,6 @@ public interface DrinkMapper {
     //검색 총 갯수
     int searchDrinkCount(DrinkSearchDto drinkSearchDto);
 
-    //필터(카테고리, 도수, 가격)
-    List<DrinkDto> getFilterList(DrinkSearchDto drinkSearchDto);
-
-    //필터 총 갯수
-    int getFilterCount(DrinkSearchDto drinkSearchDto);
-
     //주류 디테일 이동
     DrinkDto findByDrinkId(Integer drinkId);
 

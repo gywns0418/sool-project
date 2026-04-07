@@ -311,7 +311,7 @@ function validateName() {
   if (!koreanRegex.test(name.value)) {
     nameValid.value = false
     nameChecked.value = false
-    nameMsg.value = '닉네임은 한글 1~10자만 입력 가능합니다.'
+    nameMsg.value = '닉네임은 한글과 숫자 1~10자만 입력 가능합니다.'
     return
   }
 

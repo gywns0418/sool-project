@@ -284,4 +284,13 @@
              , updated_at = NOW()
          WHERE user_id = #{userId}
     </update>
+
+    <!-- 노트 작성 여부 확인 -->
+    <select id="existsMyNoteByDrinkId" resultType="int">
+       SELECT COUNT(*)
+         FROM tasting_note    <!-- 테이스팅 노트 테이블 -->
+        WHERE user_id = #{userId}
+          AND drink_id = #{drinkId}
+          AND is_deleted = 'N'
+    </select>
 </mapper>

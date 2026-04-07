@@ -102,6 +102,7 @@ const submitReport = async () => {
     console.log('신고 등록 실패', e)
     const message = e.response?.data?.message || '신고 처리에 실패했습니다.'
     alert(message)
+    closeModal()
   } finally {
     reportLoading.value = false
   }

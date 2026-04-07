@@ -123,6 +123,11 @@ public class TastingNoteService {
         return tastingNoteMetricMapper.findAvgMetricByDrinkId(drinkId);
     }
 
+    //노트 작성 기본 정보 ( 작성여부 확인 )
+    public boolean existsMyNoteByDrinkId(int userId, int drinkId) {
+        return tastingNoteMapper.existsMyNoteByDrinkId(userId, drinkId) > 0;
+    }
+
     //노트 삽입
     @Transactional  //트랜잭션 관리 어노테이션
     public int createNote(TastingNoteDto dto) {
