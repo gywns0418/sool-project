@@ -183,7 +183,7 @@ const makeCategoryLabel = (item) => {
 
   return emojiData
     ? `${emojiData.emoji} ${item.codeName}`
-    : item.codeName
+    : "🍹 " + item.codeName
 }
 
 

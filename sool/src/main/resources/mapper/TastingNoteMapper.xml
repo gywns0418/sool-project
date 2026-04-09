@@ -29,7 +29,6 @@
 
     LEFT JOIN drink d           <!-- 주류 테이블 -->
            ON tn.drink_id = d.drink_id
-          AND d.is_deleted = 'N'
 
     LEFT JOIN common_code cc    <!-- 공통 코드 테이블 -->
            ON d.type_code = cc.code
@@ -155,7 +154,6 @@
         <!--주류 이름, 카테고리 코드-->
      LEFT JOIN drink d                  <!-- 주류 테이블 -->
             ON tn.drink_id = d.drink_id
-           AND d.is_deleted = 'N'
 
         <!--카테고리 소분류 이름 -->
      LEFT JOIN common_code cc           <!-- 공통 코드 테이블 -->
@@ -256,7 +254,6 @@
 
      LEFT JOIN drink d                      <!-- 주류 테이블 -->
             ON tn.drink_id = d.drink_id
-           AND d.is_deleted = 'N'
 
      LEFT JOIN common_code cc               <!-- 공통 코드 테이블 -->
             ON d.type_code = cc.code

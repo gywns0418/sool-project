@@ -17,6 +17,7 @@
           FROM common_code cc           <!-- 공통 코드 테이블 -->
 
          WHERE cc.group_code = 'DRINK_CATEGORY'
+           AND cc.use_yn = 'Y'
            AND cc.is_deleted = 'N'
 
       ORDER BY cc.sort_seq ASC
@@ -35,6 +36,7 @@
            AND d.is_deleted = 'N'
 
          WHERE cc.group_code = 'DRINK_CATEGORY'
+           AND cc.use_yn = 'Y'
            AND cc.is_deleted = 'N'
 
       GROUP BY cc.code
@@ -50,6 +52,7 @@
           
          WHERE group_code = 'REPORT_REASON'
            AND use_yn = 'Y'
+           AND is_deleted = 'N'
       ORDER BY sort_seq ASC
     </select>
 
