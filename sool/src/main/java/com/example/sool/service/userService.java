@@ -99,18 +99,6 @@ public class UserService {
         //좋아요 삭제
         likeMapper.deleteByUserId(userId);
 
-        //댓글 삭제
-        commentMapper.deleteByUserId(userId);
-
-        //노트 이미지 삭제
-        imageMapper.deleteImageByUserId(userId);
-
-        //노트의 맛 프로파일 삭제
-        tastingNoteMetricMapper.deleteByUserId(userId);
-
-        //노트 삭제
-        tastingNoteMapper.deleteByUserId(userId);
-
         //회원 삭제
         return userMapper.deleteUser(userId);
     }

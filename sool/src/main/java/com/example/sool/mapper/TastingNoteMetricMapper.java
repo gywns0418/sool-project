@@ -11,9 +11,6 @@ public interface TastingNoteMetricMapper {
 
     //맛 프로파일 등록
     int insertMetric(TastingNoteMetricDto tastingNoteMetricDto);
-
-    //맛 프로파일 수정
-    int updateMetric(TastingNoteMetricDto tastingNoteMetricDto);
     
     //특정 노트의 맛 점수 조회
     List<TastingNoteMetricDto> findByNoteId(Integer noteId);

@@ -16,7 +16,7 @@
         </div>
 
         <div class="card-body">
-          <p class="sub-text">{{ displayItem.drinkName || '주류 이름 없음' }}</p>
+          <p class="sub-text">{{ displayItem.categoryCode || '카테고리 없음' }} - {{ displayItem.drinkName || '주류 이름 없음' }}</p>
           <h4 class="card-title">{{ displayItem.title || '제목 없음' }}</h4>
 
           <div class="meta-row">

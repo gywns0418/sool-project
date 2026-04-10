@@ -43,7 +43,7 @@
         </div>
 
         <div class="form-group full">
-          <label>이름</label>
+          <label>닉네임</label>
           <input
             v-model.trim="profileForm.name"
             type="text"

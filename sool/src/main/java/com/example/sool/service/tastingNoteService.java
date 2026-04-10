@@ -217,13 +217,15 @@ public class TastingNoteService {
         //이미지 삭제
         ImageDto image = imageMapper.selectImageByNoteId(noteId);
         imageMapper.deleteImage(image.getImageId());
-        s3Service.delete(image.getFileKey());
+        
 
         //좋아요 삭제
         LikeDto lDto = new LikeDto();
         lDto.setObjType("NOTE");
         lDto.setObjId(noteId);
-        likeMapper.deleteAllLike(lDto);
+        if (image != null) {
+            imageMapper.deleteImage(image.getImageId());
+        }
 
         //댓글 삭제
         commentMapper.deleteAllComment(noteId);
@@ -233,6 +235,11 @@ public class TastingNoteService {
 
         // 노트 삭제
         tastingNoteMapper.deleteTastingNote(noteId);
+
+        //S3 파일 삭제 (트랜잭션 적용 안됨)
+        if (image != null) {
+            s3Service.delete(image.getFileKey());
+        }
     }
 
     //노트 유효성 검사
@@ -255,6 +262,10 @@ public class TastingNoteService {
 
         if (dto.getContent() == null || dto.getContent().trim().isEmpty()) {
             throw new IllegalArgumentException("노트 내용을 입력해주세요.");
+        }
+        
+        if (dto.getContent().trim().length() > 500) {
+            throw new IllegalArgumentException("노트 내용은 500자 이하로 입력해주세요.");
         }
 
         if (dto.getRating() == null || dto.getRating() < 1 || dto.getRating() > 5) {

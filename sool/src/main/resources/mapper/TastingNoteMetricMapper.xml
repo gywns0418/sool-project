@@ -22,15 +22,6 @@
     </insert>
 
 
-    <!-- 점수 수정 -->
-    <update id="updateMetric" parameterType="com.example.sool.dto.TastingNoteMetricDto">
-        UPDATE tasting_note_metric          <!-- 맛 프로파일 테이블 -->
-           SET score = #{score}
-         WHERE note_id = #{noteId}
-           AND metric_code = #{metricCode}
-    </update>
-
-
     <!-- 특정 노트의 맛 점수 조회 -->
     <select id="findByNoteId" parameterType="int" resultType="com.example.sool.dto.TastingNoteMetricDto">
         SELECT tnm.note_id AS noteId                <!-- 테이스팅 노트 키 -->
