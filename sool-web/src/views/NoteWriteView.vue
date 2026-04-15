@@ -52,7 +52,7 @@
           <div class="form-card-header">
             <div class="form-card-icon">★</div>
             <div>
-              <div class="form-card-title">기본 평점</div>
+              <div class="form-card-title">별점</div>
               <div class="form-card-sub">전체적인 만족도를 남겨보세요</div>
             </div>
           </div>

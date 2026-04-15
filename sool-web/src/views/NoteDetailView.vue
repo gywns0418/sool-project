@@ -500,7 +500,7 @@ watch(
 .nd-wrap {
   display: grid;
   grid-template-columns: 1fr 400px;
-  min-height: 700px;
+  min-height: 1000px;
 }
 
 .nd-main {

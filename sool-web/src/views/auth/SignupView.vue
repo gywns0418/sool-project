@@ -317,7 +317,7 @@ function validateName() {
 
   nameValid.value = true
   nameChecked.value = true
-  nameMsg.value = '사용 가능한 이름 형식입니다.'
+  nameMsg.value = '사용 가능한 닉네임 형식입니다.'
 }
 
 function onChangeEmail() {

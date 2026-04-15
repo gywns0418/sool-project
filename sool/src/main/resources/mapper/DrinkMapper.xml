@@ -46,7 +46,7 @@
              , IFNULL(lc.likeCount, 0) AS likeCount     <!-- 주류 좋아요 수 집계 -->
              , IFNULL(ar.avgRating, 0) AS avgRating     <!-- 평균 별점 집계 -->
         <choose>
-            <when test="userId != null">
+            <when test="userId != null and userId !=''">
              , (ul.user_id IS NOT NULL) AS liked        <!-- 유저의 좋아요 표시-->
             </when>
 
@@ -93,7 +93,7 @@
             ON d.drink_id = ar.drink_id
 
     <!-- 로그인 했을 경우 -->
-    <if test="userId != null">
+    <if test="userId != null and userId !=''">
      LEFT JOIN `like` ul                    <!-- 좋아요 테이블 -->
             ON ul.obj_id   = d.drink_id
            AND ul.obj_type = 'DRINK'
@@ -244,6 +244,7 @@
              , d.abv                                    <!-- 주류 도수 -->
              , d.price                                  <!-- 주류 가격 -->
              , d.country                                <!-- 주류 생산 국가 -->
+             , d.description                            <!-- 주류 설명 -->
              , d.created_at AS createdAt                <!-- 주류 등록 일시 -->
              , cc1.code_name AS categoryName            <!-- 공통 코드 카테고리 대분류 한글 이름 -->
              , cc2.code_name AS typeName                <!-- 공통 코드 카테고리 소분류 한글 이름 -->
