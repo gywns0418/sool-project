@@ -39,9 +39,14 @@
                   maxlength="20"
                   placeholder="아이디"
                   @input="onChangeLoginId"
-                  :disabled="emailCodeSent"
+                  :disabled="emailCodeSent || loading"
                 />
-                <button type="button" class="btn-side" @click="handleCheckLoginId">
+                <button
+                  type="button"
+                  class="btn-side"
+                  @click="handleCheckLoginId"
+                  :disabled="emailCodeSent || loading"
+                >
                   중복확인
                 </button>
               </div>
@@ -60,7 +65,7 @@
                   maxlength="10"
                   placeholder="닉네임"
                   @input="onChangeName"
-                  :disabled="emailCodeSent"
+                  :disabled="emailCodeSent || loading"
                 />
               </div>
               <p v-if="nameMsg" class="field-msg" :class="{ success: nameChecked, error: !nameChecked }">
@@ -77,7 +82,7 @@
                 maxlength="100"
                 placeholder="이메일 주소를 입력하세요"
                 @input="onChangeEmail"
-                :disabled="emailCodeSent"
+                :disabled="emailCodeSent || loading"
               />
               <p v-if="emailMsg" class="field-msg" :class="{ success: emailValid, error: !emailValid }">
                 {{ emailMsg }}
@@ -93,7 +98,7 @@
               인증번호 보내기 <span class="btn-arrow">→</span>
             </button>
           </template>
-<!--------------------------------------------------------------------------------------------------------------------------------------->
+
           <template v-else-if="step === 2">
             <div class="info-box">
               <strong>{{ email }}</strong> 로 인증번호를 보냈습니다.
@@ -113,7 +118,7 @@
             </div>
 
             <div class="btn-row">
-              <button type="button" class="btn-light" @click="step = 1">
+              <button type="button" class="btn-light" @click="goStep1">
                 이전
               </button>
 
@@ -204,7 +209,7 @@
 
 <script setup>
 import PageNav from '../../components/common/PageNav.vue'
-import { computed, ref, onBeforeUnmount} from 'vue'
+import { computed, ref, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   checkLoginId,
@@ -228,7 +233,7 @@ const loginIdChecked = ref(false)
 const loginIdMsg = ref('')
 
 const name = ref('')
-const nameChecked=ref(false)
+const nameChecked = ref(false)
 const nameValid = ref(false)
 const nameMsg = ref('')
 
@@ -265,6 +270,13 @@ function resetEmailFlow() {
   if (step.value > 1) {
     step.value = 1
   }
+}
+
+function goStep1() {
+  step.value = 1
+  emailCodeSent.value = false
+  emailCode.value = ''
+  emailVerifyMsg.value = ''
 }
 
 function onChangeLoginId(event) {
@@ -343,7 +355,6 @@ function validateEmail() {
 }
 
 async function handleCheckLoginId() {
-
   if (!loginId.value) {
     loginIdChecked.value = false
     loginIdMsg.value = '아이디를 입력하세요.'
@@ -363,22 +374,19 @@ async function handleCheckLoginId() {
     if (res.data.available) {
       loginIdChecked.value = true
       loginIdMsg.value = '사용 가능한 아이디입니다.'
-      console.log("사용 가능한 아이디")
+      console.log('사용 가능한 아이디')
     } else {
       loginIdChecked.value = false
       loginIdMsg.value = '이미 사용 중인 아이디입니다.'
     }
-
   } catch (e) {
     loginIdChecked.value = false
-    loginIdMsg.value =
-      e.response?.data?.message || '아이디 중복확인 중 오류가 발생했습니다.'
+    loginIdMsg.value = e.response?.data?.message || '아이디 중복확인 중 오류가 발생했습니다.'
   } finally {
     loading.value = false
   }
 }
 
-//재전송 카운트다운
 function startResendCountdown(seconds = 10) {
   if (resendTimer) {
     clearInterval(resendTimer)
@@ -408,18 +416,21 @@ async function handleSendEmailCode() {
 
   loading.value = true
   emailCodeSent.value = true
+
   try {
     await sendEmailCode({
       loginId: loginId.value,
       name: name.value,
       email: email.value
     })
+
     emailVerifyMsg.value = ''
     step.value = 2
     startResendCountdown(10)
-    
+
     alert('인증번호를 발송했습니다.')
   } catch (e) {
+    emailCodeSent.value = false
     emailVerifyMsg.value = e.response?.data?.message || ''
     alert(e.response?.data?.message || '인증번호 발송에 실패했습니다.')
   } finally {
@@ -473,8 +484,6 @@ async function handleVerifyEmailCode() {
     loading.value = false
   }
 }
-
-
 
 function validatePassword() {
   if (!password.value) {
@@ -536,14 +545,12 @@ async function handleSignup() {
   }
 }
 
-//카운트다운 정리
 onBeforeUnmount(() => {
   if (resendTimer) {
     clearInterval(resendTimer)
     resendTimer = null
   }
 })
-
 </script>
 
 <style scoped>
@@ -551,7 +558,7 @@ onBeforeUnmount(() => {
   background: var(--bg);
   overflow: hidden;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
-  min-height: 1000px;
+  min-height: 1200px;
 }
 
 .signup-body {

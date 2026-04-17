@@ -30,7 +30,7 @@
             회원 정보 수정
           </div>
           <div class="my-nav-item" :class="{ sel: activeTab === 'reports' }" @click="changeTab('reports')">
-            신고 목록
+            나의 신고 내역
           </div>
           <div class="my-nav-sep"></div>
           <div class="my-nav-item" @click="handleUserDelete">회원 탈퇴</div>

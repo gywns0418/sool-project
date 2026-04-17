@@ -7,14 +7,14 @@
 
     <!-- 신고 등록 -->
     <insert id="insertReport" parameterType="com.example.sool.dto.ReportDto">
-        INSERT INTO report          <!-- 신고 테이블 -->
+        INSERT INTO report          /* 신고 테이블 */
         (   
-            user_id                 <!-- 회원 키( 신고자 ) -->
-          , obj_id                  <!-- 대상 ID -->
-          , obj_type                <!-- 대상 타입 -->
-          , reason_code             <!-- 신고 사유 코드 -->
-          , status_code             <!-- 신고 상태 코드 -->
-          , created_at              <!-- 등록 일시 -->
+            user_id                 /* 회원 키( 신고자 ) */
+          , obj_id                  /* 대상 ID */
+          , obj_type                /* 대상 타입 */
+          , reason_code             /* 신고 사유 코드 */
+          , status_code             /* 신고 상태 코드 */
+          , created_at              /* 등록 일시 */
         )
         VALUES
         (
@@ -30,7 +30,7 @@
     <!-- 신고 존재 확인 -->
     <select id="existsReport" parameterType="com.example.sool.dto.ReportDto" resultType="int">
         SELECT COUNT(*)
-          FROM report           <!-- 신고 테이블 -->
+          FROM report           /* 신고 테이블 */
          WHERE user_id = #{userId}
            AND obj_id = #{objId}
            AND obj_type = #{objType}
@@ -39,39 +39,39 @@
 
     <!-- 마이페이지 신고 조회 -->
     <select id="selectReportByUserid" parameterType="int" resultType="com.example.sool.dto.ReportDto">
-        SELECT r.report_id AS reportId              <!-- 신고 키 -->
-             , r.user_id AS userId                  <!-- 회원 키 -->
-             , r.obj_id AS objId                    <!-- 대상 ID -->
-             , r.obj_type AS objType                <!-- 대상 타입 -->
-             , r.reason_code AS reasonCode          <!-- 신고 사유 코드 -->
-             , r.status_code AS statusCode          <!-- 신고 상태 코드 -->
-             , r.created_at AS createdAt            <!-- 등록 일시 -->
-             , cc1.code_name AS reportStatus        <!-- 신고 상태 이름 -->
-             , cc2.code_name AS reportReason        <!-- 신고 사유 이름 -->
-             , tn.title AS noteTitle                <!-- 노트 제목 -->
-             , c.content AS commentContent          <!-- 댓글 내용 -->
+        SELECT r.report_id AS reportId              /* 신고 키 */
+             , r.user_id AS userId                  /* 회원 키 */
+             , r.obj_id AS objId                    /* 대상 ID */
+             , r.obj_type AS objType                /* 대상 타입 */
+             , r.reason_code AS reasonCode          /* 신고 사유 코드 */
+             , r.status_code AS statusCode          /* 신고 상태 코드 */
+             , r.created_at AS createdAt            /* 등록 일시 */
+             , cc1.code_name AS reportStatus        /* 신고 상태 이름 */
+             , cc2.code_name AS reportReason        /* 신고 사유 이름 */
+             , tn.title AS noteTitle                /* 노트 제목 */
+             , c.content AS commentContent          /* 댓글 내용 */
 
-          FROM report r                 <!-- 신고 테이블 -->
+          FROM report r                 /* 신고 테이블 */
         
-        <!--신고 상태-->
-     LEFT JOIN common_code cc1          <!-- 공통 코드 테이블 -->
+        <!-- 신고 상태 -->
+     LEFT JOIN common_code cc1          /* 공통 코드 테이블 */
             ON r.status_code = cc1.code
            AND cc1.group_code = 'REPORT_STATUS'
            AND cc1.use_yn = 'Y'
 
-        <!--신고 사유-->
-     LEFT JOIN common_code cc2          <!-- 공통 코드 테이블 -->
+        <!-- 신고 사유 -->
+     LEFT JOIN common_code cc2          /* 공통 코드 테이블 */
             ON r.reason_code = cc2.code
            AND cc2.group_code = 'REPORT_REASON'
            AND cc2.use_yn = 'Y'
         
-        <!--노트 제목-->
-     LEFT JOIN tasting_note tn          <!-- 테이스팅 노트 테이블 -->
+        <!-- 노트 제목 -->
+     LEFT JOIN tasting_note tn          /* 테이스팅 노트 테이블 */
             ON r.obj_type = 'NOTE'
            AND r.obj_id = tn.note_id
 
         <!-- 댓글 내용 -->
-     LEFT JOIN comment c                <!-- 댓글 테이블 -->
+     LEFT JOIN comment c                /* 댓글 테이블 */
             ON r.obj_type = 'COMMENT'
            AND r.obj_id = c.comment_id
 

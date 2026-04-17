@@ -1,7 +1,7 @@
 <template>
   <div class="comment-item">
     <div class="comment" :class="{ deleted: isDeleted, reported: isReported }">
-      <div class="cm-head">
+      <div class="cm-head" v-if="!isReported">
         <div class="avatar">{{ authorInitial }}</div>
         <span class="cm-name">{{ authorName }}</span>
         <span class="cm-date">{{ formattedDate }}</span>

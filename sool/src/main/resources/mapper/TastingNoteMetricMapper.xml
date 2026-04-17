@@ -7,11 +7,11 @@
 
     <!-- 맛 프로파일 등록 -->
     <insert id="insertMetric" parameterType="com.example.sool.dto.TastingNoteMetricDto">
-        INSERT INTO tasting_note_metric     <!-- 맛 프로파일 테이블 -->
+        INSERT INTO tasting_note_metric     /* 맛 프로파일 테이블 */
         (
-            note_id         <!-- 테이스팅 노트 키 -->
-          , metric_code     <!-- 맛 프로파일 코드 키 -->
-          , score           <!-- 점수 -->
+            note_id         /* 테이스팅 노트 키 */
+          , metric_code     /* 맛 프로파일 코드 키 */
+          , score           /* 점수 */
         )
         VALUES
         (
@@ -24,14 +24,14 @@
 
     <!-- 특정 노트의 맛 점수 조회 -->
     <select id="findByNoteId" parameterType="int" resultType="com.example.sool.dto.TastingNoteMetricDto">
-        SELECT tnm.note_id AS noteId                <!-- 테이스팅 노트 키 -->
-             , tnm.metric_code AS metricCode        <!-- 맛 프로파일 코드 키 -->
-             , tnm.score                            <!-- 점수 -->
-             , cc.code_name AS metricName           <!-- 공통 코드 맛 프로파일 이름 -->
+        SELECT tnm.note_id AS noteId                /* 테이스팅 노트 키 */
+             , tnm.metric_code AS metricCode        /* 맛 프로파일 코드 키 */
+             , tnm.score                            /* 점수 */
+             , cc.code_name AS metricName           /* 공통 코드 맛 프로파일 이름 */
 
-          FROM tasting_note_metric tnm         <!-- 맛 프로파일 테이블 -->
+          FROM tasting_note_metric tnm         /* 맛 프로파일 테이블 */
 
-     LEFT JOIN common_code cc                  <!-- 공통 코드 테이블 -->
+     LEFT JOIN common_code cc                  /* 공통 코드 테이블 */
             ON tnm.metric_code = cc.code
            AND cc.group_code = 'TASTE_METRIC'
 
@@ -43,18 +43,18 @@
 
     <!-- 주류 디테일 평균 맛 프로파일 -->
     <select id="findAvgMetricByDrinkId" parameterType="int" resultType="com.example.sool.dto.TastingNoteMetricDto">
-        SELECT tnm.metric_code AS metricCode        <!-- 맛 프로파일 코드 키 -->
-             , cc.code_name AS metricName           <!-- 공통 코드 맛 프로파일 이름 -->
-             , ROUND(AVG(tnm.score), 1) AS avgScore <!-- 평균 점수 집계 -->
+        SELECT tnm.metric_code AS metricCode        /* 맛 프로파일 코드 키 */
+             , cc.code_name AS metricName           /* 공통 코드 맛 프로파일 이름 */
+             , ROUND(AVG(tnm.score), 1) AS avgScore /* 평균 점수 집계 */
 
-          FROM tasting_note_metric tnm      <!-- 맛 프로파일 테이블 -->
+          FROM tasting_note_metric tnm      /* 맛 프로파일 테이블 */
 
-          JOIN tasting_note tn              <!-- 테이스팅 노트 테이블 -->
+          JOIN tasting_note tn              /* 테이스팅 노트 테이블 */
             ON tn.note_id = tnm.note_id
            AND tn.drink_id = #{drinkId}
            AND tn.is_deleted = 'N'
 
-     LEFT JOIN common_code cc               <!-- 공통 코드 테이블 -->
+     LEFT JOIN common_code cc               /* 공통 코드 테이블 */
             ON cc.code = tnm.metric_code
            AND cc.group_code = 'TASTE_METRIC'
 
@@ -67,21 +67,8 @@
     <!-- 노트 전체 맛 점수 삭제 -->
     <delete id="deleteByNoteId" parameterType="int">
         DELETE
-          FROM tasting_note_metric      <!-- 맛 프로파일 테이블 -->
+          FROM tasting_note_metric      /* 맛 프로파일 테이블 */
          WHERE note_id = #{noteId}
-    </delete>
-
-
-    <!-- 회원 삭제 시 맛 점수 삭제 -->
-    <delete id="deleteByUserId">
-        DELETE
-          FROM tasting_note_metric      <!-- 맛 프로파일 테이블 -->
-         WHERE note_id IN
-               (
-                SELECT note_id
-                  FROM tasting_note     <!-- 노트 테이블 -->
-                 WHERE user_id = #{userId}
-               )
     </delete>
 
 </mapper>

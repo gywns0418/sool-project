@@ -38,10 +38,14 @@
                   class="field-input"
                   placeholder="아이디"
                   @input="onChangeLoginId"
-                  :disabled="emailCodeSent"
+                  :disabled="emailCodeSent || loading"
                 />
                 <button
-                  type="button" class="btn-side" @click="handleExistLoginId">
+                  type="button"
+                  class="btn-side"
+                  @click="handleExistLoginId"
+                  :disabled="emailCodeSent || loading"
+                >
                   아이디 확인
                 </button>
               </div>
@@ -62,7 +66,7 @@
                 class="field-input"
                 placeholder="이메일 주소를 입력하세요"
                 @input="onChangeEmail"
-                :disabled="emailCodeSent"
+                :disabled="emailCodeSent || loading"
               />
               <p
                 v-if="emailMsg"
@@ -82,7 +86,7 @@
               인증번호 보내기 <span class="btn-arrow">→</span>
             </button>
           </template>
-<!-------------------------------------------------------------------------------------->
+
           <template v-else-if="step === 2">
             <div class="info-box">
               <strong>{{ email }}</strong> 로 인증번호를 보냈습니다.
@@ -105,7 +109,7 @@
               <button
                 type="button"
                 class="btn-light"
-                @click="step = 1"
+                @click="goStep1"
               >
                 이전
               </button>
@@ -116,7 +120,7 @@
                 :disabled="loading || resendSeconds > 0"
                 @click="handleResendEmailCode"
               >
-                {{ resendSeconds > 0 ? `${resendSeconds}초 후 재전송 가능` : "재전송" }}
+                {{ resendSeconds > 0 ? `${resendSeconds}초 후 재전송 가능` : '재전송' }}
               </button>
 
               <button
@@ -129,7 +133,7 @@
               </button>
             </div>
           </template>
-<!---------------------------------------------------------------------------------------------------------------->
+
           <template v-else>
             <div class="info-box success-box">
               이메일 인증이 완료되었습니다.
@@ -238,7 +242,6 @@ const passwordConfirm = ref('')
 const passwordConfirmMsg = ref('')
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const koreanRegex = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?])[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]{8,20}$/
 
 function clearResendTimer() {
@@ -277,6 +280,20 @@ function resetEmailFlow() {
   if (step.value > 1) {
     step.value = 1
   }
+}
+
+function goStep1() {
+  step.value = 1
+  emailCodeSent.value = false
+  emailCode.value = ''
+  emailVerified.value = false
+  emailVerifyMsg.value = ''
+  password.value = ''
+  passwordMsg.value = ''
+  passwordConfirm.value = ''
+  passwordConfirmMsg.value = ''
+  clearResendTimer()
+  resendSeconds.value = 0
 }
 
 function onChangeLoginId() {
@@ -333,13 +350,10 @@ async function handleExistLoginId() {
   }
 }
 
-
-//이메일 전송 가능 
 const canSendEmail = computed(() => {
   return !!loginId.value && loginIdChecked.value && emailValid.value
 })
 
-//이메일 인증번호 전송
 async function handleSendEmailCode() {
   if (!loginId.value) {
     alert('아이디를 입력하세요.')
@@ -358,6 +372,7 @@ async function handleSendEmailCode() {
 
   loading.value = true
   emailCodeSent.value = true
+
   try {
     const res = await sendResetPasswordEmailCode({
       loginId: loginId.value,
@@ -369,6 +384,8 @@ async function handleSendEmailCode() {
     startResendCountdown(10)
     alert(res.data?.message || '인증번호를 발송했습니다.')
   } catch (e) {
+    emailCodeSent.value = false
+    emailVerifyMsg.value = e.response?.data?.message || ''
     alert(e.response?.data?.message || '인증번호 발송에 실패했습니다.')
   } finally {
     loading.value = false

@@ -8,15 +8,15 @@
 
     <!-- 인기술 top4 -->
     <select id="drinkTop" resultType="com.example.sool.dto.DrinkDto">
-        SELECT d.drink_id AS drinkId            <!-- 주류 키 -->
-             , d.category_code AS categoryCode  <!-- 주류 카테고리 대분류 -->
-             , d.type_code AS typeCode          <!-- 주류 카테고리 소분류 -->
-             , d.drink_name AS drinkName        <!-- 주류 한글 이름 -->
-             , d.drink_name_en AS drinkNameEn   <!-- 주류 영문 이름 -->
-             , COUNT(l.obj_id) AS likeCount     <!-- 주류에 해당하는 좋아요 수 -->
-          FROM drink d      <!-- 주류 테이블 -->
+        SELECT d.drink_id AS drinkId            /* 주류 키 */
+             , d.category_code AS categoryCode  /* 주류 카테고리 대분류 */
+             , d.type_code AS typeCode          /* 주류 카테고리 소분류 */
+             , d.drink_name AS drinkName        /* 주류 한글 이름 */
+             , d.drink_name_en AS drinkNameEn   /* 주류 영문 이름 */
+             , COUNT(l.obj_id) AS likeCount     /* 주류에 해당하는 좋아요 수 */
+          FROM drink d      /* 주류 테이블 */
 
-     LEFT JOIN `like` l     <!-- 좋아요 테이블 -->
+     LEFT JOIN `like` l     /* 좋아요 테이블 */
             ON d.drink_id = l.obj_id
            AND l.obj_type = 'DRINK'
 
@@ -32,39 +32,39 @@
 
     <!-- 검색 -->
     <select id="searchDrinkList" parameterType="com.example.sool.dto.DrinkSearchDto" resultType="com.example.sool.dto.DrinkDto">
-        SELECT d.drink_id AS drinkId                    <!-- 주류 키 -->
-             , d.category_code AS categoryCode          <!-- 주류 카테고리 대분류 -->
-             , d.type_code AS typeCode                  <!-- 주류 카테고리 소분류 -->
-             , d.drink_name AS drinkName                <!-- 주류 한글 이름 -->
-             , d.drink_name_en AS drinkNameEn           <!-- 주류 영문 이름 -->
-             , d.abv                                    <!-- 주류 도수 -->
-             , d.price                                  <!-- 주류 가격 -->
-             , d.country                                <!-- 주류 생산 국가 -->
-             , d.created_at AS createdAt                <!-- 주류 등록 일시 -->
-             , cc1.code_name AS categoryName            <!-- 공통코드 카테고리 대분류 한글 이름 -->
-             , cc2.code_name AS typeName                <!-- 공통코드 카테고리 소분류 한글 이름 -->
-             , IFNULL(lc.likeCount, 0) AS likeCount     <!-- 주류 좋아요 수 집계 -->
-             , IFNULL(ar.avgRating, 0) AS avgRating     <!-- 평균 별점 집계 -->
+        SELECT d.drink_id AS drinkId                    /* 주류 키 */
+             , d.category_code AS categoryCode          /* 주류 카테고리 대분류 */
+             , d.type_code AS typeCode                  /* 주류 카테고리 소분류 */
+             , d.drink_name AS drinkName                /* 주류 한글 이름 */
+             , d.drink_name_en AS drinkNameEn           /* 주류 영문 이름 */
+             , d.abv                                    /* 주류 도수 */
+             , d.price                                  /* 주류 가격 */
+             , d.country                                /* 주류 생산 국가 */
+             , d.created_at AS createdAt                /* 주류 등록 일시 */
+             , cc1.code_name AS categoryName            /* 공통코드 카테고리 대분류 한글 이름 */
+             , cc2.code_name AS typeName                /* 공통코드 카테고리 소분류 한글 이름 */
+             , IFNULL(lc.likeCount, 0) AS likeCount     /* 주류 좋아요 수 집계 */
+             , IFNULL(ar.avgRating, 0) AS avgRating     /* 평균 별점 집계 */
         <choose>
             <when test="userId != null and userId !=''">
-             , (ul.user_id IS NOT NULL) AS liked        <!-- 유저의 좋아요 표시-->
+             , (ul.user_id IS NOT NULL) AS liked        /* 유저의 좋아요 표시 */
             </when>
 
             <otherwise>
              , false AS liked
             </otherwise>
         </choose>
-          FROM drink d                      <!-- 주류 테이블 -->
+          FROM drink d                      /* 주류 테이블 */
 
     <!-- 카테고리 대분류 한글 이름 -->
-     LEFT JOIN common_code cc1              <!-- 공통 코드 테이블 -->
+     LEFT JOIN common_code cc1              /* 공통 코드 테이블 */
             ON d.category_code = cc1.code
            AND cc1.group_code  = 'DRINK_CATEGORY'
            AND cc1.use_yn      = 'Y'
            AND cc1.is_deleted  = 'N'
 
     <!-- 카테고리 소분류 한글 이름 -->
-     LEFT JOIN common_code cc2              <!-- 공통 코드 테이블 -->
+     LEFT JOIN common_code cc2              /* 공통 코드 테이블 */
             ON d.type_code     = cc2.code
            AND cc2.group_code  = 'DRINK_TYPE'
            AND cc2.use_yn      = 'Y'
@@ -75,7 +75,7 @@
                 SELECT
                        obj_id
                      , COUNT(*) AS likeCount
-                  FROM `like`               <!-- 좋아요 테이블 -->
+                  FROM `like`               /* 좋아요 테이블 */
                  WHERE obj_type = 'DRINK'
               GROUP BY obj_id
                ) lc
@@ -86,7 +86,7 @@
                 SELECT
                        drink_id
                      , ROUND(AVG(rating), 1) AS avgRating
-                  FROM tasting_note         <!-- 테이스팅 노트 테이블 -->
+                  FROM tasting_note         /* 테이스팅 노트 테이블 */
                  WHERE is_deleted = 'N'
               GROUP BY drink_id
                ) ar
@@ -94,7 +94,7 @@
 
     <!-- 로그인 했을 경우 -->
     <if test="userId != null and userId !=''">
-     LEFT JOIN `like` ul                    <!-- 좋아요 테이블 -->
+     LEFT JOIN `like` ul                    /* 좋아요 테이블 */
             ON ul.obj_id   = d.drink_id
            AND ul.obj_type = 'DRINK'
            AND ul.user_id  = #{userId}
@@ -104,7 +104,7 @@
     <if test="keyword != null and keyword != ''">
     INNER JOIN (
                 <!-- 주류 한글 이름 -->
-                SELECT d1.drink_id          <!-- 주류 테이블 -->
+                SELECT d1.drink_id          /* 주류 테이블 */
                   FROM drink d1
                  WHERE d1.is_deleted = 'N'
                    AND d1.drink_name LIKE CONCAT('%', #{keyword}, '%')
@@ -113,7 +113,7 @@
 
                 <!-- 주류 영문 이름 -->
                 SELECT d2.drink_id
-                  FROM drink d2             <!-- 주류 테이블 -->
+                  FROM drink d2             /* 주류 테이블 */
                  WHERE d2.is_deleted    = 'N'
                    AND d2.drink_name_en LIKE CONCAT('%', #{keyword}, '%')
 
@@ -121,8 +121,8 @@
 
                 <!-- 카테고리 대분류 한글 이름 -->
                 SELECT d3.drink_id
-                  FROM drink d3             <!-- 주류 테이블 -->
-            INNER JOIN common_code c1       <!-- 공통 코드 테이블 -->
+                  FROM drink d3             /* 주류 테이블 */
+            INNER JOIN common_code c1       /* 공통 코드 테이블 */
                     ON d3.category_code = c1.code
                    AND c1.group_code    = 'DRINK_CATEGORY'
                    AND c1.use_yn        = 'Y'
@@ -134,8 +134,8 @@
 
                 <!-- 카테고리 소분류 한글 이름 -->
                 SELECT d4.drink_id
-                  FROM drink d4             <!-- 주류 테이블 -->
-            INNER JOIN common_code c2       <!-- 공통 코드 테이블 -->
+                  FROM drink d4             /* 주류 테이블 */
+            INNER JOIN common_code c2       /* 공통 코드 테이블 */
                     ON d4.type_code  = c2.code
                    AND c2.group_code = 'DRINK_TYPE'
                    AND c2.use_yn     = 'Y'
@@ -180,28 +180,28 @@
 
     <!-- 검색 총 갯수 -->
     <select id="searchDrinkCount" parameterType="com.example.sool.dto.DrinkSearchDto" resultType="int">
-        SELECT COUNT(*)             <!-- 검색 총 갯수 -->
-          FROM drink d              <!-- 주류 테이블 -->
+        SELECT COUNT(*)             /* 검색 총 갯수 */
+          FROM drink d              /* 주류 테이블 */
 
         <if test="keyword != null and keyword != ''">
     INNER JOIN (
                 SELECT d1.drink_id
-                  FROM drink d1         <!-- 주류 테이블 -->
+                  FROM drink d1         /* 주류 테이블 */
                  WHERE d1.is_deleted = 'N'
                    AND d1.drink_name LIKE CONCAT('%', #{keyword}, '%')
 
                 UNION
 
                 SELECT d2.drink_id
-                  FROM drink d2         <!-- 주류 테이블 -->
+                  FROM drink d2         /* 주류 테이블 */
                  WHERE d2.is_deleted    = 'N'
                    AND d2.drink_name_en LIKE CONCAT('%', #{keyword}, '%')
 
                 UNION
 
                 SELECT d3.drink_id
-                  FROM drink d3         <!-- 주류 테이블 -->
-            INNER JOIN common_code c1   <!-- 공통코드 테이블 -->
+                  FROM drink d3         /* 주류 테이블 */
+            INNER JOIN common_code c1   /* 공통코드 테이블 */
                     ON d3.category_code = c1.code
                    AND c1.group_code    = 'DRINK_CATEGORY'
                    AND c1.use_yn        = 'Y'
@@ -212,8 +212,8 @@
                 UNION
 
                 SELECT d4.drink_id
-                  FROM drink d4         <!-- 주류 테이블 -->
-            INNER JOIN common_code c2   <!-- 공통 코드 테이블 -->
+                  FROM drink d4         /* 주류 테이블 */
+            INNER JOIN common_code c2   /* 공통 코드 테이블 */
                     ON d4.type_code  = c2.code
                    AND c2.group_code = 'DRINK_TYPE'
                    AND c2.use_yn     = 'Y'
@@ -236,30 +236,30 @@
 
     <!-- id로 정보(주류 디테일) -->
     <select id="findByDrinkId" parameterType="int" resultType="com.example.sool.dto.DrinkDto">
-        SELECT d.drink_id AS drinkId                    <!-- 주류 키 -->
-             , d.category_code AS categoryCode          <!-- 주류 카테고리 대분류 -->
-             , d.type_code AS typeCode                  <!-- 주류 카테고리 소분류 -->
-             , d.drink_name AS drinkName                <!-- 주류 한글 이름 -->
-             , d.drink_name_en AS drinkNameEn           <!-- 주류 영문 이름 -->
-             , d.abv                                    <!-- 주류 도수 -->
-             , d.price                                  <!-- 주류 가격 -->
-             , d.country                                <!-- 주류 생산 국가 -->
-             , d.description                            <!-- 주류 설명 -->
-             , d.created_at AS createdAt                <!-- 주류 등록 일시 -->
-             , cc1.code_name AS categoryName            <!-- 공통 코드 카테고리 대분류 한글 이름 -->
-             , cc2.code_name AS typeName                <!-- 공통 코드 카테고리 소분류 한글 이름 -->
-             , IFNULL(tn.noteCount, 0) AS noteCount     <!-- 노트 수 집계 -->
-             , IFNULL(tn.avgRating, 0) AS avgRating     <!-- 평균 별점 집계 -->
-             , IFNULL(lc.likeCount, 0) AS likeCount     <!-- 좋아요 수 집계 -->
-          FROM drink d                  <!-- 주류 테이블 -->
+        SELECT d.drink_id AS drinkId                    /* 주류 키 */
+             , d.category_code AS categoryCode          /* 주류 카테고리 대분류 */
+             , d.type_code AS typeCode                  /* 주류 카테고리 소분류 */
+             , d.drink_name AS drinkName                /* 주류 한글 이름 */
+             , d.drink_name_en AS drinkNameEn           /* 주류 영문 이름 */
+             , d.abv                                    /* 주류 도수 */
+             , d.price                                  /* 주류 가격 */
+             , d.country                                /* 주류 생산 국가 */
+             , d.description                            /* 주류 설명 */
+             , d.created_at AS createdAt                /* 주류 등록 일시 */
+             , cc1.code_name AS categoryName            /* 공통 코드 카테고리 대분류 한글 이름 */
+             , cc2.code_name AS typeName                /* 공통 코드 카테고리 소분류 한글 이름 */
+             , IFNULL(tn.noteCount, 0) AS noteCount     /* 노트 수 집계 */
+             , IFNULL(tn.avgRating, 0) AS avgRating     /* 평균 별점 집계 */
+             , IFNULL(lc.likeCount, 0) AS likeCount     /* 좋아요 수 집계 */
+          FROM drink d                  /* 주류 테이블 */
 
-     LEFT JOIN common_code cc1          <!-- 공통 코드 테이블 -->
+     LEFT JOIN common_code cc1          /* 공통 코드 테이블 */
             ON d.category_code = cc1.code
            AND cc1.group_code  = 'DRINK_CATEGORY'
            AND cc1.use_yn      = 'Y'
            AND cc1.is_deleted  = 'N'
 
-     LEFT JOIN common_code cc2          <!-- 공통 코드 테이블 -->
+     LEFT JOIN common_code cc2          /* 공통 코드 테이블 */
             ON d.type_code     = cc2.code
            AND cc2.group_code  = 'DRINK_TYPE'
            AND cc2.use_yn      = 'Y'
@@ -270,7 +270,7 @@
               SELECT drink_id 
                    , COUNT(*) AS noteCount
                    , ROUND(AVG(rating), 1) AS avgRating
-                FROM tasting_note       <!-- 테이스팅 노트 테이블 -->
+                FROM tasting_note       /* 테이스팅 노트 테이블 */
                WHERE is_deleted = 'N'
             GROUP BY drink_id
             ) tn
@@ -280,7 +280,7 @@
     LEFT JOIN (
               SELECT obj_id
                    , COUNT(*) AS likeCount
-                FROM `like`             <!-- 좋아요 테이블 -->
+                FROM `like`             /* 좋아요 테이블 */
                WHERE obj_type = 'DRINK'
             GROUP BY obj_id
             ) lc
@@ -292,30 +292,30 @@
 
     <!-- 노트 아이디로 주류 검색 -->
     <select id="findDrinkByNoteId" parameterType="int" resultType="com.example.sool.dto.DrinkDto">
-        SELECT d.drink_id AS drinkId                    <!-- 주류 키 -->
-             , d.category_code AS categoryCode          <!-- 주류 카테고리 대분류 -->
-             , d.type_code AS typeCode                  <!-- 주류 카테고리 소분류 -->
-             , d.drink_name AS drinkName                <!-- 주류 한글 이름 -->
-             , d.drink_name_en AS drinkNameEn           <!-- 주류 영문 이름 -->
-             , d.abv                                    <!-- 주류 도수 -->
-             , d.price                                  <!-- 주류 가격 -->
-             , d.country                                <!-- 주류 생산 국가 -->
-             , d.created_at AS createdAt                <!-- 주류 등록 일시 -->
-             , cc1.code_name AS categoryName            <!-- 공통 코드 카테고리 대분류 한글 이름 -->
-             , cc2.code_name AS typeName                <!-- 공통 코드 카테고리 소분류 한글 이름 -->
+        SELECT d.drink_id AS drinkId                    /* 주류 키 */
+             , d.category_code AS categoryCode          /* 주류 카테고리 대분류 */
+             , d.type_code AS typeCode                  /* 주류 카테고리 소분류 */
+             , d.drink_name AS drinkName                /* 주류 한글 이름 */
+             , d.drink_name_en AS drinkNameEn           /* 주류 영문 이름 */
+             , d.abv                                    /* 주류 도수 */
+             , d.price                                  /* 주류 가격 */
+             , d.country                                /* 주류 생산 국가 */
+             , d.created_at AS createdAt                /* 주류 등록 일시 */
+             , cc1.code_name AS categoryName            /* 공통 코드 카테고리 대분류 한글 이름 */
+             , cc2.code_name AS typeName                /* 공통 코드 카테고리 소분류 한글 이름 */
         
-          FROM drink d                  <!-- 주류 테이블 -->
+          FROM drink d                  /* 주류 테이블 */
 
-    INNER JOIN tasting_note tn          <!-- 테이스팅 노트 테이블 -->
+    INNER JOIN tasting_note tn          /* 테이스팅 노트 테이블 */
             ON d.drink_id = tn.drink_id
 
-     LEFT JOIN common_code cc1          <!-- 공통 코드 테이블 -->
+     LEFT JOIN common_code cc1          /* 공통 코드 테이블 */
             ON d.category_code = cc1.code
            AND cc1.group_code  = 'DRINK_CATEGORY'
            AND cc1.use_yn      = 'Y'
            AND cc1.is_deleted  = 'N'
 
-     LEFT JOIN common_code cc2          <!-- 공통 코드 테이블-->
+     LEFT JOIN common_code cc2          /* 공통 코드 테이블*/
             ON d.type_code     = cc2.code
            AND cc2.group_code  = 'DRINK_TYPE'
            AND cc2.use_yn      = 'Y'

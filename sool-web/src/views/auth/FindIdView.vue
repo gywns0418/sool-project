@@ -37,7 +37,7 @@
                 class="field-input"
                 placeholder="이메일 주소를 입력하세요"
                 @input="onChangeEmail"
-                :disabled="emailCodeSent"
+                :disabled="emailCodeSent || loading"
               />
               <p
                 v-if="emailMsg"
@@ -57,7 +57,7 @@
               인증번호 보내기 <span class="btn-arrow">→</span>
             </button>
           </template>
-<!---------------------------------------------------------------------------------------->
+
           <template v-else-if="step === 2">
             <div class="info-box">
               <strong>{{ email }}</strong> 로 인증번호를 보냈습니다.
@@ -80,7 +80,7 @@
               <button
                 type="button"
                 class="btn-light"
-                @click="step = 1"
+                @click="goStep1"
               >
                 이전
               </button>
@@ -91,7 +91,7 @@
                 :disabled="loading || resendSeconds > 0"
                 @click="handleResendEmailCode"
               >
-                {{ resendSeconds > 0 ? `${resendSeconds}초 후 재전송 가능` : "재전송" }}
+                {{ resendSeconds > 0 ? `${resendSeconds}초 후 재전송 가능` : '재전송' }}
               </button>
 
               <button
@@ -104,7 +104,7 @@
               </button>
             </div>
           </template>
-<!---------------------------------------------------------------------------------------->
+
           <template v-else>
             <div class="info-box success-box">
               이메일 인증이 완료되었습니다.
@@ -204,6 +204,7 @@ function resetEmailFlow() {
   emailCode.value = ''
   emailVerified.value = false
   emailVerifyMsg.value = ''
+  foundLoginId.value = ''
   clearResendTimer()
   resendSeconds.value = 0
 
@@ -212,6 +213,16 @@ function resetEmailFlow() {
   }
 }
 
+function goStep1() {
+  step.value = 1
+  emailCodeSent.value = false
+  emailCode.value = ''
+  emailVerified.value = false
+  emailVerifyMsg.value = ''
+  foundLoginId.value = ''
+  clearResendTimer()
+  resendSeconds.value = 0
+}
 
 function validateEmail() {
   if (!email.value) {
@@ -247,6 +258,7 @@ async function handleSendEmailCode() {
 
   loading.value = true
   emailCodeSent.value = true
+
   try {
     const res = await sendFindLoginIdEmailCode({
       email: email.value
@@ -257,6 +269,8 @@ async function handleSendEmailCode() {
     startResendCountdown(10)
     alert(res.data?.message || '인증번호를 발송했습니다.')
   } catch (e) {
+    emailCodeSent.value = false
+    emailVerifyMsg.value = e.response?.data?.message || ''
     alert(e.response?.data?.message || '인증번호 발송에 실패했습니다.')
   } finally {
     loading.value = false
@@ -298,8 +312,6 @@ async function handleVerifyEmailCode() {
       const findRes = await findLoginId({
         email: email.value
       })
-      console.log(res.data)
-      console.log(findRes.data)
 
       foundLoginId.value = findRes.data?.loginId || ''
       emailVerified.value = true

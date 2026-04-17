@@ -20,7 +20,4 @@ public interface TastingNoteMetricMapper {
 
     //노트 전체 맛 점수 삭제
     int deleteByNoteId(Integer noteId);
-
-    //회원 삭제 시 맛 점수 삭제
-    int deleteByUserId(Integer userId);
 }

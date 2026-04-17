@@ -7,14 +7,14 @@
 
     <!-- 주류 카테고리 리스트 조회 -->
     <select id="getDrinkCategoryList" resultType="com.example.sool.dto.CommonCodeDto">
-        SELECT cc.group_code AS groupCode           <!-- 그룹 코드 키 -->
-             , cc.code                              <!-- 상세 코드 값 -->
-             , cc.code_name AS codeName             <!-- 상세 코드 이름 -->
-             , cc.sort_seq AS sortSeq               <!-- 정렬 순서 -->
-             , cc.use_yn AS useYn                   <!-- 사용 여부 -->
-             , cc.is_deleted AS isDeleted           <!-- 삭제 여부 -->
+        SELECT cc.group_code AS groupCode           /* 그룹 코드 키 */
+             , cc.code                              /* 상세 코드 값 */
+             , cc.code_name AS codeName             /* 상세 코드 이름 */
+             , cc.sort_seq AS sortSeq               /* 정렬 순서 */
+             , cc.use_yn AS useYn                   /* 사용 여부 */
+             , cc.is_deleted AS isDeleted           /* 삭제 여부 */
              
-          FROM common_code cc           <!-- 공통 코드 테이블 -->
+          FROM common_code cc           /* 공통 코드 테이블 */
 
          WHERE cc.group_code = 'DRINK_CATEGORY'
            AND cc.use_yn = 'Y'
@@ -25,13 +25,13 @@
 
     <!-- 주류 검색 카테고리 조회 (카테고리별 주류 개수 포함) -->
     <select id="selectCategoryList" resultType="com.example.sool.dto.CommonCodeDto">
-        SELECT cc.code                              <!-- 상세 코드 값 -->
-             , cc.code_name AS codeName             <!-- 상세 코드 이름 -->
-             , COUNT(d.drink_id) AS drinkCount      <!-- 주류 수 집계 -->
+        SELECT cc.code                              /* 상세 코드 값 */
+             , cc.code_name AS codeName             /* 상세 코드 이름 */
+             , COUNT(d.drink_id) AS drinkCount      /* 주류 수 집계 */
 
-          FROM common_code cc       <!-- 공통 코드 테이블 -->
+          FROM common_code cc       /* 공통 코드 테이블 */
 
-     LEFT JOIN drink d              <!-- 주류 테이블 -->
+     LEFT JOIN drink d              /* 주류 테이블 */
             ON cc.code = d.category_code
            AND d.is_deleted = 'N'
 
@@ -45,10 +45,10 @@
 
     <!-- 신고 사유 목록 -->
     <select id="getReportReasons" resultType="com.example.sool.dto.CommonCodeDto">
-        SELECT code                              <!-- 상세 코드 값 -->
-             , code_name AS codeName             <!-- 상세 코드 이름 -->
+        SELECT code                              /* 상세 코드 값 */
+             , code_name AS codeName             /* 상세 코드 이름 */
 
-          FROM common_code        <!-- 공통 코드 테이블 -->
+          FROM common_code        /* 공통 코드 테이블 */
           
          WHERE group_code = 'REPORT_REASON'
            AND use_yn = 'Y'
@@ -58,10 +58,10 @@
 
     <!-- 카테고리 별 지표 조회 (공통 코드)-->
     <select id="getMetricCode" parameterType="int" resultType="com.example.sool.dto.CommonCodeDto">
-        SELECT cc.code                              <!-- 상세 코드 값 -->
-            , cc.code_name AS codeName             <!-- 상세 코드 이름 -->
+        SELECT cc.code                              /* 상세 코드 값 */
+            , cc.code_name AS codeName             /* 상세 코드 이름 */
 
-         FROM common_code cc                       <!-- 공통 코드 테이블 -->
+         FROM common_code cc                       /* 공통 코드 테이블 */
 
         WHERE cc.group_code = 'TASTE_METRIC'
           AND cc.use_yn = 'Y'
@@ -71,7 +71,7 @@
                 OR cc.parent_code =
                     (
                         SELECT d.category_code
-                          FROM drink d              <!-- 주류 테이블 -->
+                          FROM drink d              /* 주류 테이블 */
                          WHERE d.drink_id = #{drinkId}
                            AND d.is_deleted = 'N'
                     )

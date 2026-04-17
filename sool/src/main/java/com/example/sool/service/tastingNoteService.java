@@ -201,7 +201,7 @@ public class TastingNoteService {
     }
 
     //노트 삭제
-    @Transactional
+   @Transactional
     public void deleteNote(int noteId, int userId) {
 
         TastingNoteDto note = tastingNoteMapper.findByNoteId(noteId);
@@ -214,29 +214,23 @@ public class TastingNoteService {
             throw new IllegalArgumentException("본인이 작성한 노트만 삭제할 수 있습니다.");
         }
 
-        //이미지 삭제
         ImageDto image = imageMapper.selectImageByNoteId(noteId);
-        imageMapper.deleteImage(image.getImageId());
-        
 
-        //좋아요 삭제
-        LikeDto lDto = new LikeDto();
-        lDto.setObjType("NOTE");
-        lDto.setObjId(noteId);
         if (image != null) {
             imageMapper.deleteImage(image.getImageId());
         }
 
-        //댓글 삭제
+        LikeDto lDto = new LikeDto();
+        lDto.setObjType("NOTE");
+        lDto.setObjId(noteId);
+        likeMapper.deleteLike(lDto);
+
         commentMapper.deleteAllComment(noteId);
 
-        // 맛 프로파일 삭제
         tastingNoteMetricMapper.deleteByNoteId(noteId);
 
-        // 노트 삭제
         tastingNoteMapper.deleteTastingNote(noteId);
 
-        //S3 파일 삭제 (트랜잭션 적용 안됨)
         if (image != null) {
             s3Service.delete(image.getFileKey());
         }
