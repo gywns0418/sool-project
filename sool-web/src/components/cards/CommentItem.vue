@@ -153,6 +153,27 @@ const reportedMessage = computed(() => {
     : '🚫 신고 처리된 댓글입니다'
 })
 
+const moveToLogin = async () => {
+  alert('세션이 만료되었습니다. 다시 로그인해주세요.')
+
+  authStore.user = null
+  authStore.initialized = true
+
+  router.push({
+    path: '/login',
+    query: { redirect: route.fullPath }
+  })
+}
+
+const handleForbidden = async (error) => {
+  if (error?.response?.status === 403) {
+    await moveToLogin()
+    return true
+  }
+
+  return false
+}
+
 function requireLogin() {
   if (!authStore.isLogin) {
     alert('로그인을 먼저 해주세요.')
@@ -174,6 +195,7 @@ function toggleReply() {
 
 async function submitReply() {
   const content = replyContent.value.trim()
+
   if (!content) return
   if (isReported.value) return
   if (!requireLogin()) return
@@ -190,6 +212,9 @@ async function submitReply() {
     showReply.value = false
     emit('refresh')
   } catch (error) {
+    const handled = await handleForbidden(error)
+    if (handled) return
+
     console.log('답글 등록 실패', error)
     alert('답글 등록에 실패했습니다.')
   } finally {
@@ -213,12 +238,14 @@ function cancelEdit() {
 
 async function submitEdit() {
   const content = editContent.value.trim()
+
   if (!content) {
     alert('댓글 내용을 입력해주세요.')
     return
   }
 
   if (isReported.value) return
+  if (!requireLogin()) return
 
   try {
     editSubmitting.value = true
@@ -230,6 +257,9 @@ async function submitEdit() {
     editing.value = false
     emit('refresh')
   } catch (error) {
+    const handled = await handleForbidden(error)
+    if (handled) return
+
     console.log('댓글 수정 실패', error)
     alert('댓글 수정에 실패했습니다.')
   } finally {
@@ -239,18 +269,24 @@ async function submitEdit() {
 
 async function deleteComment() {
   if (isReported.value) return
+  if (!requireLogin()) return
   if (!confirm('댓글을 삭제하시겠습니까?')) return
 
   try {
     await deleteCommentApi(props.item.commentId)
     emit('refresh')
   } catch (error) {
+    const handled = await handleForbidden(error)
+    if (handled) return
+
     console.log('댓글 삭제 실패', error)
+    alert('댓글 삭제에 실패했습니다.')
   }
 }
 
 function reportComment() {
   if (isReported.value) return
+  if (!requireLogin()) return
 
   emit('report', {
     objType: 'COMMENT',

@@ -1,9 +1,12 @@
 package com.example.sool.service;
 
 import java.util.List;
+import java.util.Objects;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.example.sool.dto.CommonCodeDto;
 import com.example.sool.dto.DrinkDto;
@@ -185,6 +188,10 @@ public class TastingNoteService {
         TastingNoteDto savedNote = tastingNoteMapper.findByNoteId(dto.getNoteId());
         if (savedNote == null || "Y".equals(savedNote.getIsDeleted())) {
             throw new IllegalArgumentException("존재하지 않는 테이스팅 노트입니다.");
+        }
+
+        if (!Objects.equals(savedNote.getUserId(), dto.getUserId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "자신의 노트만 수정할 수 있습니다.");
         }
 
         dto.setTitle(dto.getTitle().trim());

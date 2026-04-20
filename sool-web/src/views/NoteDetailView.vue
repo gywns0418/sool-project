@@ -306,14 +306,52 @@ const formatCommentDate = (value) => {
   return `${year}. ${month}. ${day}`
 }
 
+const moveToLogin = async () => {
+  alert('세션이 만료되었습니다. 다시 로그인해주세요.')
+
+  authStore.user = null
+  authStore.initialized = true
+
+  router.push({
+    path: '/login',
+    query: { redirect: route.fullPath }
+  })
+}
+
+const handleForbidden = async (error) => {
+  if (error?.response?.status === 403) {
+    await moveToLogin()
+    return true
+  }
+
+  return false
+}
+
+const requireLogin = () => {
+  if (!authStore.isLogin) {
+    alert('로그인을 먼저 해주세요.')
+    router.push({
+      path: '/login',
+      query: { redirect: route.fullPath }
+    })
+    return false
+  }
+
+  return true
+}
+
 const fetchLikeStatus = async () => {
   const noteId = route.params.id
+
   if (!noteId || !authStore.isLogin || isReportedNote.value) return
 
   try {
     const res = await getNoteLike(noteId)
     liked.value = !!res.data.liked
   } catch (error) {
+    const handled = await handleForbidden(error)
+    if (handled) return
+
     console.log('노트 좋아요 상태 조회 실패', error)
     liked.value = false
   }
@@ -321,16 +359,9 @@ const fetchLikeStatus = async () => {
 
 const toggleLike = async () => {
   const noteId = route.params.id
-  if (!noteId || likeLoading.value || isReportedNote.value) return
 
-  if (!authStore.isLogin) {
-    alert('로그인을 먼저 해주세요.')
-    router.push({
-      path: '/login',
-      query: { redirect: route.fullPath }
-    })
-    return
-  }
+  if (!noteId || likeLoading.value || isReportedNote.value) return
+  if (!requireLogin()) return
 
   likeLoading.value = true
 
@@ -345,7 +376,11 @@ const toggleLike = async () => {
 
     liked.value = !liked.value
   } catch (error) {
+    const handled = await handleForbidden(error)
+    if (handled) return
+
     console.log('노트 좋아요 처리 실패', error)
+    alert('좋아요 처리에 실패했습니다.')
   } finally {
     likeLoading.value = false
   }
@@ -406,22 +441,19 @@ const submitComment = async () => {
 
   const content = newComment.value.trim()
   if (!content) return
-
-  if (!authStore.isLogin) {
-    alert('로그인을 먼저 해주세요.')
-    router.push({
-      path: '/login',
-      query: { redirect: route.fullPath }
-    })
-    return
-  }
+  if (!requireLogin()) return
 
   try {
     commentSubmitting.value = true
+
     await createComment(Number(route.params.id), { content })
+
     newComment.value = ''
     await fetchComments()
   } catch (error) {
+    const handled = await handleForbidden(error)
+    if (handled) return
+
     console.log('댓글 등록 실패', error)
     alert('댓글 등록에 실패했습니다.')
   } finally {
@@ -430,14 +462,7 @@ const submitComment = async () => {
 }
 
 const openReportModal = (payload) => {
-  if (!authStore.isLogin) {
-    alert('로그인을 먼저 해주세요.')
-    router.push({
-      path: '/login',
-      query: { redirect: route.fullPath }
-    })
-    return
-  }
+  if (!requireLogin()) return
 
   reportObjType.value = payload.objType
   reportObjId.value = payload.objId
@@ -457,11 +482,14 @@ const isOwner = computed(() => {
 
 function goEdit() {
   if (!noteDetail.value?.noteId || isReportedNote.value) return
+  if (!requireLogin()) return
+
   router.push(`/notes/${noteDetail.value.noteId}/edit`)
 }
 
 async function removeNote() {
   if (!noteDetail.value?.noteId || isReportedNote.value) return
+  if (!requireLogin()) return
 
   const ok = window.confirm('정말 삭제하시겠습니까?')
   if (!ok) return
@@ -471,6 +499,9 @@ async function removeNote() {
     alert('삭제되었습니다.')
     router.push(`/drinks/${noteDetail.value.drinkId}`)
   } catch (error) {
+    const handled = await handleForbidden(error)
+    if (handled) return
+
     console.log('노트 삭제 실패', error)
     alert('삭제에 실패했습니다.')
   }

@@ -58,7 +58,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
 import { useAuthStore } from '@/stores/authStore'
 import PageNav from '../components/common/PageNav.vue'
@@ -70,9 +70,9 @@ import MyReportsSection from '../components/mypage/MyReportsSection.vue'
 
 import { getMySidebarInfo, deleteUser } from '@/api/mypageApi'
 
-
 const authStore = useAuthStore()
 const router = useRouter()
+const route = useRoute()
 const activeTab = ref('notes')
 
 const sidebarInfo = ref({
@@ -100,6 +100,24 @@ const navLinks = [
   { label: '마이페이지', to: '/mypage', active: true }
 ]
 
+const moveToLogin = async () => {
+  alert('로그인이 필요합니다. 다시 로그인해주세요.')
+
+  authStore.user = null
+  authStore.initialized = true
+
+  router.replace(`/login?redirect=${encodeURIComponent(route.fullPath)}`)
+}
+
+const handleForbidden = async (error) => {
+  if (error?.response?.status === 403) {
+    await moveToLogin()
+    return true
+  }
+
+  return false
+}
+
 const handleUserDelete = async () => {
   if (!confirm('정말 회원을 탈퇴하시겠습니까?')) return
 
@@ -109,9 +127,12 @@ const handleUserDelete = async () => {
     alert('회원 탈퇴가 완료되었습니다.')
     await authStore.logout()
     router.replace('/')
-
   } catch (error) {
+    const handled = await handleForbidden(error)
+    if (handled) return
+
     console.log('회원탈퇴 실패', error)
+    alert('회원 탈퇴 중 오류가 발생했습니다.')
   }
 }
 
@@ -120,8 +141,11 @@ const fetchSidebarInfo = async () => {
     const res = await getMySidebarInfo()
     console.log(res.data)
     sidebarInfo.value = res.data
-  } catch (e) {
-    console.log('마이페이지 사이드바 조회 실패', e)
+  } catch (error) {
+    const handled = await handleForbidden(error)
+    if (handled) return
+
+    console.log('마이페이지 사이드바 조회 실패', error)
   }
 }
 
@@ -133,9 +157,11 @@ const goTop = () => {
   }
 }
 
-const changeTab = (tab) => {
+const changeTab = async (tab) => {
   activeTab.value = tab
   goTop()
+
+  await fetchSidebarInfo()
 }
 
 onMounted(async () => {
@@ -147,7 +173,7 @@ onMounted(async () => {
     if (wasLogin) {
       alert('세션이 만료되었습니다. 다시 로그인해주세요.')
     }
-    router.replace('/login')
+    router.replace(`/login?redirect=${encodeURIComponent(route.fullPath)}`)
     return
   }
 

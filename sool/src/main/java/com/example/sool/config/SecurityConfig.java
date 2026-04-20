@@ -76,7 +76,9 @@ public class SecurityConfig {
                     "/api/comments/**",
                     "/api/likes/**",
                     "/api/mypage/**",
-                    "/api/drinks/*/like"
+                    "/api/drinks/*/like",
+                    "/api/report/**",
+                    "/api/image/**"
                 ).hasRole("USER")
 
                 // 그 외 요청은 인증 필요

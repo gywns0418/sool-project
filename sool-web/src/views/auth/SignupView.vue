@@ -59,7 +59,7 @@
               <label class="field-label">닉네임</label>
               <div class="field-inline">
                 <input
-                  v-model.trim="name"
+                  v-model="name"
                   type="text"
                   class="field-input"
                   maxlength="10"
@@ -110,6 +110,7 @@
                 v-model.trim="emailCode"
                 type="text"
                 class="field-input"
+                maxlength="6"
                 placeholder="인증번호를 입력하세요"
               />
               <p v-if="emailVerifyMsg" class="field-msg error">
@@ -255,9 +256,10 @@ const passwordConfirm = ref('')
 const passwordConfirmMsg = ref('')
 
 const loginIdRegex = /^[a-z0-9]{1,20}$/
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const emailRegex = /^(?!.*\.\.)(?!.*\.$)[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?])[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]{8,20}$/
 const koreanRegex = /^[가-힣0-9]{1,10}$/
+const koreanJamoRegex = /[ㄱ-ㅎㅏ-ㅣ]/
 
 function resetEmailFlow() {
   emailVerified.value = false
@@ -307,26 +309,44 @@ function onChangeLoginId(event) {
   loginIdMsg.value = ''
 }
 
-function onChangeName() {
-  validateName()
-  resetEmailFlow()
-}
+function onChangeName(event) {
+  const rawValue = event.target.value
 
-function validateName() {
-  if (!name.value) {
+  nameChecked.value = false
+  resetEmailFlow()
+
+  if (!rawValue) {
+    name.value = ''
     nameValid.value = false
-    nameChecked.value = false
     nameMsg.value = ''
     return
   }
 
-  if (!koreanRegex.test(name.value)) {
+  if (/\s/.test(rawValue)) {
+    name.value = rawValue.replace(/\s/g, '')
+    nameValid.value = false
+    nameChecked.value = false
+    nameMsg.value = '닉네임에는 띄어쓰기를 사용할 수 없습니다.'
+    return
+  }
+
+  if (koreanJamoRegex.test(rawValue)) {
+    name.value = rawValue
+    nameValid.value = false
+    nameChecked.value = false
+    nameMsg.value = '닉네임은 완성된 한글과 숫자만 입력 가능합니다.'
+    return
+  }
+
+  if (!koreanRegex.test(rawValue)) {
+    name.value = rawValue
     nameValid.value = false
     nameChecked.value = false
     nameMsg.value = '닉네임은 한글과 숫자 1~10자만 입력 가능합니다.'
     return
   }
 
+  name.value = rawValue
   nameValid.value = true
   nameChecked.value = true
   nameMsg.value = '사용 가능한 닉네임 형식입니다.'
@@ -408,7 +428,7 @@ function startResendCountdown(seconds = 10) {
 }
 
 const canSendEmail = computed(() => {
-  return !!loginId.value && loginIdChecked.value && !!name.value && emailValid.value
+  return !!loginId.value && loginIdChecked.value && !!name.value && nameValid.value && emailValid.value
 })
 
 async function handleSendEmailCode() {

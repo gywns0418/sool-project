@@ -40,7 +40,7 @@ public class DrinkController {
 
             //로그인 상태이면 userId 세팅
             dto.setUserId(userDetails.getUserId());
-
+ 
         } else {
             //비회원일 경우 null 처리
             dto.setUserId(null);

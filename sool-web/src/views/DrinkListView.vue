@@ -173,6 +173,8 @@ const priceHigh = ref("500000")
 // 페이지 정보
 const page = ref(1)
 const size = ref(12)
+const pageErrorMsg = ref('')
+const emptyMsg = ref('')
 
 
 // 카테고리 코드에 맞는 이모지 + 이름 생성
@@ -299,6 +301,7 @@ const loadDrinkList = async () => {
       size: size.value,
       sort: sortBy.value
     }
+
     const keyword = searchKeyword.value.trim()
 
     params.keyword = keyword
@@ -310,25 +313,139 @@ const loadDrinkList = async () => {
 
     const res = await getDrinkList(params)
 
-    drinkList.value = res.data.list || []
-    totalCount.value = res.data.totalCount || 0
-    totalPage.value = res.data.totalPage || 1
+    const list = res.data.list || []
+    const total = res.data.totalCount || 0
+    const totalP = res.data.totalPage || 1
+
+    if (total === 0) {
+      drinkList.value = []
+      totalCount.value = 0
+      totalPage.value = 1
+      return
+    }
+
+    if (page.value > totalP) {
+      alert('존재하지 않는 페이지입니다. 마지막 페이지로 이동합니다.')
+
+      router.replace({
+        path: '/drinks',
+        query: {
+          ...route.query,
+          page: totalP
+        }
+      })
+      return
+    }
+
+    drinkList.value = list
+    totalCount.value = total
+    totalPage.value = totalP
 
   } catch (error) {
     console.log(error)
   }
 }
 
-// 새로고침 시 필터 상태 유지
+
+
+const normalizeAbv = (value, defaultValue) => {
+  const num = Number(value)
+
+  if (value == null || value === '') return defaultValue
+  if (isNaN(num)) return defaultValue
+  if (num < 0) return '0'
+  if (num > 99.9) return '99.9'
+
+  return String(Math.floor(num * 10) / 10)
+}
+
+const normalizePrice = (value, defaultValue) => {
+  const num = Number(value)
+
+  if (value == null || value === '') return defaultValue
+  if (isNaN(num)) return defaultValue
+  if (num < 0) return '0'
+
+  return String(Math.floor(num))
+}
+
 const syncFromRoute = () => {
-  selectedCategory.value = typeof route.query.categoryCode === "string" ? route.query.categoryCode : ""
-  searchKeyword.value = typeof route.query.keyword === "string" ? route.query.keyword : ""
-  sortBy.value = typeof route.query.sort === "string" ? route.query.sort : "latest"
-  abvLow.value = typeof route.query.abvLow === "string" ? route.query.abvLow : "0"
-  abvHigh.value = typeof route.query.abvHigh === "string" ? route.query.abvHigh : "60"
-  priceLow.value = typeof route.query.priceLow === "string" ? route.query.priceLow : "0"
-  priceHigh.value = typeof route.query.priceHigh === "string" ? route.query.priceHigh : "500000"
-  page.value = route.query.page ? Number(route.query.page) : 1
+  const pageQuery = Number(route.query.page)
+
+  if (route.query.page && (isNaN(pageQuery) || pageQuery < 1)) {
+    alert('존재하지 않는 페이지입니다. 첫 페이지로 이동합니다.')
+
+    router.replace({
+      path: '/drinks',
+      query: {
+        ...route.query,
+        page: 1
+      }
+    })
+    return
+  }
+
+  const normalizedCategoryCode =
+    typeof route.query.categoryCode === 'string' ? route.query.categoryCode : ''
+
+  const normalizedKeyword =
+    typeof route.query.keyword === 'string' ? route.query.keyword : ''
+
+  const normalizedSort =
+    typeof route.query.sort === 'string' ? route.query.sort : 'latest'
+
+  const normalizedAbvLow = normalizeAbv(route.query.abvLow, '0')
+  const normalizedAbvHigh = normalizeAbv(route.query.abvHigh, '60')
+
+  let normalizedPriceLow = normalizePrice(route.query.priceLow, '0')
+  let normalizedPriceHigh = normalizePrice(route.query.priceHigh, '500000')
+
+  if (Number(normalizedAbvLow) > Number(normalizedAbvHigh)) {
+    const temp = normalizedAbvLow
+    normalizedAbvLow = normalizedAbvHigh
+    normalizedAbvHigh = temp
+  }
+
+  if (Number(normalizedPriceLow) > Number(normalizedPriceHigh)) {
+    const temp = normalizedPriceLow
+    normalizedPriceLow = normalizedPriceHigh
+    normalizedPriceHigh = temp
+  }
+
+  const normalizedPage = route.query.page ? String(pageQuery) : '1'
+
+  const normalizedQuery = {}
+
+  if (normalizedKeyword) normalizedQuery.keyword = normalizedKeyword
+  if (normalizedCategoryCode) normalizedQuery.categoryCode = normalizedCategoryCode
+  if (normalizedAbvLow !== '0') normalizedQuery.abvLow = normalizedAbvLow
+  if (normalizedAbvHigh !== '60') normalizedQuery.abvHigh = normalizedAbvHigh
+  if (normalizedPriceLow !== '0') normalizedQuery.priceLow = normalizedPriceLow
+  if (normalizedPriceHigh !== '500000') normalizedQuery.priceHigh = normalizedPriceHigh
+  if (normalizedSort !== 'latest') normalizedQuery.sort = normalizedSort
+  if (normalizedPage !== '1') normalizedQuery.page = normalizedPage
+
+  const currentQuery = { ...route.query }
+
+  const currentQueryString = JSON.stringify(currentQuery)
+  const normalizedQueryString = JSON.stringify(normalizedQuery)
+
+  if (currentQueryString !== normalizedQueryString) {
+    router.replace({
+      path: '/drinks',
+      query: normalizedQuery
+    })
+    return
+  }
+
+  selectedCategory.value = normalizedCategoryCode
+  searchKeyword.value = normalizedKeyword
+  sortBy.value = normalizedSort
+  abvLow.value = normalizedAbvLow
+  abvHigh.value = normalizedAbvHigh
+  priceLow.value = normalizedPriceLow
+  priceHigh.value = normalizedPriceHigh
+  page.value = Number(normalizedPage)
 }
 
 // 현재 필터 상태 → URL에 반영

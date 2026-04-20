@@ -17,23 +17,46 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import MyNoteCard from './card/MyNoteCard.vue'
 import { getMyTastingNote, deleteMyTastingNote } from '@/api/mypageApi'
+import { useAuthStore } from '@/stores/authStore'
 
 const emit = defineEmits(['refreshSidebar'])
 
 const router = useRouter()
+const route = useRoute()
+const authStore = useAuthStore()
 
 const noteList = ref([])
 
+const moveToLogin = async () => {
+  alert('로그인이 필요합니다. 다시 로그인해주세요.')
+
+  authStore.user = null
+  authStore.initialized = true
+
+  router.replace(`/login?redirect=${encodeURIComponent(route.fullPath)}`)
+}
+
+const handleForbidden = async (error) => {
+  if (error?.response?.status === 403) {
+    await moveToLogin()
+    return true
+  }
+  return false
+}
+
 const fetchMyTastingNote = async () => {
-  try{
+  try {
     const res = await getMyTastingNote()
     console.log(res.data)
 
     noteList.value = res.data?.noteList || []
   } catch (error) {
+    const handled = await handleForbidden(error)
+    if (handled) return
+
     console.log('테이스팅 노트 목록 조회 실패', error)
     noteList.value = []
   }
@@ -62,6 +85,9 @@ async function handleDeleteNote(noteId) {
 
     emit('refreshSidebar')
   } catch (error) {
+    const handled = await handleForbidden(error)
+    if (handled) return
+
     console.log('테이스팅 노트 삭제 실패', error)
   }
 }

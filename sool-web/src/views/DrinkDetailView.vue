@@ -274,7 +274,6 @@ const movePage = async (pageNum) => {
 
   page.value = pageNum
   await fetchTastingNote()
-  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 const toggleLike = async () => {

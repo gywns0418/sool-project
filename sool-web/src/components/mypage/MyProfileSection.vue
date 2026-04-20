@@ -179,6 +179,8 @@
 
 <script setup>
 import { reactive, ref, computed, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/authStore'
 import {
   updateMyProfile,
   updateMyPassword,
@@ -194,6 +196,10 @@ const props = defineProps({
     default: () => ({})
   }
 })
+
+const router = useRouter()
+const route = useRoute()
+const authStore = useAuthStore()
 
 const profileLoading = ref(false)
 const passwordLoading = ref(false)
@@ -243,6 +249,24 @@ const canCheckLoginId = computed(() => {
 const canCheckEmail = computed(() => {
   return !!profileForm.email && emailValid.value
 })
+
+const moveToLogin = async () => {
+  alert('로그인이 필요합니다. 다시 로그인해주세요.')
+
+  authStore.user = null
+  authStore.initialized = true
+
+  router.replace(`/login?redirect=${encodeURIComponent(route.fullPath)}`)
+}
+
+const handleForbidden = async (error) => {
+  if (error?.response?.status === 403) {
+    await moveToLogin()
+    return true
+  }
+
+  return false
+}
 
 function validateLoginId() {
   if (!profileForm.loginId) {
@@ -352,6 +376,9 @@ async function checkLoginIdDuplicate() {
       loginIdMsg.value = '이미 사용 중인 아이디입니다.'
     }
   } catch (e) {
+    const handled = await handleForbidden(e)
+    if (handled) return
+
     console.log('아이디 확인 실패', e)
     loginIdChecked.value = false
     checkedLoginIdValue.value = ''
@@ -384,6 +411,9 @@ async function checkEmailDuplicate() {
       emailMsg.value = '이미 사용 중인 이메일입니다.'
     }
   } catch (e) {
+    const handled = await handleForbidden(e)
+    if (handled) return
+
     console.log('이메일 중복 확인 실패', e)
     emailChecked.value = false
     checkedEmailValue.value = ''
@@ -485,6 +515,9 @@ async function saveProfile() {
       email: profileForm.email
     })
   } catch (e) {
+    const handled = await handleForbidden(e)
+    if (handled) return
+
     console.log('기본 정보 수정 실패', e)
     alert(e?.response?.data || '기본 정보 수정에 실패했습니다.')
   } finally {
@@ -532,6 +565,9 @@ async function savePassword() {
     alert('비밀번호가 변경되었습니다.')
     resetPasswordForm()
   } catch (e) {
+    const handled = await handleForbidden(e)
+    if (handled) return
+
     console.log('비밀번호 변경 실패', e)
     alert(e?.response?.data || '비밀번호 변경에 실패했습니다.')
   } finally {

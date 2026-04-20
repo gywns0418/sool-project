@@ -43,6 +43,8 @@
 
 <script setup>
 import { ref, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/authStore'
 import { getReportReasons, insertReport } from '@/api/reportApi'
 
 const props = defineProps({
@@ -62,6 +64,10 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'success'])
 
+const router = useRouter()
+const route = useRoute()
+const authStore = useAuthStore()
+
 const reportReasons = ref([])
 const selectedReasonCode = ref('')
 const reportLoading = ref(false)
@@ -72,12 +78,36 @@ const closeModal = () => {
   selectedReasonCode.value = ''
 }
 
+const moveToLogin = async () => {
+  alert('세션이 만료되었습니다. 다시 로그인해주세요.')
+
+  authStore.user = null
+  authStore.initialized = true
+
+  emit('update:modelValue', false)
+  selectedReasonCode.value = ''
+
+  router.replace(`/login?redirect=${encodeURIComponent(route.fullPath)}`)
+}
+
+const handleForbidden = async (error) => {
+  if (error?.response?.status === 403) {
+    await moveToLogin()
+    return true
+  }
+
+  return false
+}
+
 const fetchReportReasons = async () => {
   try {
     const res = await getReportReasons()
     reportReasons.value = Array.isArray(res.data) ? res.data : []
     loaded.value = true
   } catch (error) {
+    const handled = await handleForbidden(error)
+    if (handled) return
+
     console.log('신고 사유 조회 실패', error)
     reportReasons.value = []
   }
@@ -99,10 +129,12 @@ const submitReport = async () => {
     emit('success')
     closeModal()
   } catch (e) {
+    const handled = await handleForbidden(e)
+    if (handled) return
+
     console.log('신고 등록 실패', e)
     const message = e.response?.data?.message || '신고 처리에 실패했습니다.'
     alert(message)
-    closeModal()
   } finally {
     reportLoading.value = false
   }

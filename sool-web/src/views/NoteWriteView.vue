@@ -360,9 +360,30 @@ async function fetchPageData() {
   await fetchWriteForm()
 }
 
+async function validateLoginSession() {
+  await authStore.fetchMe()
+
+  if (!authStore.isLogin) {
+    alert('세션이 만료되었습니다. 다시 로그인해주세요.')
+    router.replace({
+      path: '/login',
+      query: { redirect: route.fullPath }
+    })
+    return false
+  }
+
+  return true
+}
+
 //저장하기 버튼
 const saveNote = async () => {
   if (isSaving.value) return
+
+  const isValidSession = await validateLoginSession()
+
+  if (!isValidSession) {
+    return
+  }
 
   if(!title.value){
     alert("제목을 입력해주세요")

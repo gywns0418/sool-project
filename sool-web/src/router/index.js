@@ -37,8 +37,16 @@ const router = createRouter({
   history: createWebHistory(),
   routes,
 
-  // 페이지 이동 시 항상 스크롤을 맨 위로
-  scrollBehavior() {
+  // 페이지 이동 시 항상 스크롤을 맨 위로(노트 목록 빼고)
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition
+    }
+
+    if (to.query.keepScroll === 'true') {
+      return false
+    }
+
     return { top: 0 }
   }
 })
