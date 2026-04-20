@@ -7,7 +7,7 @@
 <mapper namespace="com.example.sool.mapper.DrinkMapper">
 
     <!-- 인기술 top4 -->
-    <select id="drinkTop" resultType="com.example.sool.dto.DrinkDto">
+    <select id="drinkTop" resultType="DrinkDto">
         SELECT d.drink_id AS drinkId            /* 주류 키 */
              , d.category_code AS categoryCode  /* 주류 카테고리 대분류 */
              , d.type_code AS typeCode          /* 주류 카테고리 소분류 */
@@ -31,7 +31,7 @@
     </select>
 
     <!-- 검색 -->
-    <select id="searchDrinkList" parameterType="com.example.sool.dto.DrinkSearchDto" resultType="com.example.sool.dto.DrinkDto">
+    <select id="searchDrinkList" parameterType="DrinkSearchDto" resultType="DrinkDto">
         SELECT d.drink_id AS drinkId                    /* 주류 키 */
              , d.category_code AS categoryCode          /* 주류 카테고리 대분류 */
              , d.type_code AS typeCode                  /* 주류 카테고리 소분류 */
@@ -179,7 +179,7 @@
     </select>
 
     <!-- 검색 총 갯수 -->
-    <select id="searchDrinkCount" parameterType="com.example.sool.dto.DrinkSearchDto" resultType="int">
+    <select id="searchDrinkCount" parameterType="DrinkSearchDto" resultType="int">
         SELECT COUNT(*)             /* 검색 총 갯수 */
           FROM drink d              /* 주류 테이블 */
 
@@ -235,7 +235,7 @@
     </select>
 
     <!-- id로 정보(주류 디테일) -->
-    <select id="findByDrinkId" parameterType="int" resultType="com.example.sool.dto.DrinkDto">
+    <select id="findByDrinkId" parameterType="int" resultType="DrinkDto">
         SELECT d.drink_id AS drinkId                    /* 주류 키 */
              , d.category_code AS categoryCode          /* 주류 카테고리 대분류 */
              , d.type_code AS typeCode                  /* 주류 카테고리 소분류 */
@@ -291,7 +291,7 @@
     </select>
 
     <!-- 노트 아이디로 주류 검색 -->
-    <select id="findDrinkByNoteId" parameterType="int" resultType="com.example.sool.dto.DrinkDto">
+    <select id="findDrinkByNoteId" parameterType="int" resultType="DrinkDto">
         SELECT d.drink_id AS drinkId                    /* 주류 키 */
              , d.category_code AS categoryCode          /* 주류 카테고리 대분류 */
              , d.type_code AS typeCode                  /* 주류 카테고리 소분류 */

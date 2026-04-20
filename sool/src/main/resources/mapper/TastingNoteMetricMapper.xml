@@ -6,7 +6,7 @@
 <mapper namespace="com.example.sool.mapper.TastingNoteMetricMapper">
 
     <!-- 맛 프로파일 등록 -->
-    <insert id="insertMetric" parameterType="com.example.sool.dto.TastingNoteMetricDto">
+    <insert id="insertMetric" parameterType="TastingNoteMetricDto">
         INSERT INTO tasting_note_metric     /* 맛 프로파일 테이블 */
         (
             note_id         /* 테이스팅 노트 키 */
@@ -23,7 +23,7 @@
 
 
     <!-- 특정 노트의 맛 점수 조회 -->
-    <select id="findByNoteId" parameterType="int" resultType="com.example.sool.dto.TastingNoteMetricDto">
+    <select id="findByNoteId" parameterType="int" resultType="TastingNoteMetricDto">
         SELECT tnm.note_id AS noteId                /* 테이스팅 노트 키 */
              , tnm.metric_code AS metricCode        /* 맛 프로파일 코드 키 */
              , tnm.score                            /* 점수 */
@@ -42,7 +42,7 @@
 
 
     <!-- 주류 디테일 평균 맛 프로파일 -->
-    <select id="findAvgMetricByDrinkId" parameterType="int" resultType="com.example.sool.dto.TastingNoteMetricDto">
+    <select id="findAvgMetricByDrinkId" parameterType="int" resultType="TastingNoteMetricDto">
         SELECT tnm.metric_code AS metricCode        /* 맛 프로파일 코드 키 */
              , cc.code_name AS metricName           /* 공통 코드 맛 프로파일 이름 */
              , ROUND(AVG(tnm.score), 1) AS avgScore /* 평균 점수 집계 */

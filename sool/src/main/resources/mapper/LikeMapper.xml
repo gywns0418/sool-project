@@ -6,7 +6,7 @@
 <mapper namespace="com.example.sool.mapper.LikeMapper">
 
     <!-- 좋아요 추가 -->
-    <insert id="insertLike" parameterType="com.example.sool.dto.LikeDto">
+    <insert id="insertLike" parameterType="LikeDto">
         INSERT INTO `like`          /* 좋아요 테이블 */
         (
             user_id                 /* 회원 키 */
@@ -24,7 +24,7 @@
     </insert>
 
     <!-- 좋아요 존재 확인 -->
-    <select id="existsLike" parameterType="com.example.sool.dto.LikeDto" resultType="int">
+    <select id="existsLike" parameterType="LikeDto" resultType="int">
         SELECT COUNT(*) 
           FROM `like`         /* 좋아요 테이블 */
          WHERE user_id = #{userId}
@@ -33,7 +33,7 @@
     </select>
 
     <!-- 좋아요 삭제 -->
-    <delete id="deleteLike" parameterType="com.example.sool.dto.LikeDto">
+    <delete id="deleteLike" parameterType="LikeDto">
         DELETE
           FROM `like`       /* 좋아요 테이블 */
          WHERE user_id = #{userId}
@@ -42,7 +42,7 @@
     </delete>
 
     <!-- 마이페이지 좋아요 술 목록 -->
-    <select id="findLikedDrinkList" parameterType="int" resultType="com.example.sool.dto.DrinkDto">
+    <select id="findLikedDrinkList" parameterType="int" resultType="DrinkDto">
        SELECT d.drink_id AS drinkId                    /* 주류 키 */
             , d.category_code AS categoryCode          /* 주류 카테고리 대분류 */
             , d.type_code AS typeCode                  /* 주류 카테고리 소분류 */
@@ -92,7 +92,7 @@
     </select>
 
     <!-- 마이페이지 좋아요 노트 목록 -->
-    <select id="findLikedNoteList" parameterType="int" resultType="com.example.sool.dto.TastingNoteDto">
+    <select id="findLikedNoteList" parameterType="int" resultType="TastingNoteDto">
        SELECT tn.note_id AS noteId                 /* 노트 키 */
             , tn.drink_id AS drinkId               /* 주류 키 */
             , tn.user_id AS userId                 /* 회원 키 */

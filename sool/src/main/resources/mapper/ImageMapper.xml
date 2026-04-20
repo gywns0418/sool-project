@@ -6,7 +6,7 @@
 <mapper namespace="com.example.sool.mapper.ImageMapper">
 
     <!-- 이미지 등록 -->
-    <insert id="insertImage" parameterType="com.example.sool.dto.ImageDto">
+    <insert id="insertImage" parameterType="ImageDto">
         INSERT INTO image       /* 이미지 테이블 */
         (
             obj_id              /* 대상 ID */
@@ -26,7 +26,7 @@
     </insert>
 
     <!-- 이미지 단건 조회 -->
-    <select id="selectImageById" parameterType="int" resultType="com.example.sool.dto.ImageDto">
+    <select id="selectImageById" parameterType="int" resultType="ImageDto">
         SELECT i.image_id AS imageId            /* 이미지 키 */
              , i.obj_id AS objId                /* 대상 ID */
              , i.obj_type AS objType            /* 대상 타입 */
@@ -37,8 +37,8 @@
          WHERE i.image_id = #{imageId}
     </select>
 
-    <!-- 노트 이미지 조회 -->
-    <select id="selectImageByNoteId" parameterType="int" resultType="com.example.sool.dto.ImageDto">
+    <!-- 이미지 조회 -->
+    <select id="selectImage" parameterType="ImageDto" resultType="ImageDto">
         SELECT i.image_id AS imageId            /* 이미지 키 */
              , i.obj_id AS objId                /* 대상 ID */
              , i.obj_type AS objType            /* 대상 타입 */
@@ -47,26 +47,12 @@
              , i.created_at AS createdAt        /* 등록 일시 */
           FROM image i              /* 이미지 테이블 */
          WHERE i.obj_id = #{objId}
-           AND i.obj_type = 'NOTE'
-      ORDER BY i.image_id DESC
-    </select>
-
-    <!-- 주류 이미지 조회 -->
-    <select id="selectImageByDrinkId" parameterType="int" resultType="com.example.sool.dto.ImageDto">
-        SELECT i.image_id AS imageId            /* 이미지 키 */
-             , i.obj_id AS objId                /* 대상 ID */
-             , i.obj_type AS objType            /* 대상 타입 */
-             , i.file_key AS fileKey            /* 파일 키 */
-             , i.file_url AS fileUrl            /* 파일 URL */
-             , i.created_at AS createdAt        /* 등록 일시 */
-          FROM image i              /* 이미지 테이블 */
-         WHERE i.obj_id = #{objId}
-           AND i.obj_type = 'DRINK'
+           AND i.obj_type = #{objType}
       ORDER BY i.image_id DESC
     </select>
 
     <!-- 이미지 수정 -->
-    <update id="updateImage" parameterType="com.example.sool.dto.ImageDto">
+    <update id="updateImage" parameterType="ImageDto">
         UPDATE image        /* 이미지 테이블 */
            SET file_key = #{fileKey}           /* 파일 키 */
              , file_url = #{fileUrl}           /* 파일 URL */
@@ -79,18 +65,6 @@
         DELETE
           FROM image        /* 이미지 테이블 */
          WHERE image_id = #{imageId}
-    </delete>
-
-    <!-- 회원 삭제 시 노트 이미지 삭제 -->
-    <delete id="deleteImageByUserId" parameterType="int">
-        DELETE
-          FROM image                /* 이미지 테이블 */
-         WHERE obj_type = 'NOTE'
-           AND obj_id IN (
-                SELECT tn.note_id
-                  FROM tasting_note tn      /* 테이스팅 노트 테이블 */
-                 WHERE tn.user_id = #{userId}
-           )
     </delete>
 
 </mapper>

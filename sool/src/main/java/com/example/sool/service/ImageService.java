@@ -38,15 +38,5 @@ public class ImageService {
         return imageMapper.selectImageById(image_id);
     }
 
-    //노트 이미지 선택
-    public ImageDto selectImageByNoteId(int objId) {
-        return imageMapper.selectImageByNoteId(objId);
-    }
-
-    //주류 이미지 선택
-    public ImageDto selectImageByDrinkId(int objId) {
-        return imageMapper.selectImageByDrinkId(objId);
-    }
-
 
 }

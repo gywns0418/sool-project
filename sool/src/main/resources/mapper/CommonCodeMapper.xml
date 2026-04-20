@@ -6,7 +6,7 @@
 <mapper namespace="com.example.sool.mapper.CommonCodeMapper">
 
     <!-- 주류 카테고리 리스트 조회 -->
-    <select id="getDrinkCategoryList" resultType="com.example.sool.dto.CommonCodeDto">
+    <select id="getDrinkCategoryList" resultType="CommonCodeDto">
         SELECT cc.group_code AS groupCode           /* 그룹 코드 키 */
              , cc.code                              /* 상세 코드 값 */
              , cc.code_name AS codeName             /* 상세 코드 이름 */
@@ -24,7 +24,7 @@
     </select>
 
     <!-- 주류 검색 카테고리 조회 (카테고리별 주류 개수 포함) -->
-    <select id="selectCategoryList" resultType="com.example.sool.dto.CommonCodeDto">
+    <select id="selectCategoryList" resultType="CommonCodeDto">
         SELECT cc.code                              /* 상세 코드 값 */
              , cc.code_name AS codeName             /* 상세 코드 이름 */
              , COUNT(d.drink_id) AS drinkCount      /* 주류 수 집계 */
@@ -44,7 +44,7 @@
     </select>
 
     <!-- 신고 사유 목록 -->
-    <select id="getReportReasons" resultType="com.example.sool.dto.CommonCodeDto">
+    <select id="getReportReasons" resultType="CommonCodeDto">
         SELECT code                              /* 상세 코드 값 */
              , code_name AS codeName             /* 상세 코드 이름 */
 
@@ -57,7 +57,7 @@
     </select>
 
     <!-- 카테고리 별 지표 조회 (공통 코드)-->
-    <select id="getMetricCode" parameterType="int" resultType="com.example.sool.dto.CommonCodeDto">
+    <select id="getMetricCode" parameterType="int" resultType="CommonCodeDto">
         SELECT cc.code                              /* 상세 코드 값 */
             , cc.code_name AS codeName             /* 상세 코드 이름 */
 

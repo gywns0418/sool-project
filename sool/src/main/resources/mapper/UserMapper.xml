@@ -6,7 +6,7 @@
 <mapper namespace="com.example.sool.mapper.UserMapper">
 
     <!-- 로그인 아이디로 회원 조회 -->
-    <select id="findByLoginId" parameterType="string" resultType="com.example.sool.dto.UserDto">
+    <select id="findByLoginId" parameterType="string" resultType="UserDto">
         SELECT user_id AS userId            /* 회원 키 */
              , login_id AS loginId          /* 로그인 ID */
              , password                     /* 비밀번호 */
@@ -23,7 +23,7 @@
 
 
     <!-- 회원 등록 -->
-    <insert id="insertUser" parameterType="com.example.sool.dto.UserDto">
+    <insert id="insertUser" parameterType="UserDto">
         INSERT INTO user        /* 회원 테이블 */
         (
             login_id            /* 로그인 ID */
@@ -46,7 +46,7 @@
 
 
     <!-- 회원 단건 조회 -->
-    <select id="selectUserById" parameterType="int" resultType="com.example.sool.dto.UserDto">
+    <select id="selectUserById" parameterType="int" resultType="UserDto">
         SELECT user_id AS userId            /* 회원 키 */
              , login_id AS loginId          /* 로그인 ID */
              , password                     /* 비밀번호 */
@@ -64,7 +64,7 @@
 
 
     <!-- 이름/이메일로 아이디 찾기 -->
-    <select id="findByEmail" parameterType="com.example.sool.dto.UserDto" resultType="com.example.sool.dto.UserDto">
+    <select id="findByEmail" parameterType="UserDto" resultType="UserDto">
         SELECT login_id AS loginId  /* 로그인 ID */
           FROM user         /* 회원 테이블 */
          WHERE email = #{email}
@@ -73,7 +73,7 @@
 
 
     <!-- 이메일로 회원 조회 -->
-    <select id="selectUserByEmail" parameterType="string" resultType="com.example.sool.dto.UserDto">
+    <select id="selectUserByEmail" parameterType="string" resultType="UserDto">
         SELECT user_id AS userId            /* 회원 키 */
              , login_id AS loginId          /* 로그인 ID */
              , password                     /* 비밀번호 */
@@ -91,7 +91,7 @@
 
 
     <!-- 회원 비밀번호 수정 -->
-    <update id="updateUserPassword" parameterType="com.example.sool.dto.UserDto">
+    <update id="updateUserPassword" parameterType="UserDto">
         UPDATE user         /* 회원 테이블 */
            SET password = #{password}   /* 비밀번호 */
              , updated_at = NOW()       /* 수정 일시 */
@@ -100,7 +100,7 @@
 
 
     <!-- 마이페이지 사이드바 -->
-    <select id="selectMyPageSidebar" parameterType="int" resultType="com.example.sool.dto.UserDto">
+    <select id="selectMyPageSidebar" parameterType="int" resultType="UserDto">
         SELECT u.user_id AS userId                      /* 회원 키 */
              , u.login_id AS loginId                    /* 로그인 ID */
              , u.name                                   /* 닉네임 */
@@ -139,7 +139,7 @@
 
 
     <!-- 회원 정보 수정 -->
-    <update id="updateUser" parameterType="com.example.sool.dto.UserDto">
+    <update id="updateUser" parameterType="UserDto">
         UPDATE user         /* 회원 테이블 */
            SET login_id = #{loginId}        /* 로그인 ID */
              , name = #{name}               /* 닉네임 */

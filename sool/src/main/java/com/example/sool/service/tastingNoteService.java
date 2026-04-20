@@ -48,7 +48,11 @@ public class TastingNoteService {
     public List<TastingNoteDto> recentNote(){
         List<TastingNoteDto> list = tastingNoteMapper.recentNote();
         for (TastingNoteDto note : list) {
-            ImageDto image = imageMapper.selectImageByDrinkId(note.getDrinkId());
+            ImageDto image = new ImageDto();
+            image.setObjId(note.getNoteId());
+            image.setObjType("NOTE");
+
+            image = imageMapper.selectImage(image);
             note.setImage(image);
         }
         return list;
@@ -58,7 +62,11 @@ public class TastingNoteService {
     public List<TastingNoteDto> findNoteByDrinkId(NoteSearchDto noteSearchDto){ 
         List<TastingNoteDto> list = tastingNoteMapper.findNoteByDrinkId(noteSearchDto);
         for (TastingNoteDto note : list) {
-            ImageDto image = imageMapper.selectImageByNoteId(note.getNoteId());
+            ImageDto image = new ImageDto();
+            image.setObjId(note.getNoteId());
+            image.setObjType("NOTE");
+
+            image = imageMapper.selectImage(image);
             note.setImage(image);
         }
         return list;
@@ -82,7 +90,11 @@ public class TastingNoteService {
         noteDetail.setMetricList(metricList);
 
         //노트 이미지
-        ImageDto image = imageMapper.selectImageByNoteId(noteId);
+        ImageDto image = new ImageDto();
+        image.setObjId(noteId);
+        image.setObjType("NOTE");
+
+            image = imageMapper.selectImage(image);
         noteDetail.setImage(image);
 
         return noteDetail;
@@ -99,7 +111,11 @@ public class TastingNoteService {
         List<TastingNoteDto> list = tastingNoteMapper.findByUserId(userId);
         //이미지 추가
         for (TastingNoteDto note : list) {
-            ImageDto image = imageMapper.selectImageByDrinkId(note.getDrinkId());
+            ImageDto image = new ImageDto();
+            image.setObjId(note.getNoteId());
+            image.setObjType("NOTE");
+
+            image = imageMapper.selectImage(image);
             note.setImage(image);
         }
         return list;
@@ -190,7 +206,7 @@ public class TastingNoteService {
             ImageDto image = dto.getImage();
             image.setObjId(dto.getNoteId());
             image.setObjType("NOTE");
-            if(imageMapper.selectImageByNoteId(dto.getNoteId())==null){
+            if(imageMapper.selectImage(image)==null){
                 imageMapper.insertImage(image);
             }else{
                 imageMapper.updateImage(image);
@@ -214,7 +230,11 @@ public class TastingNoteService {
             throw new IllegalArgumentException("본인이 작성한 노트만 삭제할 수 있습니다.");
         }
 
-        ImageDto image = imageMapper.selectImageByNoteId(noteId);
+        ImageDto image = new ImageDto();
+        image.setObjId(note.getNoteId());
+        image.setObjType("NOTE");
+
+        image = imageMapper.selectImage(image);
 
         if (image != null) {
             imageMapper.deleteImage(image.getImageId());

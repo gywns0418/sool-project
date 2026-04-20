@@ -6,7 +6,7 @@
 <mapper namespace="com.example.sool.mapper.ReportMapper">
 
     <!-- 신고 등록 -->
-    <insert id="insertReport" parameterType="com.example.sool.dto.ReportDto">
+    <insert id="insertReport" parameterType="ReportDto">
         INSERT INTO report          /* 신고 테이블 */
         (   
             user_id                 /* 회원 키( 신고자 ) */
@@ -28,7 +28,7 @@
     </insert>
 
     <!-- 신고 존재 확인 -->
-    <select id="existsReport" parameterType="com.example.sool.dto.ReportDto" resultType="int">
+    <select id="existsReport" parameterType="ReportDto" resultType="int">
         SELECT COUNT(*)
           FROM report           /* 신고 테이블 */
          WHERE user_id = #{userId}
@@ -38,7 +38,7 @@
     </select>
 
     <!-- 마이페이지 신고 조회 -->
-    <select id="selectReportByUserid" parameterType="int" resultType="com.example.sool.dto.ReportDto">
+    <select id="selectReportByUserid" parameterType="int" resultType="ReportDto">
         SELECT r.report_id AS reportId              /* 신고 키 */
              , r.user_id AS userId                  /* 회원 키 */
              , r.obj_id AS objId                    /* 대상 ID */

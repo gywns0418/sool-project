@@ -67,13 +67,21 @@ public class LikeService {
         
         List<TastingNoteDto> likedNoteList = likeMapper.findLikedNoteList(userId);
         for (TastingNoteDto note : likedNoteList) {
-            ImageDto image = imageMapper.selectImageByNoteId(note.getNoteId());
+            ImageDto image = new ImageDto();
+            image.setObjId(note.getNoteId());
+            image.setObjType("NOTE");
+
+            image = imageMapper.selectImage(image);
             note.setImage(image);
         }
 
         List<DrinkDto> likedDrinkList = likeMapper.findLikedDrinkList(userId);
         for (DrinkDto drink : likedDrinkList) {
-            ImageDto image = imageMapper.selectImageByDrinkId(drink.getDrinkId());
+            ImageDto image = new ImageDto();
+            image.setObjId(drink.getDrinkId());
+            image.setObjType("DRINK");
+
+            image = imageMapper.selectImage(image);
             drink.setImage(image);
         }
 

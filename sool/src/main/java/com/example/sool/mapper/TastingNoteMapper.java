@@ -35,10 +35,7 @@ public interface TastingNoteMapper {
 
     //사용자의 테이스팅 노트
     List<TastingNoteDto> findByUserId(Integer userId);
-
-    //회원 삭제 시 노트 삭제
-    int deleteByUserId(Integer userId);
-
+    
     //노트 작성여부 확인
     int existsMyNoteByDrinkId(int userId, int drinkId);
 }

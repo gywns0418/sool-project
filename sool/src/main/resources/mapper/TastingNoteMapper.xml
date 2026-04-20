@@ -6,7 +6,7 @@
 <mapper namespace="com.example.sool.mapper.TastingNoteMapper">
 
     <!-- 최근 노트 3개 조회 -->
-    <select id="recentNote" resultType="com.example.sool.dto.TastingNoteDto">
+    <select id="recentNote" resultType="TastingNoteDto">
        SELECT tn.note_id AS noteId                 /* 노트 키 */
             , tn.user_id AS userId                 /* 회원 키 */
             , tn.drink_id AS drinkId               /* 주류 키 */
@@ -53,73 +53,77 @@
 
 
     <!-- 주류 디테일 테이스팅 노트 목록 조회 -->
-    <select id="findNoteByDrinkId" parameterType="com.example.sool.dto.NoteSearchDto" resultType="com.example.sool.dto.TastingNoteDto">
-        SELECT tn.note_id AS noteId                 /* 노트 키 */
-             , tn.user_id AS userId                 /* 회원 키 */
-             , tn.drink_id AS drinkId               /* 주류 키 */
-             , tn.title                             /* 노트 제목 */
-             , tn.content                           /* 노트 내용 */
-             , tn.rating                            /* 노트 별점 */
-             , tn.created_at AS createdAt           /* 노트 등록 일시 */
-             , tn.updated_at AS updatedAt           /* 노트 수정 일시 */
-             , tn.is_deleted AS isDeleted           /* 노트 삭제 여부 */
-             , u.name AS userName                   /* 회원 이름 */
-             , IFNULL(l.likeCount, 0) AS likeCount  /* 좋아요 수 */
-             , (r.obj_id IS NOT NULL) AS reported   /* 신고 완료 여부 */
+   <select id="findNoteByDrinkId" parameterType="NoteSearchDto" resultType="TastingNoteDto">
+      SELECT tn.note_id AS noteId                 /* 노트 키 */
+          , tn.user_id AS userId                 /* 회원 키 */
+          , tn.drink_id AS drinkId               /* 주류 키 */
+          , tn.title                             /* 노트 제목 */
+          , tn.content                           /* 노트 내용 */
+          , tn.rating                            /* 노트 별점 */
+          , tn.created_at AS createdAt           /* 노트 등록 일시 */
+          , tn.updated_at AS updatedAt           /* 노트 수정 일시 */
+          , tn.is_deleted AS isDeleted           /* 노트 삭제 여부 */
+          , CASE
+               WHEN u.is_deleted = 'Y' THEN '탈퇴한 회원'
+               ELSE u.name
+            END AS userName                      /* 회원 이름 */
+          , IFNULL(l.likeCount, 0) AS likeCount  /* 좋아요 수 */
+          , (r.obj_id IS NOT NULL) AS reported   /* 신고 완료 여부 */
+          , d.category_code AS categoryCode      /* 주류 카테고리 코드 */
 
-          FROM tasting_note tn      /* 테이스팅 노트 테이블 */
+       FROM tasting_note tn      /* 테이스팅 노트 테이블 */
 
-          JOIN user u               /* 회원 테이블 */
-            ON tn.user_id = u.user_id
+  LEFT JOIN user u               /* 회원 테이블 */
+         ON tn.user_id = u.user_id
 
-        <!-- 노트 좋아요 수 집계 -->
-     LEFT JOIN (
-                SELECT obj_id
-                     , COUNT(*) AS likeCount
-                  FROM `like`       /* 좋아요 테이블 */
-                 WHERE obj_type = 'NOTE'
-              GROUP BY obj_id
-               ) l
-            ON l.obj_id = tn.note_id
+       JOIN drink d              /* 주류 테이블 */
+         ON tn.drink_id = d.drink_id
 
-      <!-- 신고 완료된 노트 -->
-    LEFT JOIN (
-                SELECT DISTINCT obj_id
-                  FROM report       /* 신고 테이블 */
-                 WHERE obj_type = 'NOTE'
-                   AND status_code = 'COMPLETED'
-                   AND is_deleted = 'N'
-              ) r
-           ON r.obj_id = tn.note_id
+      <!-- 노트 좋아요 수 집계 -->
+  LEFT JOIN (
+              SELECT obj_id
+                  , COUNT(*) AS likeCount
+                FROM `like`       /* 좋아요 테이블 */
+              WHERE obj_type = 'NOTE'
+            GROUP BY obj_id
+            ) l
+         ON l.obj_id = tn.note_id
 
-         WHERE tn.drink_id = #{drinkId}
-           AND tn.is_deleted = 'N'
+    <!-- 신고 완료된 노트 -->
+  LEFT JOIN (
+              SELECT DISTINCT obj_id
+                FROM report       /* 신고 테이블 */
+              WHERE obj_type = 'NOTE'
+                AND status_code = 'COMPLETED'
+                AND is_deleted = 'N'
+            ) r
+        ON r.obj_id = tn.note_id
 
-        <choose>
-            <!-- 별점 높은순 -->
-            <when test="sort == 'ratingDesc'">
-          ORDER BY tn.rating DESC
-                 , tn.created_at DESC
-            </when>
+      WHERE tn.drink_id = #{drinkId}
+        AND tn.is_deleted = 'N'
 
-            <!-- 별점 낮은순 -->
-            <when test="sort == 'ratingAsc'">
-          ORDER BY tn.rating ASC
-                 , tn.created_at DESC
-            </when>
+      <choose>
+          <when test="sort == 'ratingDesc'">
+        ORDER BY tn.rating DESC
+              , tn.created_at DESC
+          </when>
 
-            <!-- 기본 최신순 -->
-            <otherwise>
-          ORDER BY tn.created_at DESC
-            </otherwise>
-        </choose>
+          <when test="sort == 'ratingAsc'">
+        ORDER BY tn.rating ASC
+              , tn.created_at DESC
+          </when>
 
-         LIMIT #{size}
-        OFFSET #{offset}
-    </select>
+          <otherwise>
+        ORDER BY tn.created_at DESC
+          </otherwise>
+      </choose>
+
+     LIMIT #{size}
+    OFFSET #{offset}
+  </select>
 
     <!--주류 노트 총 갯수-->
-    <select id="countNoteByDrinkId" parameterType="com.example.sool.dto.NoteSearchDto" resultType="int">
+    <select id="countNoteByDrinkId" parameterType="NoteSearchDto" resultType="int">
         SELECT COUNT(*)
           FROM tasting_note tn  /* 테이스팅 노트 테이블 */
          WHERE tn.drink_id = #{drinkId}
@@ -127,7 +131,7 @@
     </select>
 
     <!-- 노트 상세 조회 -->
-    <select id="getNoteDetail" parameterType="int" resultType="com.example.sool.dto.TastingNoteDto">
+    <select id="getNoteDetail" parameterType="int" resultType="TastingNoteDto">
         SELECT tn.note_id AS noteId                 /* 노트 키 */
              , tn.user_id AS userId                 /* 회원 키 */
              , tn.drink_id AS drinkId               /* 주류 키 */
@@ -137,7 +141,10 @@
              , tn.created_at AS createdAt           /* 노트 등록 일시 */
              , tn.updated_at AS updatedAt           /* 노트 수정 일시 */
              , tn.is_deleted AS isDeleted           /* 노트 삭제 여부 */
-             , u.name AS userName                   /* 회원 이름 */
+             , CASE
+                 WHEN u.is_deleted = 'Y' THEN '탈퇴한 회원'
+                 ELSE u.name
+               END AS userName                      /* 회원 이름 */
              , d.drink_name AS drinkName            /* 주류 이름 */
              , d.category_code AS categoryCode      /* 카테고리 대분류 */
              , cc.code_name AS typeName             /* 카테고리 소분류 */
@@ -149,7 +156,6 @@
 
      LEFT JOIN user u                   /* 회원 테이블 */
             ON tn.user_id = u.user_id
-           AND u.is_deleted = 'N'
 
      LEFT JOIN drink d                  /* 주류 테이블 */
             ON tn.drink_id = d.drink_id
@@ -182,7 +188,7 @@
     </select>
 
     <!-- 노트 등록 -->
-    <insert id="insertTastingNote" parameterType="com.example.sool.dto.TastingNoteDto" useGeneratedKeys="true" keyProperty="noteId">
+    <insert id="insertTastingNote" parameterType="TastingNoteDto" useGeneratedKeys="true" keyProperty="noteId">
         INSERT INTO tasting_note            /* 테이스팅 노트 테이블 */
         (
             user_id                         /* 회원 키 */
@@ -204,7 +210,7 @@
     </insert>
 
     <!-- 노트 ID로 조회 -->
-    <select id="findByNoteId" parameterType="int" resultType="com.example.sool.dto.TastingNoteDto">
+    <select id="findByNoteId" parameterType="int" resultType="TastingNoteDto">
         SELECT note_id AS noteId                 /* 노트 키 */
              , user_id AS userId                 /* 회원 키 */
              , drink_id AS drinkId               /* 주류 키 */
@@ -220,7 +226,7 @@
     </select>
 
     <!-- 노트 수정 -->
-    <update id="updateTastingNote" parameterType="com.example.sool.dto.TastingNoteDto">
+    <update id="updateTastingNote" parameterType="TastingNoteDto">
         UPDATE tasting_note             /* 테이스팅 노트 테이블 */
            SET title = #{title}         /* 노트 제목 */
              , content = #{content}     /* 노트 내용 */
@@ -232,7 +238,7 @@
     </update>
 
     <!-- 사용자 노트 목록 -->
-    <select id="findByUserId" resultType="com.example.sool.dto.TastingNoteDto">
+    <select id="findByUserId" resultType="TastingNoteDto">
         SELECT tn.note_id AS noteId                 /* 노트 키 */
              , tn.user_id AS userId                 /* 회원 키 */
              , tn.drink_id AS drinkId               /* 주류 키 */
@@ -268,14 +274,6 @@
            SET is_deleted = 'Y'
              , updated_at = NOW()
          WHERE note_id = #{noteId}
-    </update>
-
-    <!-- 회원 탈퇴 시 노트 삭제 -->
-    <update id="deleteByUserId">
-        UPDATE tasting_note         /* 테이스팅 노트 테이블 */
-           SET is_deleted = 'Y'
-             , updated_at = NOW()
-         WHERE user_id = #{userId}
     </update>
 
     <!-- 노트 작성 여부 확인 -->

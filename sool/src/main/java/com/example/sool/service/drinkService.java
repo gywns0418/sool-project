@@ -46,7 +46,11 @@ public class DrinkService {
         //redis에 데이터 없을 때 주류 top4
         List<DrinkDto> list = drinkMapper.drinkTop();
         for (DrinkDto drink : list) {
-            ImageDto image = imageMapper.selectImageByDrinkId(drink.getDrinkId());
+            ImageDto image = new ImageDto();
+            image.setObjId(drink.getDrinkId());
+            image.setObjType("DRINK");
+
+            image = imageMapper.selectImage(image);
             drink.setImage(image);
         }
 
@@ -67,7 +71,11 @@ public class DrinkService {
 
         //주류별 대표 이미지 조회 후 세팅
         for (DrinkDto drink : list) {
-            ImageDto image = imageMapper.selectImageByDrinkId(drink.getDrinkId());
+            ImageDto image = new ImageDto();
+            image.setObjId(drink.getDrinkId());
+            image.setObjType("DRINK");
+
+            image = imageMapper.selectImage(image);
             drink.setImage(image);
         }
 
@@ -88,7 +96,12 @@ public class DrinkService {
     public DrinkDto findByDrinkId(Integer drinkId) {
 
         DrinkDto drink = drinkMapper.findByDrinkId(drinkId);
-        ImageDto image = imageMapper.selectImageByDrinkId(drinkId);
+
+        ImageDto image = new ImageDto();
+        image.setObjId(drink.getDrinkId());
+        image.setObjType("DRINK");
+
+        image = imageMapper.selectImage(image);
         drink.setImage(image);
 
         return drink;
@@ -98,7 +111,12 @@ public class DrinkService {
     public DrinkDto findDrinkByNoteId(Integer noteId){
         
         DrinkDto drink = drinkMapper.findDrinkByNoteId(noteId);
-        ImageDto image = imageMapper.selectImageByDrinkId(drink.getDrinkId());
+        
+        ImageDto image = new ImageDto();
+        image.setObjId(drink.getDrinkId());
+        image.setObjType("DRINK");
+
+        image = imageMapper.selectImage(image);
         drink.setImage(image);
 
         return drink;

@@ -32,7 +32,4 @@ public interface CommentMapper {
     //노트 삭제시 댓글 전체 삭제
     int deleteAllComment(Integer noteId);
 
-    //회원 탈퇴 시 댓글 삭제
-    int deleteByUserId(Integer userId);
-
 }

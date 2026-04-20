@@ -21,9 +21,9 @@ import com.example.sool.dto.ImageDto;
 import com.example.sool.dto.NoteSearchDto;
 import com.example.sool.dto.TastingNoteDto;
 import com.example.sool.dto.TastingNoteMetricDto;
+import com.example.sool.mapper.ImageMapper;
 import com.example.sool.security.CustomUserDetails;
 import com.example.sool.service.DrinkService;
-import com.example.sool.service.ImageService;
 import com.example.sool.service.TastingNoteService;
 
 @RestController
@@ -32,12 +32,12 @@ public class TastingNoteController {
 
     private final TastingNoteService tastingNoteService;
     private final DrinkService drinkService;
-    private final ImageService imageService;
+    private final ImageMapper imageMapper;
 
-    public TastingNoteController(TastingNoteService tastingNoteService, DrinkService drinkService,ImageService imageService){
+    public TastingNoteController(TastingNoteService tastingNoteService, DrinkService drinkService,ImageMapper imageMapper){
         this.tastingNoteService = tastingNoteService;
         this.drinkService = drinkService;
-        this.imageService = imageService;
+        this.imageMapper = imageMapper;
     }
 
     //노트 목록
@@ -157,8 +157,12 @@ public class TastingNoteController {
         if (note.getUserId() != userDetails.getUserId()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인 노트만 수정할 수 있습니다.");
         }
+        
+        ImageDto image = new ImageDto();
+        image.setObjId(note.getNoteId());
+        image.setObjType("NOTE");
 
-        ImageDto image = imageService.selectImageByNoteId(noteId);
+        image = imageMapper.selectImage(image);
 
         Map<String, Object> result = new HashMap<>();
         result.put("drink", drink);

@@ -9,9 +9,7 @@ public interface ImageMapper {
 
     int insertImage(ImageDto imageDto);
 
-    ImageDto selectImageByNoteId(int objId);
-
-    ImageDto selectImageByDrinkId(int objId);
+    ImageDto selectImage(ImageDto dto);
 
     ImageDto selectImageById(int imageId);
 
@@ -19,5 +17,4 @@ public interface ImageMapper {
 
     int deleteImage(int imageId);
 
-    int deleteImageByUserId(int userId);
 }

@@ -41,7 +41,7 @@
           :src="item?.image?.fileUrl"
           alt="note image"
         />
-        <span v-else>{{ item.emoji || '🍷' }}</span>
+        <span v-else>{{ drinkEmoji || '🍹' }}</span>
       </div>
 
       <button
@@ -61,6 +61,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 import { useRouter, useRoute } from 'vue-router'
 import { getNoteLike, insertNoteLike, deleteNoteLike } from '@/api/likeApi'
+import { categories } from '@/mock/soolData'
 
 const props = defineProps({
   item: {
@@ -68,6 +69,7 @@ const props = defineProps({
     required: true
   }
 })
+console.log(props)
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -78,7 +80,7 @@ const likeCount = ref(props.item.likeCount || 0)
 const loading = ref(false)
 
 const drinkEmoji = computed(() => {
-  const code = drink.value?.categoryCode
+  const code = props.item?.categoryCode
   const emojiData = categories.find(item => item.name === code)
   return emojiData ? emojiData.emoji : '🍹'
 })
