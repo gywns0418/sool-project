@@ -285,4 +285,12 @@
           AND is_deleted = 'N'
     </select>
 
+    <!-- 노트 존재 여부 확인-->
+    <select id="existsNote" resultType="int">
+      SELECT COUNT(*)
+        FROM tasting_note   /* 테이스팅 노트 테이블 */
+       WHERE note_id = #{noteId}
+         AND is_deleted = 'N'
+  </select>
+
 </mapper>

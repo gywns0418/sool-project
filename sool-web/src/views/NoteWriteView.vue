@@ -36,7 +36,7 @@
         </div>
 
         <div class="form-section">
-          <label class="form-label">제목</label>
+          <label class="form-label required">제목</label>
           <input
             v-model="title"
             type="text"
@@ -52,7 +52,7 @@
           <div class="form-card-header">
             <div class="form-card-icon">★</div>
             <div>
-              <div class="form-card-title">별점</div>
+              <div class="form-card-title required">별점</div>
               <div class="form-card-sub">전체적인 만족도를 남겨보세요</div>
             </div>
           </div>
@@ -79,7 +79,7 @@
           <div class="form-card-header">
             <div class="form-card-icon green">◎</div>
             <div>
-              <div class="form-card-title">맛 프로파일</div>
+              <div class="form-card-title required">맛 프로파일</div>
               <div class="form-card-sub">항목별로 1점부터 5점까지 선택하세요</div>
             </div>
           </div>
@@ -91,9 +91,28 @@
 
             <div v-for="item in scores" :key="item.code" class="score-row">
               <div class="score-row-head">
-                <span class="score-label">{{ item.codeName }}</span>
+                <div class="score-label-wrap">
+                  <span class="score-label">{{ item.codeName }}</span>
+
+                  <button
+                    v-if="item.codeDesc"
+                    type="button"
+                    class="info-toggle-btn"
+                    @click="toggleScoreDesc(item.code)"
+                  >
+                    i
+                  </button>
+                </div>
+
                 <span class="score-val-text">{{ item.value }}점</span>
               </div>
+
+              <p
+                v-if="item.codeDesc && openScoreDescCode === item.code"
+                class="score-desc"
+              >
+                {{ item.codeDesc }}
+              </p>
 
               <div class="seg-bar">
                 <button
@@ -120,7 +139,7 @@
         </div>
 
         <div class="form-section">
-          <label class="form-label">테이스팅 내용</label>
+          <label class="form-label required">테이스팅 내용</label>
           <textarea
             v-model="memo"
             class="write-textarea"
@@ -130,7 +149,7 @@
         </div>
 
         <div class="form-section">
-          <label class="form-label">사진 업로드 *</label>
+          <label class="form-label required">사진 업로드</label>
 
           <input
             ref="fileInput"
@@ -210,6 +229,7 @@ const title = ref('')
 const selectedStar = ref(1)
 const memo = ref('')
 const scores = ref([])
+const openScoreDescCode = ref('')
 const isSaving = ref(false)
 
 const fileInput = ref(null)
@@ -247,15 +267,22 @@ function resetForm() {
   selectedStar.value = 1
   memo.value = ''
   scores.value = []
+  openScoreDescCode.value = ''
 }
 
 function normalizeMetricList(metricList) {
   return (metricList || []).map(item => ({
     code: item.code || item.metricCode,
     codeName: item.codeName || item.metricName,
+    codeDesc: item.codeDesc || '',
     value: Number(item.value ?? item.score ?? 1)
   }))
 }
+
+function toggleScoreDesc(code) {
+  openScoreDescCode.value = openScoreDescCode.value === code ? '' : code
+}
+
 
 //작성 기초 정보
 async function fetchWriteForm() {
@@ -778,7 +805,7 @@ watch(
   padding: 14px 16px;
   font-size: 13px;
   line-height: 1.75;
-  resize: vertical;
+  resize: none;
 }
 
 .upload-zone {
@@ -867,5 +894,47 @@ watch(
   .note-top-section {
     grid-template-columns: 1fr;
   }
+}
+
+.form-label.required::after {
+  content: " *";
+  color: #e74c3c;
+  font-weight: 600;
+}
+
+.form-card-title.required::after {
+  content: " *";
+  color: #e74c3c;
+  font-weight: 600;
+}
+
+.score-label-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.info-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #eef6f1;
+  color: var(--point2);
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+}
+
+.score-desc {
+  margin: 4px 0 10px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+  padding-left: 2px;
 }
 </style>

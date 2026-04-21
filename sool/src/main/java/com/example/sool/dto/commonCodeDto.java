@@ -13,6 +13,7 @@ public class CommonCodeDto {
     private String code;
     private String codeName;
     private String parentCode;
+    private String codeDesc;
 
     private Integer sortSeq;
     private String useYn;

@@ -38,4 +38,7 @@ public interface TastingNoteMapper {
     
     //노트 작성여부 확인
     int existsMyNoteByDrinkId(int userId, int drinkId);
+
+    //노트 존재 여부 확인
+    int existsNote(int noteId);
 }

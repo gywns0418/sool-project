@@ -60,7 +60,7 @@
     <select id="getMetricCode" parameterType="int" resultType="CommonCodeDto">
         SELECT cc.code                              /* 상세 코드 값 */
             , cc.code_name AS codeName             /* 상세 코드 이름 */
-
+            , cc.code_desc AS codeDesc             /* 상세 코드 설명 */
          FROM common_code cc                       /* 공통 코드 테이블 */
 
         WHERE cc.group_code = 'TASTE_METRIC'

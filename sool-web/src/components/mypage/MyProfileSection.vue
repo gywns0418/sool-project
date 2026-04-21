@@ -569,7 +569,14 @@ async function savePassword() {
     if (handled) return
 
     console.log('비밀번호 변경 실패', e)
-    alert(e?.response?.data || '비밀번호 변경에 실패했습니다.')
+
+    const errorData = e?.response?.data
+    const errorMessage =
+      typeof errorData === 'string'
+        ? errorData
+        : errorData?.message || '비밀번호 변경에 실패했습니다.'
+
+    alert(errorMessage)
   } finally {
     passwordLoading.value = false
   }

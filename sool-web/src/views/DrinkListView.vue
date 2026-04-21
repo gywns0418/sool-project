@@ -54,6 +54,7 @@
             type="number"
             min="0"
             :max="PRICE_MAX"
+            step="1000"
             :placeholder="PRICE_DEFAULT_LOW"
             class="range-inp"
             @keydown="preventMinusInput"
@@ -66,6 +67,7 @@
             type="number"
             min="0"
             :max="PRICE_MAX"
+            step="1000"
             :placeholder="PRICE_DEFAULT_HIGH"
             class="range-inp"
             @keydown="preventMinusInput"
@@ -80,7 +82,7 @@
 
       <section class="list-main">
         <div class="list-top">
-          <h2>검색된 {{ titleLabel }} <span class="sub-count">{{ totalCount }}개</span></h2>
+          <h2>{{ titleLabel }} <span class="sub-count">{{ totalCount }}개</span></h2>
 
           <div class="list-controls">
             <form @submit.prevent="applySearch" class="list-search-form">
@@ -179,7 +181,6 @@ const page = ref(1)
 const size = ref(12)
 
 const isCategoryLoaded = ref(false)
-const invalidCategory = ref(false)
 
 const makeCategoryLabel = (item) => {
   if (!item.code) return item.codeName
@@ -329,11 +330,6 @@ const loadCategoryList = async () => {
 
 const loadDrinkList = async () => {
   try {
-    if (invalidCategory.value) {
-      clearDrinkList()
-      return
-    }
-
     normalizeRange()
 
     const params = {
@@ -394,6 +390,7 @@ const syncFromRoute = () => {
 
   let fixedAbvLow = normalizedAbvLow
   let fixedAbvHigh = normalizedAbvHigh
+  let fixedCategoryCode = normalizedCategoryCode
 
   if (Number(fixedAbvLow) > Number(fixedAbvHigh)) {
     const temp = fixedAbvLow
@@ -407,9 +404,13 @@ const syncFromRoute = () => {
     normalizedPriceHigh = temp
   }
 
+  if (isCategoryLoaded.value && !isValidCategoryCode(normalizedCategoryCode)) {
+    fixedCategoryCode = ""
+  }
+
   const normalizedPageValue = normalizePage(route.query.page)
 
-  selectedCategory.value = normalizedCategoryCode
+  selectedCategory.value = fixedCategoryCode
   searchKeyword.value = normalizedKeyword
   sortBy.value = normalizedSortValue
   abvLow.value = fixedAbvLow
@@ -418,14 +419,10 @@ const syncFromRoute = () => {
   priceHigh.value = normalizedPriceHigh
   page.value = normalizedPageValue
 
-  if (isCategoryLoaded.value) {
-    invalidCategory.value = !isValidCategoryCode(normalizedCategoryCode)
-  }
-
   const normalizedQuery = {}
 
   if (normalizedKeyword) normalizedQuery.keyword = normalizedKeyword
-  if (normalizedCategoryCode) normalizedQuery.categoryCode = normalizedCategoryCode
+  if (fixedCategoryCode) normalizedQuery.categoryCode = fixedCategoryCode
   if (fixedAbvLow !== ABV_DEFAULT_LOW) normalizedQuery.abvLow = fixedAbvLow
   if (fixedAbvHigh !== ABV_DEFAULT_HIGH) normalizedQuery.abvHigh = fixedAbvHigh
   if (normalizedPriceLow !== PRICE_DEFAULT_LOW) normalizedQuery.priceLow = normalizedPriceLow
@@ -468,7 +465,6 @@ const updateRoute = () => {
 const changeCategory = (code) => {
   selectedCategory.value = code
   page.value = 1
-  invalidCategory.value = false
   updateRoute()
 }
 
@@ -491,7 +487,6 @@ const resetFilter = () => {
   priceLow.value = PRICE_DEFAULT_LOW
   priceHigh.value = PRICE_DEFAULT_HIGH
   page.value = 1
-  invalidCategory.value = false
 
   updateRoute()
 }
@@ -539,7 +534,7 @@ const titleLabel = computed(() => {
 
   const found = categoryOptions.value.find(item => item.code === selectedCategory.value)
 
-  return found ? found.codeName : "검색 결과"
+  return found ? found.codeName : "전체 주류"
 })
 
 const visiblePages = computed(() => {

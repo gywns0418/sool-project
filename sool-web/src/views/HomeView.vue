@@ -1,45 +1,48 @@
 <template>
-    <div class="page-wrap">
-      <PageNav :links="navLinks" show-search />
-      <section class="hero">
-        <div class="hero-left">
-          <div class="hero-tag">Tasting Note</div>
-          <h1 class="hero-title">당신의 한 잔을<br><em>기록하세요</em></h1>
-          <p class="hero-desc">와인, 위스키, 전통주까지. 마셨던 술의 맛과 향을 기록하고 취향을 발견하세요</p>
-          <div class="hero-cta">
-            <router-link to="/drinks" class="btn-primary">주류 목록 탐색하기 →</router-link>
-          </div>
+  <div class="page-wrap">
+    <PageNav :links="navLinks" show-search />
+
+    <section class="hero">
+      <div class="hero-left">
+        <div class="hero-tag">Tasting Note</div>
+        <h1 class="hero-title">당신의 한 잔을<br><em>기록하세요</em></h1>
+        <p class="hero-desc">와인, 위스키, 전통주까지. 마셨던 술의 맛과 향을 기록하고 취향을 발견하세요</p>
+        <div class="hero-cta">
+          <router-link to="/drinks" class="btn-primary">주류 목록 탐색하기 →</router-link>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <CategoryStrip :items="categoryList" />
+    <CategoryStrip :items="categoryList" />
 
-      <section class="popular">
-        <div class="section-head">
+    <section class="popular">
+      <div class="section-head popular-head">
+        <div class="section-head-left">
           <div class="section-title">인기 주류 ✦</div>
+          <div class="section-sub">❤️ 좋아요 기준 TOP 4</div>
         </div>
-        <div class="drinks-row">
-          <DrinkRankCard
-            v-for="(drink, index) in popularDrinks"
-            :key="drink.drinkId"
-            :item="drink"
-            :rank="index + 1"
-          />
-        </div>
-      </section>
+      </div>
 
-      <section class="recent-notes">
-        <div class="section-head">
-          <div class="section-title">최근 테이스팅 노트</div>
-        </div>
-        <div class="note-feed">
-          <RecentNoteCard v-for="note in recentNote" :key="note.id" :item="note" />
-        </div>
-      </section>
-    </div>
+      <div class="drinks-row">
+        <DrinkRankCard
+          v-for="(drink, index) in popularDrinks"
+          :key="drink.drinkId"
+          :item="drink"
+          :rank="index + 1"
+        />
+      </div>
+    </section>
+
+    <section class="recent-notes">
+      <div class="section-head">
+        <div class="section-title">최근 테이스팅 노트</div>
+      </div>
+      <div class="note-feed">
+        <RecentNoteCard v-for="note in recentNote" :key="note.id" :item="note" />
+      </div>
+    </section>
+  </div>
 </template>
-
-
 
 <script setup>
 import PageNav from '../components/common/PageNav.vue'
@@ -76,8 +79,6 @@ const navLinks = [
   { label: '홈', to: '/', active: true }
 ]
 </script>
-
-
 
 <style scoped>
 .page-wrap {
@@ -188,11 +189,27 @@ const navLinks = [
   margin-bottom: 24px;
 }
 
+.popular-head {
+  align-items: flex-start;
+}
+
+.section-head-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .section-title {
   font-family: 'Playfair Display', serif;
   font-size: 22px;
   font-weight: 400;
   color: var(--ink);
+}
+
+.section-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-left: 2px;
 }
 
 .drinks-row {
