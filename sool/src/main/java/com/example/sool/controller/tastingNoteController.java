@@ -3,6 +3,7 @@ package com.example.sool.controller;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -154,7 +155,7 @@ public class TastingNoteController {
         //저장된 카테고리별 맛 프로파일 항목
         List<TastingNoteMetricDto> metricList = tastingNoteService.findMetricByNoteId(noteId);
 
-        if (note.getUserId() != userDetails.getUserId()) {
+        if (!Objects.equals(note.getUserId(), userDetails.getUserId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인 노트만 수정할 수 있습니다.");
         }
         

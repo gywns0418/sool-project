@@ -27,6 +27,7 @@ public class LikeService {
         this.redisTemplate = redisTemplate;
     }
 
+    @Transactional
     public int insertLike(LikeDto likeDto){
         //좋아요 추가 시 주류TOP4 캐시 삭제
         redisTemplate.delete("drink:top4");

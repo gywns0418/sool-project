@@ -60,7 +60,6 @@
 
          JOIN drink d                  /* 주류 테이블 */
            ON l.obj_id = d.drink_id
-          AND d.is_deleted = 'N'
 
     LEFT JOIN (
                 SELECT drink_id
