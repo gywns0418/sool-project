@@ -143,7 +143,6 @@
         UPDATE user         /* 회원 테이블 */
            SET login_id = #{loginId}        /* 로그인 ID */
              , name = #{name}               /* 닉네임 */
-             , email = #{email}             /* 이메일 */
              , updated_at = NOW()           /* 수정 일시 */
          WHERE user_id = #{userId}
     </update>

@@ -5,11 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.sool.dto.UserDto;
-import com.example.sool.mapper.CommentMapper;
-import com.example.sool.mapper.ImageMapper;
 import com.example.sool.mapper.LikeMapper;
-import com.example.sool.mapper.TastingNoteMapper;
-import com.example.sool.mapper.TastingNoteMetricMapper;
 import com.example.sool.mapper.UserMapper;
 
 @Service
@@ -18,20 +14,11 @@ public class UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final LikeMapper likeMapper;
-    private final CommentMapper commentMapper;
-    private final TastingNoteMetricMapper tastingNoteMetricMapper;
-    private final TastingNoteMapper tastingNoteMapper;
-    private final ImageMapper imageMapper;
 
-    public UserService(UserMapper userMapper, PasswordEncoder passwordEncoder, LikeMapper likeMapper, CommentMapper commentMapper,
-                        TastingNoteMetricMapper tastingNoteMetricMapper, TastingNoteMapper tastingNoteMapper,ImageMapper imageMapper) {
+    public UserService(UserMapper userMapper, PasswordEncoder passwordEncoder, LikeMapper likeMapper) {
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder ;
         this.likeMapper = likeMapper;
-        this.commentMapper = commentMapper;
-        this.tastingNoteMetricMapper = tastingNoteMetricMapper;
-        this.tastingNoteMapper = tastingNoteMapper;
-        this.imageMapper = imageMapper;
     }
 
     public UserDto findByLoginId(String loginId) {

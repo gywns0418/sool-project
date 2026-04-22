@@ -14,6 +14,7 @@
              , d.drink_name AS drinkName        /* 주류 한글 이름 */
              , d.drink_name_en AS drinkNameEn   /* 주류 영문 이름 */
              , COUNT(l.obj_id) AS likeCount     /* 주류에 해당하는 좋아요 수 */
+             
           FROM drink d      /* 주류 테이블 */
 
      LEFT JOIN `like` l     /* 좋아요 테이블 */
@@ -50,7 +51,7 @@
 
         <choose>
             <when test="userId != null and userId != ''">
-            , (ul.user_id IS NOT NULL) AS liked        /* 유저의 좋아요 표시 */
+            , (ul.user_id IS NOT NULL) AS liked        /* 로그인 사용자의 좋아요 표시 */
             </when>
             <otherwise>
             , false AS liked
@@ -63,15 +64,11 @@
    LEFT JOIN common_code cc1                           /* 공통 코드 테이블 */
           ON d.category_code = cc1.code
          AND cc1.group_code  = 'DRINK_CATEGORY'
-         AND cc1.use_yn      = 'Y'
-         AND cc1.is_deleted  = 'N'
 
         <!-- 카테고리 소분류 한글 이름 -->
    LEFT JOIN common_code cc2                           /* 공통 코드 테이블 */
           ON d.type_code     = cc2.code
          AND cc2.group_code  = 'DRINK_TYPE'
-         AND cc2.use_yn      = 'Y'
-         AND cc2.is_deleted  = 'N'
 
         <!-- 좋아요 수 집계 -->
    LEFT JOIN (
@@ -128,8 +125,6 @@
                   INNER JOIN common_code c1           /* 공통 코드 테이블 */
                           ON d3.category_code = c1.code
                          AND c1.group_code    = 'DRINK_CATEGORY'
-                         AND c1.use_yn        = 'Y'
-                         AND c1.is_deleted    = 'N'
                        WHERE d3.is_deleted = 'N'
                          AND c1.code_name LIKE CONCAT(#{keyword}, '%')
 
@@ -141,8 +136,6 @@
                   INNER JOIN common_code c2           /* 공통 코드 테이블 */
                           ON d4.type_code  = c2.code
                          AND c2.group_code = 'DRINK_TYPE'
-                         AND c2.use_yn     = 'Y'
-                         AND c2.is_deleted = 'N'
                        WHERE d4.is_deleted = 'N'
                          AND c2.code_name LIKE CONCAT(#{keyword}, '%')
                      ) k
@@ -216,8 +209,6 @@
             INNER JOIN common_code c1     /* 공통 코드 테이블 */
                     ON d3.category_code = c1.code
                    AND c1.group_code    = 'DRINK_CATEGORY'
-                   AND c1.use_yn        = 'Y'
-                   AND c1.is_deleted    = 'N'
                  WHERE d3.is_deleted = 'N'
                    AND c1.code_name LIKE CONCAT(#{keyword}, '%')
 
@@ -229,8 +220,6 @@
             INNER JOIN common_code c2     /* 공통 코드 테이블 */
                     ON d4.type_code  = c2.code
                   AND c2.group_code = 'DRINK_TYPE'
-                  AND c2.use_yn     = 'Y'
-                  AND c2.is_deleted = 'N'
                 WHERE d4.is_deleted = 'N'
                   AND c2.code_name LIKE CONCAT(#{keyword}, '%')
               ) k
@@ -266,19 +255,16 @@
              , IFNULL(tn.noteCount, 0) AS noteCount     /* 노트 수 집계 */
              , IFNULL(tn.avgRating, 0) AS avgRating     /* 평균 별점 집계 */
              , IFNULL(lc.likeCount, 0) AS likeCount     /* 좋아요 수 집계 */
+
           FROM drink d                  /* 주류 테이블 */
 
      LEFT JOIN common_code cc1          /* 공통 코드 테이블 */
             ON d.category_code = cc1.code
            AND cc1.group_code  = 'DRINK_CATEGORY'
-           AND cc1.use_yn      = 'Y'
-           AND cc1.is_deleted  = 'N'
 
      LEFT JOIN common_code cc2          /* 공통 코드 테이블 */
             ON d.type_code     = cc2.code
            AND cc2.group_code  = 'DRINK_TYPE'
-           AND cc2.use_yn      = 'Y'
-           AND cc2.is_deleted  = 'N'
 
     <!-- 노트 집계 -->
     LEFT JOIN (
@@ -328,14 +314,10 @@
      LEFT JOIN common_code cc1          /* 공통 코드 테이블 */
             ON d.category_code = cc1.code
            AND cc1.group_code  = 'DRINK_CATEGORY'
-           AND cc1.use_yn      = 'Y'
-           AND cc1.is_deleted  = 'N'
 
      LEFT JOIN common_code cc2          /* 공통 코드 테이블*/
             ON d.type_code     = cc2.code
            AND cc2.group_code  = 'DRINK_TYPE'
-           AND cc2.use_yn      = 'Y'
-           AND cc2.is_deleted  = 'N'
 
          WHERE tn.note_id = #{noteId}
     </select>

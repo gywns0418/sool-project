@@ -87,7 +87,7 @@
 
      LEFT JOIN (
                 SELECT DISTINCT obj_id
-                  FROM report
+                  FROM report       /* 신고 테이블 */
                  WHERE obj_type = 'COMMENT'
                    AND status_code = 'COMPLETED'
                    AND is_deleted = 'N'

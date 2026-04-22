@@ -47,41 +47,32 @@
           <input
             v-model.trim="profileForm.name"
             type="text"
-            maxlength="6"
-            placeholder="이름을 입력하세요"
+            maxlength="10"
+            placeholder="닉네임을 입력하세요"
+            @input="onChangeName"
           />
+          <p
+            class="msg"
+            :class="{
+              ok: nameValid,
+              error: profileForm.name && !nameValid
+            }"
+          >
+            {{ nameMsg }}
+          </p>
         </div>
 
         <div class="form-group full">
           <label>이메일</label>
-
-          <div class="inline-field">
-            <input
-              v-model.trim="profileForm.email"
-              type="email"
-              maxlength="100"
-              placeholder="이메일을 입력하세요"
-              @input="onChangeEmail"
-            />
-
-            <button
-              type="button"
-              class="check-btn"
-              :disabled="!canCheckEmail || profileLoading"
-              @click="checkEmailDuplicate"
-            >
-              이메일 확인
-            </button>
-          </div>
-
-          <p
-            class="msg"
-            :class="{
-              ok: emailValid && emailChecked,
-              error: profileForm.email && !emailValid
-            }"
-          >
-            {{ emailMsg }}
+          <input
+            v-model.trim="profileForm.email"
+            type="email"
+            maxlength="100"
+            placeholder="이메일은 변경할 수 없습니다"
+            disabled
+          />
+          <p class="msg">
+            이메일은 변경할 수 없습니다.
           </p>
         </div>
       </div>
@@ -184,8 +175,7 @@ import { useAuthStore } from '@/stores/authStore'
 import {
   updateMyProfile,
   updateMyPassword,
-  checkLoginIdApi,
-  checkEmailApi
+  checkLoginIdApi
 } from '@/api/mypageApi'
 
 const emit = defineEmits(['updateProfile'])
@@ -223,18 +213,17 @@ const passwordForm = reactive({
 })
 
 const loginIdRegex = /^[a-zA-Z0-9]{4,20}$/
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?])[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]{8,20}$/
+const koreanRegex = /^[가-힣0-9]{1,10}$/
+const koreanJamoRegex = /[ㄱ-ㅎㅏ-ㅣ]/
 
 const loginIdValid = ref(false)
 const loginIdMsg = ref('')
 const loginIdChecked = ref(false)
 const checkedLoginIdValue = ref('')
 
-const emailValid = ref(false)
-const emailMsg = ref('')
-const emailChecked = ref(false)
-const checkedEmailValue = ref('')
+const nameValid = ref(true)
+const nameMsg = ref('')
 
 const passwordValid = ref(true)
 const passwordMsg = ref('')
@@ -244,10 +233,6 @@ const passwordConfirmMsg = ref('')
 
 const canCheckLoginId = computed(() => {
   return !!profileForm.loginId && loginIdValid.value
-})
-
-const canCheckEmail = computed(() => {
-  return !!profileForm.email && emailValid.value
 })
 
 const moveToLogin = async () => {
@@ -285,21 +270,54 @@ function validateLoginId() {
   loginIdMsg.value = '형식이 올바릅니다. 아이디 확인을 진행해주세요.'
 }
 
-function validateEmail() {
-  if (!profileForm.email) {
-    emailValid.value = false
-    emailMsg.value = ''
+function validateName() {
+  if (!profileForm.name) {
+    nameValid.value = false
+    nameMsg.value = ''
     return
   }
 
-  if (!emailRegex.test(profileForm.email)) {
-    emailValid.value = false
-    emailMsg.value = '올바른 이메일 형식이 아닙니다.'
+  if (/\s/.test(profileForm.name)) {
+    nameValid.value = false
+    nameMsg.value = '닉네임에는 띄어쓰기를 사용할 수 없습니다.'
     return
   }
 
-  emailValid.value = true
-  emailMsg.value = '형식이 올바릅니다. 이메일 확인을 진행해주세요.'
+  if (koreanJamoRegex.test(profileForm.name)) {
+    nameValid.value = false
+    nameMsg.value = '닉네임은 완성된 한글과 숫자만 입력 가능합니다.'
+    return
+  }
+
+  if (!koreanRegex.test(profileForm.name)) {
+    nameValid.value = false
+    nameMsg.value = '닉네임은 한글과 숫자 1~10자만 입력 가능합니다.'
+    return
+  }
+
+  nameValid.value = true
+  nameMsg.value = '사용 가능한 닉네임 형식입니다.'
+}
+
+function onChangeName(event) {
+  const rawValue = event.target.value
+
+  if (!rawValue) {
+    profileForm.name = ''
+    nameValid.value = false
+    nameMsg.value = ''
+    return
+  }
+
+  if (/\s/.test(rawValue)) {
+    profileForm.name = rawValue.replace(/\s/g, '')
+    nameValid.value = false
+    nameMsg.value = '닉네임에는 띄어쓰기를 사용할 수 없습니다.'
+    return
+  }
+
+  profileForm.name = rawValue
+  validateName()
 }
 
 function validateNewPassword() {
@@ -345,12 +363,6 @@ function onChangeLoginId() {
   checkedLoginIdValue.value = ''
 }
 
-function onChangeEmail() {
-  validateEmail()
-  emailChecked.value = false
-  checkedEmailValue.value = ''
-}
-
 async function checkLoginIdDuplicate() {
   validateLoginId()
 
@@ -386,41 +398,6 @@ async function checkLoginIdDuplicate() {
   }
 }
 
-async function checkEmailDuplicate() {
-  validateEmail()
-
-  if (!emailValid.value) return
-
-  if (profileForm.email === originalProfile.email) {
-    emailChecked.value = true
-    checkedEmailValue.value = profileForm.email
-    emailMsg.value = '현재 사용 중인 이메일입니다.'
-    return
-  }
-
-  try {
-    const res = await checkEmailApi(profileForm.email)
-
-    if (res.data.available) {
-      emailChecked.value = true
-      checkedEmailValue.value = profileForm.email
-      emailMsg.value = '사용 가능한 이메일입니다.'
-    } else {
-      emailChecked.value = false
-      checkedEmailValue.value = ''
-      emailMsg.value = '이미 사용 중인 이메일입니다.'
-    }
-  } catch (e) {
-    const handled = await handleForbidden(e)
-    if (handled) return
-
-    console.log('이메일 중복 확인 실패', e)
-    emailChecked.value = false
-    checkedEmailValue.value = ''
-    emailMsg.value = '이메일 확인 중 오류가 발생했습니다.'
-  }
-}
-
 function applyProfile(data) {
   profileForm.loginId = data?.loginId || ''
   profileForm.name = data?.name || ''
@@ -431,15 +408,11 @@ function applyProfile(data) {
   originalProfile.email = data?.email || ''
 
   validateLoginId()
-  validateEmail()
+  validateName()
 
   loginIdChecked.value = !!profileForm.loginId
   checkedLoginIdValue.value = profileForm.loginId
   loginIdMsg.value = profileForm.loginId ? '현재 사용 중인 아이디입니다.' : ''
-
-  emailChecked.value = !!profileForm.email
-  checkedEmailValue.value = profileForm.email
-  emailMsg.value = profileForm.email ? '현재 사용 중인 이메일입니다.' : ''
 }
 
 function resetProfileForm() {
@@ -459,18 +432,22 @@ function resetPasswordForm() {
 async function saveProfile() {
   if (
     profileForm.loginId === originalProfile.loginId &&
-    profileForm.name === originalProfile.name &&
-    profileForm.email === originalProfile.email
+    profileForm.name === originalProfile.name
   ) {
     alert('변경된 정보가 없습니다.')
     return
   }
 
   validateLoginId()
-  validateEmail()
+  validateName()
 
   if (!profileForm.name) {
-    alert('이름을 입력해주세요.')
+    alert('닉네임을 입력해주세요.')
+    return
+  }
+
+  if (!nameValid.value) {
+    alert('닉네임 형식을 확인해주세요.')
     return
   }
 
@@ -479,18 +456,8 @@ async function saveProfile() {
     return
   }
 
-  if (!emailValid.value) {
-    alert('이메일 형식을 확인해주세요.')
-    return
-  }
-
   if (!loginIdChecked.value || checkedLoginIdValue.value !== profileForm.loginId) {
     alert('아이디 확인을 완료해주세요.')
-    return
-  }
-
-  if (!emailChecked.value || checkedEmailValue.value !== profileForm.email) {
-    alert('이메일 확인을 완료해주세요.')
     return
   }
 
@@ -499,8 +466,7 @@ async function saveProfile() {
   try {
     await updateMyProfile({
       loginId: profileForm.loginId,
-      name: profileForm.name,
-      email: profileForm.email
+      name: profileForm.name
     })
 
     alert('기본 정보가 수정되었습니다.')
