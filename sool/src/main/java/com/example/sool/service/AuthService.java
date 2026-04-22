@@ -132,14 +132,16 @@ public class AuthService {
         validateLoginId(loginId);
         validateEmail(email);
 
-        if (userService.findByLoginId(loginId) == null) {
+        UserDto user = userService.findByLoginId(loginId);
+
+        if (user == null) {
             throw new IllegalArgumentException("없는 아이디입니다.");
         }
 
-        if (userService.selectUserByEmail(email) == null) {
-            throw new IllegalArgumentException("없는 이메일입니다.");
+        if (!email.equals(user.getEmail())) {
+            throw new IllegalArgumentException("아이디와 이메일이 일치하지 않습니다.");
         }
-
+        
         String cooldownKey = getCooldownKey(email);
 
         if (Boolean.TRUE.equals(redisTemplate.hasKey(cooldownKey))) {

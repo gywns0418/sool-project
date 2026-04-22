@@ -1,5 +1,12 @@
 <template>
   <div class="page-wrap">
+    <div v-if="loading" class="loading-overlay">
+      <div class="loading-box">
+        <div class="spinner-large"></div>
+        <p>{{ loadingMessage }}</p>
+      </div>
+    </div>
+
     <PageNav :links="navLinks" show-search />
 
     <div class="resetpassword-body">
@@ -54,7 +61,10 @@
               :disabled="!canSendEmail || loading"
               @click="handleSendEmailCode"
             >
-              인증번호 보내기 <span class="btn-arrow">→</span>
+              <span v-if="loading && loadingType === 'sendEmailCode'" class="spinner"></span>
+              <span v-else>
+                인증번호 보내기 <span class="btn-arrow">→</span>
+              </span>
             </button>
           </template>
 
@@ -70,6 +80,8 @@
                 type="text"
                 class="field-input"
                 placeholder="인증번호를 입력하세요"
+                maxlength="6"
+                :disabled="loading"
               />
               <p v-if="emailVerifyMsg" class="field-msg error">
                 {{ emailVerifyMsg }}
@@ -81,6 +93,7 @@
                 type="button"
                 class="btn-light"
                 @click="goStep1"
+                :disabled="loading"
               >
                 이전
               </button>
@@ -91,7 +104,10 @@
                 :disabled="loading || resendSeconds > 0"
                 @click="handleResendEmailCode"
               >
-                {{ resendSeconds > 0 ? `${resendSeconds}초 후 재전송 가능` : '재전송' }}
+                <span v-if="loading && loadingType === 'resendEmailCode'" class="spinner spinner-dark"></span>
+                <span v-else>
+                  {{ resendSeconds > 0 ? `${resendSeconds}초 후 재전송 가능` : '재전송' }}
+                </span>
               </button>
 
               <button
@@ -100,7 +116,10 @@
                 :disabled="loading || !emailCode"
                 @click="handleVerifyEmailCode"
               >
-                인증번호 확인 <span class="btn-arrow">→</span>
+                <span v-if="loading && loadingType === 'verifyEmailCode'" class="spinner"></span>
+                <span v-else>
+                  인증번호 확인 <span class="btn-arrow">→</span>
+                </span>
               </button>
             </div>
           </template>
@@ -122,6 +141,7 @@
                 type="button"
                 class="btn-light"
                 @click="step = 2"
+                :disabled="loading"
               >
                 이전
               </button>
@@ -129,6 +149,7 @@
               <button
                 type="button"
                 class="btn-submit btn-submit-small"
+                :disabled="loading"
                 @click="router.push('/login')"
               >
                 로그인 하러가기 <span class="btn-arrow">→</span>
@@ -160,6 +181,8 @@ const navLinks = [
 
 const step = ref(1)
 const loading = ref(false)
+const loadingType = ref('')
+const loadingMessage = ref('처리 중입니다...')
 
 const email = ref('')
 const emailValid = ref(false)
@@ -177,6 +200,18 @@ const resendSeconds = ref(0)
 let resendTimer = null
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+function setLoading(type, message) {
+  loading.value = true
+  loadingType.value = type
+  loadingMessage.value = message
+}
+
+function clearLoading() {
+  loading.value = false
+  loadingType.value = ''
+  loadingMessage.value = '처리 중입니다...'
+}
 
 function clearResendTimer() {
   if (resendTimer) {
@@ -256,7 +291,7 @@ async function handleSendEmailCode() {
     return
   }
 
-  loading.value = true
+  setLoading('sendEmailCode', '인증번호를 발송하고 있습니다.')
   emailCodeSent.value = true
 
   try {
@@ -273,12 +308,13 @@ async function handleSendEmailCode() {
     emailVerifyMsg.value = e.response?.data?.message || ''
     alert(e.response?.data?.message || '인증번호 발송에 실패했습니다.')
   } finally {
-    loading.value = false
+    clearLoading()
   }
 }
 
 async function handleResendEmailCode() {
-  loading.value = true
+  setLoading('resendEmailCode', '인증번호를 다시 발송하고 있습니다.')
+
   try {
     const res = await resendEmailCode({
       email: email.value
@@ -291,7 +327,7 @@ async function handleResendEmailCode() {
     emailVerifyMsg.value = e.response?.data?.message || ''
     alert(e.response?.data?.message || '인증번호 재전송에 실패했습니다.')
   } finally {
-    loading.value = false
+    clearLoading()
   }
 }
 
@@ -301,7 +337,8 @@ async function handleVerifyEmailCode() {
     return
   }
 
-  loading.value = true
+  setLoading('verifyEmailCode', '인증번호와 아이디를 확인하고 있습니다.')
+
   try {
     const res = await verifyEmailCode({
       email: email.value,
@@ -325,7 +362,7 @@ async function handleVerifyEmailCode() {
     emailVerified.value = false
     emailVerifyMsg.value = e.response?.data?.message || '인증번호 확인 중 오류가 발생했습니다.'
   } finally {
-    loading.value = false
+    clearLoading()
   }
 }
 
@@ -340,6 +377,36 @@ onBeforeUnmount(() => {
   overflow: hidden;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
   min-height: 1000px;
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.loading-box {
+  min-width: 220px;
+  background: var(--white);
+  border-radius: 16px;
+  padding: 28px 30px;
+  text-align: center;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--border);
+}
+
+.loading-box p {
+  margin: 14px 0 0;
+  font-size: 14px;
+  color: var(--ink);
+  font-weight: 500;
 }
 
 .resetpassword-body {
@@ -570,6 +637,10 @@ onBeforeUnmount(() => {
   color: var(--ink);
   padding: 0 16px;
   flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .btn-row {
@@ -580,6 +651,36 @@ onBeforeUnmount(() => {
 
 .btn-arrow {
   font-size: 15px;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.35);
+  border-top: 2px solid #ffffff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.spinner-dark {
+  border: 2px solid rgba(0,0,0,0.15);
+  border-top: 2px solid var(--ink);
+}
+
+.spinner-large {
+  width: 38px;
+  height: 38px;
+  border: 3px solid rgba(200, 96, 58, 0.18);
+  border-top: 3px solid var(--point);
+  border-radius: 50%;
+  margin: 0 auto;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 640px) {
@@ -602,6 +703,12 @@ onBeforeUnmount(() => {
   .btn-submit-small,
   .btn-light {
     width: 100%;
+  }
+
+  .loading-box {
+    width: calc(100% - 32px);
+    min-width: auto;
+    padding: 24px 20px;
   }
 }
 </style>
