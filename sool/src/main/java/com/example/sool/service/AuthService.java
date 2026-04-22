@@ -137,7 +137,7 @@ public class AuthService {
         if (user == null) {
             throw new IllegalArgumentException("없는 아이디입니다.");
         }
-
+ 
         if (!email.equals(user.getEmail())) {
             throw new IllegalArgumentException("아이디와 이메일이 일치하지 않습니다.");
         }
