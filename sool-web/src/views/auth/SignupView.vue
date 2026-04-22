@@ -1,5 +1,12 @@
 <template>
   <div class="page-wrap">
+    <div v-if="loading" class="loading-overlay">
+      <div class="loading-box">
+        <div class="spinner-large"></div>
+        <p>{{ loadingMessage }}</p>
+      </div>
+    </div>
+
     <PageNav :links="navLinks" show-search />
 
     <div class="signup-body">
@@ -47,7 +54,8 @@
                   @click="handleCheckLoginId"
                   :disabled="emailCodeSent || loading"
                 >
-                  중복확인
+                  <span v-if="loading && loadingType === 'checkLoginId'" class="spinner"></span>
+                  <span v-else>중복확인</span>
                 </button>
               </div>
               <p v-if="loginIdMsg" class="field-msg" :class="{ success: loginIdChecked, error: !loginIdChecked }">
@@ -95,7 +103,10 @@
               :disabled="!canSendEmail || loading"
               @click="handleSendEmailCode"
             >
-              인증번호 보내기 <span class="btn-arrow">→</span>
+              <span v-if="loading && loadingType === 'sendEmailCode'" class="spinner"></span>
+              <span v-else>
+                인증번호 보내기 <span class="btn-arrow">→</span>
+              </span>
             </button>
           </template>
 
@@ -112,6 +123,7 @@
                 class="field-input"
                 maxlength="6"
                 placeholder="인증번호를 입력하세요"
+                :disabled="loading"
               />
               <p v-if="emailVerifyMsg" class="field-msg error">
                 {{ emailVerifyMsg }}
@@ -119,7 +131,7 @@
             </div>
 
             <div class="btn-row">
-              <button type="button" class="btn-light" @click="goStep1">
+              <button type="button" class="btn-light" @click="goStep1" :disabled="loading">
                 이전
               </button>
 
@@ -129,7 +141,10 @@
                 :disabled="loading || resendSeconds > 0"
                 @click="handleResendEmailCode"
               >
-                {{ resendSeconds > 0 ? `${resendSeconds}초 후 재전송 가능` : '재전송' }}
+                <span v-if="loading && loadingType === 'resendEmailCode'" class="spinner spinner-dark"></span>
+                <span v-else>
+                  {{ resendSeconds > 0 ? `${resendSeconds}초 후 재전송 가능` : '재전송' }}
+                </span>
               </button>
 
               <button
@@ -138,7 +153,10 @@
                 :disabled="loading || !emailCode"
                 @click="handleVerifyEmailCode"
               >
-                인증번호 확인 <span class="btn-arrow">→</span>
+                <span v-if="loading && loadingType === 'verifyEmailCode'" class="spinner"></span>
+                <span v-else>
+                  인증번호 확인 <span class="btn-arrow">→</span>
+                </span>
               </button>
             </div>
           </template>
@@ -157,6 +175,7 @@
                 maxlength="20"
                 placeholder="비밀번호를 입력하세요"
                 @input="validatePassword"
+                :disabled="loading"
               />
               <p v-if="passwordMsg" class="field-msg error">
                 {{ passwordMsg }}
@@ -174,6 +193,7 @@
                 class="field-input"
                 placeholder="비밀번호를 다시 입력하세요"
                 @input="checkPasswordMatch"
+                :disabled="loading"
               />
               <p v-if="passwordConfirmMsg" class="field-msg error">
                 {{ passwordConfirmMsg }}
@@ -184,7 +204,7 @@
             </div>
 
             <div class="btn-row">
-              <button type="button" class="btn-light" @click="step = 2">
+              <button type="button" class="btn-light" @click="step = 2" :disabled="loading">
                 이전
               </button>
               <button
@@ -193,7 +213,10 @@
                 :disabled="!canSignup || loading"
                 @click="handleSignup"
               >
-                가입하기 <span class="btn-arrow">→</span>
+                <span v-if="loading && loadingType === 'signup'" class="spinner"></span>
+                <span v-else>
+                  가입하기 <span class="btn-arrow">→</span>
+                </span>
               </button>
             </div>
           </template>
@@ -228,6 +251,8 @@ const navLinks = [
 
 const step = ref(1)
 const loading = ref(false)
+const loadingType = ref('')
+const loadingMessage = ref('처리 중입니다...')
 
 const loginId = ref('')
 const loginIdChecked = ref(false)
@@ -260,6 +285,18 @@ const emailRegex = /^(?!.*\.\.)(?!.*\.$)[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?])[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]{8,20}$/
 const koreanRegex = /^[가-힣0-9]{1,10}$/
 const koreanJamoRegex = /[ㄱ-ㅎㅏ-ㅣ]/
+
+function setLoading(type, message) {
+  loading.value = true
+  loadingType.value = type
+  loadingMessage.value = message
+}
+
+function clearLoading() {
+  loading.value = false
+  loadingType.value = ''
+  loadingMessage.value = '처리 중입니다...'
+}
 
 function resetEmailFlow() {
   emailVerified.value = false
@@ -387,7 +424,8 @@ async function handleCheckLoginId() {
     return
   }
 
-  loading.value = true
+  setLoading('checkLoginId', '아이디 중복 여부를 확인하고 있습니다.')
+
   try {
     const res = await checkLoginId({ loginId: loginId.value })
 
@@ -403,7 +441,7 @@ async function handleCheckLoginId() {
     loginIdChecked.value = false
     loginIdMsg.value = e.response?.data?.message || '아이디 중복확인 중 오류가 발생했습니다.'
   } finally {
-    loading.value = false
+    clearLoading()
   }
 }
 
@@ -434,7 +472,7 @@ const canSendEmail = computed(() => {
 async function handleSendEmailCode() {
   if (!canSendEmail.value) return
 
-  loading.value = true
+  setLoading('sendEmailCode', '인증번호를 발송하고 있습니다.')
   emailCodeSent.value = true
 
   try {
@@ -454,12 +492,13 @@ async function handleSendEmailCode() {
     emailVerifyMsg.value = e.response?.data?.message || ''
     alert(e.response?.data?.message || '인증번호 발송에 실패했습니다.')
   } finally {
-    loading.value = false
+    clearLoading()
   }
 }
 
 async function handleResendEmailCode() {
-  loading.value = true
+  setLoading('resendEmailCode', '인증번호를 다시 발송하고 있습니다.')
+
   try {
     const res = await resendEmailCode({
       email: email.value
@@ -472,7 +511,7 @@ async function handleResendEmailCode() {
     emailVerifyMsg.value = e.response?.data?.message || ''
     alert(e.response?.data?.message || '인증번호 재전송에 실패했습니다.')
   } finally {
-    loading.value = false
+    clearLoading()
   }
 }
 
@@ -482,7 +521,8 @@ async function handleVerifyEmailCode() {
     return
   }
 
-  loading.value = true
+  setLoading('verifyEmailCode', '인증번호를 확인하고 있습니다.')
+
   try {
     const res = await verifyEmailCode({
       email: email.value,
@@ -501,7 +541,7 @@ async function handleVerifyEmailCode() {
     emailVerified.value = false
     emailVerifyMsg.value = e.response?.data?.message || '인증번호 확인 중 오류가 발생했습니다.'
   } finally {
-    loading.value = false
+    clearLoading()
   }
 }
 
@@ -547,7 +587,8 @@ const canSignup = computed(() => {
 async function handleSignup() {
   if (!canSignup.value) return
 
-  loading.value = true
+  setLoading('signup', '회원가입을 진행하고 있습니다.')
+
   try {
     await signUp({
       loginId: loginId.value,
@@ -561,7 +602,7 @@ async function handleSignup() {
   } catch (e) {
     alert(e.response?.data?.message || '회원가입 중 오류가 발생했습니다.')
   } finally {
-    loading.value = false
+    clearLoading()
   }
 }
 
@@ -579,6 +620,36 @@ onBeforeUnmount(() => {
   overflow: hidden;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
   min-height: 1200px;
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.loading-box {
+  min-width: 220px;
+  background: var(--white);
+  border-radius: 16px;
+  padding: 28px 30px;
+  text-align: center;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--border);
+}
+
+.loading-box p {
+  margin: 14px 0 0;
+  font-size: 14px;
+  color: var(--ink);
+  font-weight: 500;
 }
 
 .signup-body {
@@ -808,6 +879,10 @@ onBeforeUnmount(() => {
   background: var(--ink);
   color: var(--white);
   padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .btn-side:hover:not(:disabled) {
@@ -821,6 +896,10 @@ onBeforeUnmount(() => {
   color: var(--ink);
   padding: 0 16px;
   flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .btn-row {
@@ -851,6 +930,36 @@ onBeforeUnmount(() => {
   text-decoration: underline;
 }
 
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.35);
+  border-top: 2px solid #ffffff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.spinner-dark {
+  border: 2px solid rgba(0,0,0,0.15);
+  border-top: 2px solid var(--ink);
+}
+
+.spinner-large {
+  width: 38px;
+  height: 38px;
+  border: 3px solid rgba(200, 96, 58, 0.18);
+  border-top: 3px solid var(--point);
+  border-radius: 50%;
+  margin: 0 auto;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 640px) {
   .signup-body {
     padding: 20px 14px;
@@ -877,6 +986,12 @@ onBeforeUnmount(() => {
   .btn-light,
   .btn-side {
     width: 100%;
+  }
+
+  .loading-box {
+    width: calc(100% - 32px);
+    min-width: auto;
+    padding: 24px 20px;
   }
 }
 </style>
