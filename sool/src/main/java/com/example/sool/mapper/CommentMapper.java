@@ -32,4 +32,6 @@ public interface CommentMapper {
     //노트 삭제시 댓글 전체 삭제
     int deleteAllComment(Integer noteId);
 
+    CommentDto findActiveByCommentId(Integer commentId);
+
 }

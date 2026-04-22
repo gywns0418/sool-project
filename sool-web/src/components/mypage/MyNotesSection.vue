@@ -30,23 +30,6 @@ const authStore = useAuthStore()
 
 const noteList = ref([])
 
-const moveToLogin = async () => {
-  alert('로그인이 필요합니다. 다시 로그인해주세요.')
-
-  authStore.user = null
-  authStore.initialized = true
-
-  router.replace(`/login?redirect=${encodeURIComponent(route.fullPath)}`)
-}
-
-const handleForbidden = async (error) => {
-  if (error?.response?.status === 403) {
-    await moveToLogin()
-    return true
-  }
-  return false
-}
-
 const fetchMyTastingNote = async () => {
   try {
     const res = await getMyTastingNote()

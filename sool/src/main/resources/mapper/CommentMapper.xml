@@ -144,4 +144,18 @@
          WHERE note_id = #{noteId}
     </update>
 
+    <!-- 부모 댓글 존재 확인 -->
+    <select id="findActiveByCommentId" parameterType="int" resultType="CommentDto">
+       SELECT comment_id AS commentId
+            , note_id AS noteId
+            , parent_comment_id AS parentCommentId
+            , group_id AS groupId
+            , depth
+            , user_id AS userId
+            , content
+            , is_deleted AS isDeleted
+          FROM comment
+        WHERE comment_id = #{commentId}
+          AND is_deleted = 'N'
+    </select>
 </mapper>

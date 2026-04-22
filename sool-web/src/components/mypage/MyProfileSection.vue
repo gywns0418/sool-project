@@ -235,24 +235,6 @@ const canCheckLoginId = computed(() => {
   return !!profileForm.loginId && loginIdValid.value
 })
 
-const moveToLogin = async () => {
-  alert('로그인이 필요합니다. 다시 로그인해주세요.')
-
-  authStore.user = null
-  authStore.initialized = true
-
-  router.replace(`/login?redirect=${encodeURIComponent(route.fullPath)}`)
-}
-
-const handleForbidden = async (error) => {
-  if (error?.response?.status === 403) {
-    await moveToLogin()
-    return true
-  }
-
-  return false
-}
-
 function validateLoginId() {
   if (!profileForm.loginId) {
     loginIdValid.value = false
@@ -388,8 +370,6 @@ async function checkLoginIdDuplicate() {
       loginIdMsg.value = '이미 사용 중인 아이디입니다.'
     }
   } catch (e) {
-    const handled = await handleForbidden(e)
-    if (handled) return
 
     console.log('아이디 확인 실패', e)
     loginIdChecked.value = false
@@ -481,8 +461,6 @@ async function saveProfile() {
       email: profileForm.email
     })
   } catch (e) {
-    const handled = await handleForbidden(e)
-    if (handled) return
 
     console.log('기본 정보 수정 실패', e)
     alert(e?.response?.data || '기본 정보 수정에 실패했습니다.')
@@ -531,8 +509,6 @@ async function savePassword() {
     alert('비밀번호가 변경되었습니다.')
     resetPasswordForm()
   } catch (e) {
-    const handled = await handleForbidden(e)
-    if (handled) return
 
     console.log('비밀번호 변경 실패', e)
 

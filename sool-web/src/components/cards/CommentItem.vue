@@ -193,6 +193,14 @@ function toggleReply() {
   showReply.value = !showReply.value
 }
 
+const getErrorMessage = (error, defaultMsg) => {
+  return (
+    error?.response?.data?.message ||
+    defaultMsg ||
+    '요청 처리 중 오류가 발생했습니다.'
+  )
+}
+
 async function submitReply() {
   const content = replyContent.value.trim()
 
@@ -212,11 +220,12 @@ async function submitReply() {
     showReply.value = false
     emit('refresh')
   } catch (error) {
-    const handled = await handleForbidden(error)
-    if (handled) return
+  const handled = await handleForbidden(error)
+  if (handled) return
 
-    console.log('답글 등록 실패', error)
-    alert('답글 등록에 실패했습니다.')
+  console.log('답글 등록 실패', error)
+  alert(getErrorMessage(error, '답글 등록에 실패했습니다.'))
+
   } finally {
     replySubmitting.value = false
   }
@@ -257,11 +266,11 @@ async function submitEdit() {
     editing.value = false
     emit('refresh')
   } catch (error) {
-    const handled = await handleForbidden(error)
-    if (handled) return
+  const handled = await handleForbidden(error)
+  if (handled) return
 
-    console.log('댓글 수정 실패', error)
-    alert('댓글 수정에 실패했습니다.')
+  console.log('댓글 수정 실패', error)
+  alert(getErrorMessage(error, '댓글 수정에 실패했습니다.'))
   } finally {
     editSubmitting.value = false
   }
@@ -276,11 +285,11 @@ async function deleteComment() {
     await deleteCommentApi(props.item.commentId)
     emit('refresh')
   } catch (error) {
-    const handled = await handleForbidden(error)
-    if (handled) return
+  const handled = await handleForbidden(error)
+  if (handled) return
 
-    console.log('댓글 삭제 실패', error)
-    alert('댓글 삭제에 실패했습니다.')
+  console.log('댓글 삭제 실패', error)
+  alert(getErrorMessage(error, '댓글 삭제에 실패했습니다.'))
   }
 }
 

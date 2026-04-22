@@ -53,6 +53,13 @@
             ON tn.note_id = tnm.note_id
            AND tn.drink_id = #{drinkId}
            AND tn.is_deleted = 'N'
+           AND NOT EXISTS (
+                   SELECT 1
+                     FROM report r             /* 신고 테이블 */
+                    WHERE r.obj_type = 'NOTE'
+                      AND r.obj_id = tn.note_id
+                      AND r.status_code = 'COMPLETED'
+             )
 
      LEFT JOIN common_code cc               /* 공통 코드 테이블 */
             ON cc.code = tnm.metric_code

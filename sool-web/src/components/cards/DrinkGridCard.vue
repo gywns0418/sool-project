@@ -16,6 +16,7 @@
       <div class="cat2">{{ item.typeName || item.typeCode }}</div>
 
       <div class="name2">{{ item.drinkName }}</div>
+      <div class="name2">{{ item.drinkNameEn }}</div>
 
       <div class="info-list">
           <span v-if="item.abv !== null && item.abv !== undefined">
@@ -56,23 +57,22 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(["refresh"])
-
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 
 const likeLoading = ref(false)
-const liked = ref(!!props.item.liked)
-const likeCount = ref(props.item.likeCount ?? 0)
+const liked = ref(false)
+const likeCount = ref(0)
+const requestSeq = ref(0)
 
 watch(
-  () => props.item,
-  (newItem) => {
-    liked.value = !!newItem?.liked
-    likeCount.value = newItem?.likeCount ?? 0
+  () => [props.item?.liked, props.item?.likeCount, props.item?.drinkId],
+  () => {
+    liked.value = !!props.item?.liked
+    likeCount.value = props.item?.likeCount ?? 0
   },
-  { deep: true, immediate: true }
+  { immediate: true }
 )
 
 const emoji = computed(() => {
@@ -80,13 +80,30 @@ const emoji = computed(() => {
   return data ? data.emoji : "🍹"
 })
 
-
 function formatPrice(value) {
   return `${Number(value).toLocaleString()}원`
 }
 
+const moveToLogin = () => {
+  alert("로그인 세션이 만료되었습니다. 다시 로그인해주세요.")
+  authStore.user = null
+  authStore.initialized = true
+  router.replace(`/login?redirect=${encodeURIComponent(route.fullPath)}`)
+}
+
+const handleAuthError = (error) => {
+  const status = error?.response?.status
+
+  if (status === 401 || status === 403) {
+    moveToLogin()
+    return true
+  }
+
+  return false
+}
+
 const toggleLike = async () => {
-  const drinkId = props.item.drinkId
+  const drinkId = props.item?.drinkId
 
   if (!drinkId || likeLoading.value) return
 
@@ -101,18 +118,34 @@ const toggleLike = async () => {
 
   likeLoading.value = true
 
+  const currentSeq = ++requestSeq.value
+  const prevLiked = liked.value
+  const prevLikeCount = likeCount.value
+
   try {
-    if (liked.value) {
+    if (prevLiked) {
+      liked.value = false
+      likeCount.value = Math.max(0, prevLikeCount - 1)
       await deleteDrinkLike(drinkId)
     } else {
+      liked.value = true
+      likeCount.value = prevLikeCount + 1
       await insertDrinkLike(drinkId)
     }
 
-    emit("refresh")
+    if (currentSeq !== requestSeq.value) return
   } catch (e) {
+    liked.value = prevLiked
+    likeCount.value = prevLikeCount
+
+    if (handleAuthError(e)) return
+
     console.log("좋아요 처리 실패", e)
+    alert("좋아요 처리 중 오류가 발생했습니다.")
   } finally {
-    likeLoading.value = false
+    if (currentSeq === requestSeq.value) {
+      likeLoading.value = false
+    }
   }
 }
 </script>

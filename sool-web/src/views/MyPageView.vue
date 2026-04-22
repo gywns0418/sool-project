@@ -74,6 +74,7 @@ const authStore = useAuthStore()
 const router = useRouter()
 const route = useRoute()
 const activeTab = ref('notes')
+const isRedirectingToLogin = ref(false)
 
 const sidebarInfo = ref({
   name: '',
@@ -100,17 +101,35 @@ const navLinks = [
   { label: '마이페이지', to: '/mypage', active: true }
 ]
 
-const moveToLogin = async () => {
-  alert('로그인이 필요합니다. 다시 로그인해주세요.')
-
+const clearAuthState = () => {
   authStore.user = null
   authStore.initialized = true
-
-  router.replace(`/login?redirect=${encodeURIComponent(route.fullPath)}`)
 }
 
-const handleForbidden = async (error) => {
-  if (error?.response?.status === 403) {
+const getSafeRedirectPath = () => {
+  if (route.path === '/login') {
+    return '/'
+  }
+
+  return route.fullPath || '/'
+}
+
+const moveToLogin = async () => {
+  if (isRedirectingToLogin.value) return
+
+  isRedirectingToLogin.value = true
+
+  alert('로그인이 필요합니다. 다시 로그인해주세요.')
+
+  clearAuthState()
+
+  await router.replace(`/login?redirect=${encodeURIComponent(getSafeRedirectPath())}`)
+}
+
+const handleAuthError = async (error) => {
+  const status = error?.response?.status
+
+  if (status === 403) {
     await moveToLogin()
     return true
   }
@@ -128,7 +147,7 @@ const handleUserDelete = async () => {
     await authStore.logout()
     router.replace('/')
   } catch (error) {
-    const handled = await handleForbidden(error)
+    const handled = await handleAuthError(error)
     if (handled) return
 
     console.log('회원탈퇴 실패', error)
@@ -137,19 +156,19 @@ const handleUserDelete = async () => {
 }
 
 const fetchSidebarInfo = async () => {
+  if (isRedirectingToLogin.value) return
+
   try {
     const res = await getMySidebarInfo()
-    console.log(res.data)
     sidebarInfo.value = res.data
   } catch (error) {
-    const handled = await handleForbidden(error)
+    const handled = await handleAuthError(error)
     if (handled) return
 
     console.log('마이페이지 사이드바 조회 실패', error)
   }
 }
 
-//스크롤 최상위로
 const goTop = () => {
   const el = document.querySelector('.my-main')
   if (el) {
@@ -158,6 +177,8 @@ const goTop = () => {
 }
 
 const changeTab = async (tab) => {
+  if (isRedirectingToLogin.value) return
+
   activeTab.value = tab
   goTop()
 
@@ -165,15 +186,12 @@ const changeTab = async (tab) => {
 }
 
 onMounted(async () => {
-  const wasLogin = authStore.isLogin
+  if (isRedirectingToLogin.value) return
 
   await authStore.fetchMe()
 
   if (!authStore.isLogin) {
-    if (wasLogin) {
-      alert('세션이 만료되었습니다. 다시 로그인해주세요.')
-    }
-    router.replace(`/login?redirect=${encodeURIComponent(route.fullPath)}`)
+    await moveToLogin()
     return
   }
 

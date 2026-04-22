@@ -15,60 +15,117 @@ public class CommentService {
     private final CommentMapper commentMapper;
     private final TastingNoteMapper tastingNoteMapper;
 
-    public CommentService(CommentMapper commentMapper,TastingNoteMapper tastingNoteMapper) {
+    public CommentService(CommentMapper commentMapper, TastingNoteMapper tastingNoteMapper) {
         this.commentMapper = commentMapper;
         this.tastingNoteMapper = tastingNoteMapper;
     }
 
-    //댓글 작성
     @Transactional
     public void createComment(CommentDto dto) {
         validateNote(dto.getNoteId());
+        validateContent(dto.getContent());
 
         commentMapper.insertComment(dto);
-
         commentMapper.updateGroupId(dto.getCommentId());
     }
 
-    //대댓글 작성
     @Transactional
-    public void createReply(CommentDto dto){
+    public void createReply(CommentDto dto) {
         validateNote(dto.getNoteId());
+        validateParentCommentId(dto.getParentCommentId());
+        validateContent(dto.getContent());
 
-        CommentDto parent = commentMapper.findByCommentId(dto.getParentCommentId());
+        CommentDto parent = commentMapper.findActiveByCommentId(dto.getParentCommentId());
+
+        if (parent == null) {
+            throw new IllegalArgumentException("삭제되었거나 존재하지 않는 부모 댓글입니다.");
+        }
+
+        if (!parent.getNoteId().equals(dto.getNoteId())) {
+            throw new IllegalArgumentException("잘못된 댓글 요청입니다.");
+        }
 
         dto.setGroupId(parent.getGroupId());
-
-        //대댓글 깊이 1 설정(나중에 교체 가능)
         dto.setDepth(1);
 
         commentMapper.insertReplyComment(dto);
     }
 
-
-    //특정 노트의 댓글 목록 조회
     public List<CommentDto> findByNoteId(Integer noteId) {
+        validateNote(noteId);
         return commentMapper.findByNoteId(noteId);
     }
-
-    //댓글 수정
+    
+    @Transactional
     public int updateComment(CommentDto commentDto) {
-        validateNote(commentDto.getNoteId());
+        validateCommentId(commentDto.getCommentId());
+        validateContent(commentDto.getContent());
+
+        CommentDto savedComment = commentMapper.findByCommentId(commentDto.getCommentId());
+
+        if (savedComment == null || "Y".equals(savedComment.getIsDeleted())) {
+            throw new IllegalArgumentException("삭제되었거나 존재하지 않는 댓글입니다.");
+        }
+
+        validateNote(savedComment.getNoteId());
+
+        commentDto.setNoteId(savedComment.getNoteId());
 
         return commentMapper.updateComment(commentDto);
     }
 
-    //댓글 삭제
+    @Transactional
     public int deleteComment(Integer commentId) {
+        validateCommentId(commentId);
+
+        CommentDto savedComment = commentMapper.findByCommentId(commentId);
+
+        if (savedComment == null || "Y".equals(savedComment.getIsDeleted())) {
+            throw new IllegalArgumentException("삭제되었거나 존재하지 않는 댓글입니다.");
+        }
+
+        validateNote(savedComment.getNoteId());
 
         return commentMapper.deleteComment(commentId);
     }
 
     private void validateNote(Integer noteId) {
-    int count = tastingNoteMapper.existsNote(noteId);
+        if (noteId == null) {
+            throw new IllegalArgumentException("노트 정보가 올바르지 않습니다.");
+        }
 
-    if (count == 0) {
-        throw new IllegalArgumentException("삭제되었거나 존재하지 않는 테이스팅 노트입니다.");
+        int count = tastingNoteMapper.existsNote(noteId);
+
+        if (count == 0) {
+            throw new IllegalArgumentException("삭제되었거나 존재하지 않는 테이스팅 노트입니다.");
+        }
     }
-}
+
+    private void validateParentCommentId(Integer parentCommentId) {
+        if (parentCommentId == null) {
+            throw new IllegalArgumentException("부모 댓글 정보가 올바르지 않습니다.");
+        }
+    }
+
+    private void validateCommentId(Integer commentId) {
+        if (commentId == null) {
+            throw new IllegalArgumentException("댓글 정보가 올바르지 않습니다.");
+        }
+    }
+
+    private void validateContent(String content) {
+        if (content == null || content.trim().isEmpty()) {
+            throw new IllegalArgumentException("댓글 내용을 입력해주세요.");
+        }
+    }
+
+    private CommentDto validateActiveComment(Integer commentId) {
+        CommentDto comment = commentMapper.findActiveByCommentId(commentId);
+
+        if (comment == null) {
+            throw new IllegalArgumentException("삭제되었거나 존재하지 않는 댓글입니다.");
+        }
+
+        return comment;
+    }
 }

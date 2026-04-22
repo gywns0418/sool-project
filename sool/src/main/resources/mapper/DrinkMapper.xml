@@ -267,15 +267,23 @@
            AND cc2.group_code  = 'DRINK_TYPE'
 
     <!-- 노트 집계 -->
-    LEFT JOIN (
-              SELECT drink_id 
+ LEFT JOIN (
+              SELECT tn.drink_id
                    , COUNT(*) AS noteCount
-                   , ROUND(AVG(rating), 1) AS avgRating
-                FROM tasting_note       /* 테이스팅 노트 테이블 */
-               WHERE is_deleted = 'N'
-            GROUP BY drink_id
+                   , ROUND(AVG(tn.rating), 1) AS avgRating
+                FROM tasting_note tn              /* 테이스팅 노트 테이블 */
+               WHERE tn.is_deleted = 'N'
+                 AND NOT EXISTS (
+                        SELECT 1
+                          FROM report r           /* 신고 테이블 */
+                         WHERE r.obj_type = 'NOTE'
+                           AND r.obj_id = tn.note_id
+                           AND r.status_code = 'COMPLETED'
+                    )
+            GROUP BY tn.drink_id
             ) tn
             ON d.drink_id = tn.drink_id
+
 
     <!-- 좋아요 집계 -->
     LEFT JOIN (

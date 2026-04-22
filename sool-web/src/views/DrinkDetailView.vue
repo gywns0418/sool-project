@@ -161,6 +161,8 @@ const totalPage = ref(0)
 const sortBy = ref('latest')
 const avgMetric = ref([])
 
+const authRedirecting = ref(false)
+
 const currentDrinkId = computed(() => {
   const id = Number(route.params.id)
   return Number.isInteger(id) && id > 0 ? id : null
@@ -209,6 +211,52 @@ const hasMyNote = computed(() => {
   return noteList.value.some(note => Number(note.userId) === loginUserId)
 })
 
+const clearAuthState = () => {
+  authStore.user = null
+  authStore.initialized = true
+}
+
+const getErrorMessage = (error, defaultMessage) => {
+  return error?.response?.data?.message || defaultMessage
+}
+
+const getSafeRedirectPath = () => {
+  if (route.path === '/login') {
+    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
+    return redirect || '/'
+  }
+
+  return route.fullPath || '/'
+}
+
+const moveToLogin = async (message) => {
+  if (authRedirecting.value) return
+
+  authRedirecting.value = true
+
+  alert(message || '로그인 세션이 만료되었습니다. 다시 로그인해주세요.')
+
+  clearAuthState()
+
+  await router.replace({
+    path: '/login',
+    query: {
+      redirect: getSafeRedirectPath()
+    }
+  })
+}
+
+const handleAuthError = async (error) => {
+  const status = error?.response?.status
+
+  if (status === 401 || status === 403) {
+    await moveToLogin(getErrorMessage(error, '로그인 세션이 만료되었습니다. 다시 로그인해주세요.'))
+    return true
+  }
+
+  return false
+}
+
 const fetchDrinkDetail = async () => {
   if (!currentDrinkId.value) {
     router.replace('/404')
@@ -217,7 +265,6 @@ const fetchDrinkDetail = async () => {
 
   try {
     const res = await getDrinkDetail(currentDrinkId.value)
-    console.log(res.data)
 
     if (!res.data) {
       drink.value = null
@@ -227,7 +274,6 @@ const fetchDrinkDetail = async () => {
 
     drink.value = res.data
   } catch (e) {
-    console.log('주류 상세 조회 실패', e)
     drink.value = null
     router.replace('/404')
   }
@@ -235,11 +281,18 @@ const fetchDrinkDetail = async () => {
 
 const fetchLikeStatus = async () => {
   if (!currentDrinkId.value) return
+  if (!authStore.isLogin) {
+    liked.value = false
+    return
+  }
 
   try {
     const res = await getDrinkLike(currentDrinkId.value)
     liked.value = !!res.data?.liked
   } catch (e) {
+    const handled = await handleAuthError(e)
+    if (handled) return
+
     liked.value = false
   }
 }
@@ -261,7 +314,6 @@ const fetchTastingNote = async () => {
     size.value = Number(res.data?.size ?? 5)
     avgMetric.value = Array.isArray(res.data?.avgMetric) ? res.data.avgMetric : []
   } catch (e) {
-    console.log('테이스팅 노트 조회 실패', e)
     noteList.value = []
     totalCount.value = 0
     totalPage.value = 0
@@ -300,7 +352,10 @@ const toggleLike = async () => {
     await fetchDrinkDetail()
     await fetchLikeStatus()
   } catch (e) {
-    console.log('좋아요 처리 실패', e)
+    const handled = await handleAuthError(e)
+    if (handled) return
+
+    alert(getErrorMessage(e, '좋아요 처리 중 오류가 발생했습니다.'))
   } finally {
     likeLoading.value = false
   }
@@ -317,6 +372,7 @@ const initPage = async () => {
   page.value = 1
   liked.value = false
   drink.value = null
+  authRedirecting.value = false
   resetNoteState()
 
   await fetchDrinkDetail()

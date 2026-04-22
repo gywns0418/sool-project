@@ -97,6 +97,7 @@
               <option value="latest">최신순</option>
               <option value="like">좋아요순</option>
               <option value="name">이름순</option>
+              <!-- <option value="rating">별점순</option> -->
             </select>
           </div>
         </div>

@@ -57,7 +57,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 import { useRouter, useRoute } from 'vue-router'
 import { getNoteLike, insertNoteLike, deleteNoteLike } from '@/api/likeApi'
@@ -69,7 +69,6 @@ const props = defineProps({
     required: true
   }
 })
-console.log(props)
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -78,6 +77,15 @@ const route = useRoute()
 const liked = ref(false)
 const likeCount = ref(props.item.likeCount || 0)
 const loading = ref(false)
+
+watch(
+  () => props.item,
+  (newItem) => {
+    liked.value = !!newItem?.liked
+    likeCount.value = newItem?.likeCount ?? 0
+  },
+  { deep: true, immediate: true }
+)
 
 const drinkEmoji = computed(() => {
   const code = props.item?.categoryCode
@@ -124,10 +132,24 @@ const avatarColor = computed(() => {
   return `hsl(${hue}, 30%, 40%)`
 })
 
-const handleClick = (e) => {
-  if (props.item.reported) {
-    e.preventDefault()
+const moveToLogin = () => {
+  alert('로그인 세션이 만료되었습니다. 다시 로그인해주세요.')
+
+  authStore.user = null
+  authStore.initialized = true
+
+  router.replace(`/login?redirect=${encodeURIComponent(route.fullPath)}`)
+}
+
+const handleAuthError = (error) => {
+  const status = error?.response?.status
+
+  if (status === 401 || status === 403) {
+    moveToLogin()
+    return true
   }
+
+  return false
 }
 
 const fetchLikeStatus = async () => {
@@ -139,7 +161,8 @@ const fetchLikeStatus = async () => {
   try {
     const res = await getNoteLike(props.item.noteId)
     liked.value = !!res.data.liked
-  } catch {
+  } catch (e) {
+    if (handleAuthError(e)) return
     liked.value = false
   }
 }
@@ -159,18 +182,27 @@ const toggleLike = async () => {
 
   loading.value = true
 
+  const prevLiked = liked.value
+  const prevLikeCount = likeCount.value
+
   try {
     if (liked.value) {
+      liked.value = false
+      likeCount.value = Math.max(0, prevLikeCount - 1)
       await deleteNoteLike(props.item.noteId)
-      likeCount.value--
     } else {
+      liked.value = true
+      likeCount.value = prevLikeCount + 1
       await insertNoteLike(props.item.noteId)
-      likeCount.value++
     }
-
-    liked.value = !liked.value
   } catch (e) {
+    liked.value = prevLiked
+    likeCount.value = prevLikeCount
+
+    if (handleAuthError(e)) return
+
     console.log('노트 좋아요 실패', e)
+    alert('좋아요 처리 중 오류가 발생했습니다.')
   } finally {
     loading.value = false
   }
