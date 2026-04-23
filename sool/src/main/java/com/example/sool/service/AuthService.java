@@ -14,7 +14,7 @@ public class AuthService {
 
     private static final Duration CODE_TTL = Duration.ofMinutes(3);
     private static final Duration COOLDOWN_TTL = Duration.ofSeconds(10);
-    private static final Duration VERIFIED_TTL = Duration.ofMinutes(5);
+    private static final Duration VERIFIED_TTL = Duration.ofMinutes(5); 
 
     private final UserService userService;
     private final EmailService emailService;
