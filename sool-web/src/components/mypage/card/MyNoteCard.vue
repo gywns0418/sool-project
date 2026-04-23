@@ -121,8 +121,13 @@ function formatDate(value) {
 
 .mn-actions {
   display: flex;
+  flex-direction: row;
+  align-items: center;
   gap: 6px;
-  margin-top: 8px;
+  margin-left: 12px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  min-width: 90px;
 }
 
 .mn-btn {
