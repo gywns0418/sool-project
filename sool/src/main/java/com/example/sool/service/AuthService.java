@@ -16,7 +16,7 @@ public class AuthService {
     private static final Duration COOLDOWN_TTL = Duration.ofSeconds(10);
     private static final Duration VERIFIED_TTL = Duration.ofMinutes(5);
 
-    private static final Duration LOGIN_FAIL_TTL = Duration.ofMinutes(5);
+    private static final Duration LOGIN_FAIL_TTL = Duration.ofMinutes(4);
     private static final Duration LOGIN_LOCK_TTL = Duration.ofMinutes(5);
     private static final int MAX_LOGIN_FAIL_COUNT = 5;
 
