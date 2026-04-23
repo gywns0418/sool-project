@@ -56,7 +56,7 @@ public class CommentService {
         return commentMapper.findByNoteId(noteId);
     }
     
-    @Transactional
+    @Transactional 
     public int updateComment(CommentDto commentDto) {
         validateCommentId(commentDto.getCommentId());
         validateContent(commentDto.getContent());
