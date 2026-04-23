@@ -16,6 +16,10 @@ public class AuthService {
     private static final Duration COOLDOWN_TTL = Duration.ofSeconds(10);
     private static final Duration VERIFIED_TTL = Duration.ofMinutes(5);
 
+    private static final Duration LOGIN_FAIL_TTL = Duration.ofMinutes(5);
+    private static final Duration LOGIN_LOCK_TTL = Duration.ofMinutes(5);
+    private static final int MAX_LOGIN_FAIL_COUNT = 5;
+
     private final UserService userService;
     private final EmailService emailService;
     private final StringRedisTemplate redisTemplate;
@@ -58,6 +62,57 @@ public class AuthService {
     //인증 여부 확인
     private String getVerifiedKey(String email) {
         return "email:verified:" + email;
+    }
+
+    //로그인 실패 키
+    private String getLoginFailKey(String loginId) {
+        return "login:fail:" + loginId;
+    }
+
+    //로그인 잠금 키
+    private String getLoginLockKey(String loginId) {
+        return "login:lock:" + loginId;
+    }
+
+    public void checkLoginBlocked(String loginId) {
+        validateLoginId(loginId);
+
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(getLoginLockKey(loginId)))) {
+            throw new IllegalArgumentException("로그인 실패 횟수를 초과했습니다. 5분 후 다시 시도해주세요.");
+        }
+    }
+
+    public void increaseLoginFail(String loginId) {
+        validateLoginId(loginId);
+
+        String failKey = getLoginFailKey(loginId);
+        Long failCount = redisTemplate.opsForValue().increment(failKey);
+
+        if (failCount != null && failCount == 1L) {
+            redisTemplate.expire(failKey, LOGIN_FAIL_TTL);
+        }
+
+        if (failCount != null && failCount >= MAX_LOGIN_FAIL_COUNT) {
+            redisTemplate.delete(failKey);
+            redisTemplate.opsForValue().set(getLoginLockKey(loginId), "Y", LOGIN_LOCK_TTL);
+        }
+    }
+
+    public void clearLoginFail(String loginId) {
+        validateLoginId(loginId);
+
+        redisTemplate.delete(getLoginFailKey(loginId));
+        redisTemplate.delete(getLoginLockKey(loginId));
+    }
+
+    public long getRemainingLoginFailCount(String loginId) {
+        validateLoginId(loginId);
+
+        String value = redisTemplate.opsForValue().get(getLoginFailKey(loginId));
+        long failCount = value == null ? 0 : Long.parseLong(value);
+        long remaining = MAX_LOGIN_FAIL_COUNT - failCount;
+
+        return Math.max(remaining, 0);
     }
 
     //이메일 인증코드 설정 및 보내기

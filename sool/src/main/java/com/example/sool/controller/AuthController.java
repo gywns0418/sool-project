@@ -12,6 +12,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,19 +45,20 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody @Validated LoginRequestDto dto, HttpServletRequest request) {
         try {
-            // 아이디 / 비밀번호 인증 처리
+            authService.checkLoginBlocked(dto.getLoginId());
+
             Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(dto.getLoginId(), dto.getPassword())
             );
 
-            //인증 정보를 SecurityContext에 저장
             SecurityContext context = SecurityContextHolder.createEmptyContext();
             context.setAuthentication(authentication);
             SecurityContextHolder.setContext(context);
 
-            //세션 저장
             HttpSession session = request.getSession(true);
             session.setAttribute("SPRING_SECURITY_CONTEXT", context);
+
+            authService.clearLoginFail(dto.getLoginId());
 
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
@@ -69,10 +71,16 @@ public class AuthController {
 
             return ResponseEntity.ok(response);
 
-        }catch (DisabledException e) {
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        } catch (DisabledException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("탈퇴한 회원입니다.");
-        }catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("아이디 또는 비밀번호가 올바르지 않습니다.");
+        } catch (UsernameNotFoundException e) {
+            authService.increaseLoginFail(dto.getLoginId());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("존재하지 않는 아이디입니다.");
+        } catch (BadCredentialsException e) {
+            authService.increaseLoginFail(dto.getLoginId());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("비밀번호가 올바르지 않습니다.");
         }
     }
 
