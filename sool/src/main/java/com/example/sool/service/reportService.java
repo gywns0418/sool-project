@@ -76,7 +76,7 @@ public class ReportService {
             TastingNoteDto note = tastingNoteMapper.findByNoteId(reportDto.getObjId());
 
             if (note == null || "Y".equals(note.getIsDeleted())) {
-                throw new IllegalArgumentException("존재하지 않는 테이스팅 노트입니다.");
+                throw new IllegalArgumentException("삭제되었거나 존재하지 않는 테이스팅 노트입니다.");
             }
         }
 
@@ -84,7 +84,7 @@ public class ReportService {
             CommentDto comment = commentMapper.findByCommentId(reportDto.getObjId());
 
             if (comment == null || "Y".equals(comment.getIsDeleted())) {
-                throw new IllegalArgumentException("존재하지 않는 댓글입니다.");
+                throw new IllegalArgumentException("삭제되었거나 존재하지 않는 댓글입니다.");
             }
         }
     }

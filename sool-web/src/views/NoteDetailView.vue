@@ -380,7 +380,13 @@ const toggleLike = async () => {
     if (handled) return
 
     console.log('노트 좋아요 처리 실패', error)
-    alert('좋아요 처리에 실패했습니다.')
+
+    const message =
+      error?.response?.data?.message ||
+      error?.response?.data ||
+      '좋아요 처리에 실패했습니다.'
+
+    alert(message)
   } finally {
     likeLoading.value = false
   }

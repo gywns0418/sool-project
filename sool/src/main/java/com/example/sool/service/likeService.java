@@ -26,7 +26,7 @@ public class LikeService {
     private final RedisTemplate<String, Object> redisTemplate;
 
     public LikeService(LikeMapper likeMapper, ImageMapper imageMapper, DrinkMapper drinkMapper,
-                        TastingNoteMapper tastingNoteMapper,RedisTemplate<String, Object> redisTemplate) {
+                       TastingNoteMapper tastingNoteMapper, RedisTemplate<String, Object> redisTemplate) {
         this.likeMapper = likeMapper;
         this.imageMapper = imageMapper;
         this.drinkMapper = drinkMapper;
@@ -58,12 +58,12 @@ public class LikeService {
     public int deleteLike(LikeDto dto) {
         validateLikeRequest(dto);
 
-        if (likeMapper.existsLike(dto) == 0) {
-            throw new IllegalArgumentException("좋아요 정보가 존재하지 않습니다.");
-        }
-
         if ("DRINK".equals(dto.getObjType())) {
             redisTemplate.delete("drink:top4");
+        }
+
+        if (likeMapper.existsLike(dto) == 0) {
+            return 0;
         }
 
         return likeMapper.deleteLike(dto);
