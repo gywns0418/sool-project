@@ -1,10 +1,13 @@
 package com.example.sool.service;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.UUID;
+
+import javax.imageio.ImageIO;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -28,22 +31,25 @@ public class S3Service {
     @Value("${aws.region}")
     private String region;
 
-    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;  //5MB
+    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
 
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of(
             "png", "jpg", "jpeg", "webp"
+    );
+
+    private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
+            "image/png", "image/jpeg", "image/webp"
     );
 
     public S3Service(S3Client s3Client) {
         this.s3Client = s3Client;
     }
 
-    //s3 파일 업로드
     public S3UploadResultDto upload(MultipartFile file, String dirName) throws IOException {
         validateFile(file);
 
-        String originalName = file.getOriginalFilename();       //파일 이름
-        String savedName = UUID.randomUUID() + "_" + originalName;      //저장 파일 이름 ex) ********_filename
+        String originalName = file.getOriginalFilename();
+        String savedName = UUID.randomUUID() + "_" + originalName;
         String fileKey = dirName + "/" + savedName;
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
@@ -63,7 +69,6 @@ public class S3Service {
         return new S3UploadResultDto(fileKey, fileUrl);
     }
 
-    //s3 파일 삭제
     public boolean delete(String fileKey) {
         try {
             DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
@@ -81,9 +86,7 @@ public class S3Service {
         }
     }
 
-    //업로드 파일 형식 확인
-    private void validateFile(MultipartFile file) {
-
+    private void validateFile(MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("업로드할 파일이 없습니다.");
         }
@@ -102,6 +105,18 @@ public class S3Service {
 
         if (!ALLOWED_EXTENSIONS.contains(extension)) {
             throw new IllegalArgumentException("지원하지 않는 파일 형식입니다. (png, jpg, jpeg, webp만 사용가능)");
+        }
+
+        String contentType = file.getContentType();
+
+        if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType.toLowerCase())) {
+            throw new IllegalArgumentException("지원하지 않는 파일 형식입니다. (png, jpg, jpeg, webp만 사용가능)");
+        }
+
+        BufferedImage image = ImageIO.read(file.getInputStream());
+
+        if (image == null) {
+            throw new IllegalArgumentException("실제 이미지 파일만 업로드할 수 있습니다.");
         }
     }
 }

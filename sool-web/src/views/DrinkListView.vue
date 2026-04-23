@@ -18,6 +18,10 @@
           </button>
         </div>
 
+        <div class="filter-divider">
+          <span></span>
+        </div>
+
         <h4>도수 (%)</h4>
         <div class="range-row">
           <input
@@ -304,6 +308,16 @@ const clearDrinkList = () => {
   totalPage.value = 1
 }
 
+const removePageQuery = () => {
+  const query = { ...route.query }
+  delete query.page
+
+  router.replace({
+    path: "/drinks",
+    query
+  })
+}
+
 const loadCategoryList = async () => {
   try {
     const res = await getDrinkCategoryList()
@@ -353,6 +367,13 @@ const loadDrinkList = async () => {
 
     if (total === 0) {
       clearDrinkList()
+
+      if (page.value !== 1) {
+        page.value = 1
+        removePageQuery()
+        return
+      }
+
       return
     }
 
@@ -361,7 +382,7 @@ const loadDrinkList = async () => {
         path: "/drinks",
         query: {
           ...route.query,
-          page: totalP
+          page: String(totalP)
         }
       })
       return
@@ -773,5 +794,24 @@ const goTop = () => {
 .list-main::-webkit-scrollbar-thumb {
   background: #ddd;
   border-radius: 3px;
+}
+
+.filter-divider {
+  margin: 18px 0 8px;
+  display: flex;
+  align-items: center;
+}
+
+.filter-divider span {
+  display: block;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    #e5ddd6 15%,
+    #e5ddd6 85%,
+    transparent 100%
+  );
 }
 </style>

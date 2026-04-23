@@ -43,7 +43,13 @@
             class="text-input"
             maxlength="100"
             placeholder="예: 부드러운 베리향이 인상적인 와인"
+            @input="updateTitleCount"
+            @compositionupdate="updateTitleCount"
+            @compositionend="updateTitleCount"
           />
+        </div>
+        <div class="text-count" :class="{ danger: titleCount >= 90 }">
+          {{ titleCount }}/100
         </div>
       </div>
 
@@ -145,7 +151,13 @@
             class="write-textarea"
             maxlength="500"
             placeholder="향, 맛, 피니시, 함께 먹은 음식 등을 기록해보세요."
+            @input="updateMemoCount"
+            @compositionupdate="updateMemoCount"
+            @compositionend="updateMemoCount"
           ></textarea>
+          <div class="text-count" :class="{ danger: memoCount >= 450 }">
+            {{ memoCount }}/500
+          </div>
         </div>
 
         <div class="form-section">
@@ -161,7 +173,6 @@
 
           <button type="button" class="upload-zone" @click="openImageUpload">
 
-            <!-- 이미지 없는 상태 -->
             <template v-if="!imagePreview">
               <div class="upload-icon-wrap">📷</div>
 
@@ -171,11 +182,10 @@
               </p>
 
               <div class="up-small">
-                JPG, JPEG, PNG, WEBP 파일 업로드 가능
+                JPG, JPEG, PNG, WEBP 파일 5MB까지 업로드 가능
               </div>
             </template>
 
-            <!-- 이미지 있는 상태 -->
             <template v-else>
               <img :src="imagePreview" class="upload-preview" />
             </template>
@@ -209,14 +219,13 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PageNav from '../components/common/PageNav.vue'
 import { categories } from '@/mock/soolData'
 import { getNoteWriteForm, createNote, getNoteUpdateForm, updateNote } from '@/api/noteApi'
 import { uploadImage, deleteImage } from '@/api/imageApi'
 import { useAuthStore } from '@/stores/authStore'
-
 
 const route = useRoute()
 const router = useRouter()
@@ -226,8 +235,10 @@ const errorMsg = ref('')
 
 const drink = ref({})
 const title = ref('')
+const titleCount = ref(0)
 const selectedStar = ref(1)
 const memo = ref('')
+const memoCount = ref(0)
 const scores = ref([])
 const openScoreDescCode = ref('')
 const isSaving = ref(false)
@@ -241,6 +252,10 @@ const noteImage = ref(null)
 
 let uploadedFileKey = ''
 let uploadedFileUrl = ''
+
+const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp']
+const ALLOWED_IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp']
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024
 
 const isEditMode = computed(() => !!route.params.noteId)
 const drinkId = computed(() => Number(route.params.drinkId))
@@ -261,13 +276,91 @@ const navLinks = computed(() => {
   ]
 })
 
+const TITLE_MAX_LENGTH = 100
+const MEMO_MAX_LENGTH = 500
+
+function updateTitleCount(e) {
+  const value = e.target.value.slice(0, TITLE_MAX_LENGTH)
+
+  if (title.value !== value) {
+    title.value = value
+  }
+
+  titleCount.value = value.length
+}
+
+function updateMemoCount(e) {
+  const value = e.target.value.slice(0, MEMO_MAX_LENGTH)
+
+  if (memo.value !== value) {
+    memo.value = value
+  }
+
+  memoCount.value = value.length
+}
+
+function syncTextCounts() {
+  titleCount.value = title.value.length
+  memoCount.value = memo.value.length
+}
+
+function resetPreviewUrl() {
+  if (imagePreview.value && imagePreview.value.startsWith('blob:')) {
+    URL.revokeObjectURL(imagePreview.value)
+  }
+}
+
+function clearSelectedImage() {
+  resetPreviewUrl()
+  selectedImageFile.value = null
+  uploaded.value = false
+
+  if (isEditMode.value && noteImage.value?.fileUrl) {
+    imagePreview.value = noteImage.value.fileUrl
+  } else {
+    imagePreview.value = ''
+  }
+
+  if (fileInput.value) {
+    fileInput.value.value = ''
+  }
+}
+
+function extractErrorMessage(error, defaultMessage) {
+  const data = error?.response?.data
+
+  if (typeof data === 'string' && data.trim()) {
+    return data
+  }
+
+  if (data?.message) {
+    return data.message
+  }
+
+  if (data?.error) {
+    return data.error
+  }
+
+  if (Array.isArray(data?.errors) && data.errors.length > 0) {
+    const firstError = data.errors[0]
+    if (typeof firstError === 'string') return firstError
+    if (firstError?.defaultMessage) return firstError.defaultMessage
+    if (firstError?.message) return firstError.message
+  }
+
+  return defaultMessage
+}
+
 function resetForm() {
   drink.value = {}
   title.value = ''
+  titleCount.value = 0
   selectedStar.value = 1
   memo.value = ''
+  memoCount.value = 0
   scores.value = []
   openScoreDescCode.value = ''
+  clearSelectedImage()
 }
 
 function normalizeMetricList(metricList) {
@@ -283,8 +376,6 @@ function toggleScoreDesc(code) {
   openScoreDescCode.value = openScoreDescCode.value === code ? '' : code
 }
 
-
-//작성 기초 정보
 async function fetchWriteForm() {
   if (!drinkId.value || Number.isNaN(drinkId.value)) {
     router.replace('/404')
@@ -293,7 +384,6 @@ async function fetchWriteForm() {
 
   try {
     const res = await getNoteWriteForm(drinkId.value)
-    console.log(res.data)
 
     if (!res.data || !res.data.drink) {
       router.replace('/404')
@@ -302,20 +392,20 @@ async function fetchWriteForm() {
 
     drink.value = res.data.drink
     scores.value = normalizeMetricList(res.data.metricList)
+    syncTextCounts()
   } catch (error) {
     const status = error.response?.status
+
     if (status === 409) {
-      alert(error.response?.data?.message || '이미 작성한 노트가 있습니다.')
+      alert(extractErrorMessage(error, '이미 작성한 노트가 있습니다.'))
       router.replace(`/drinks/${drinkId.value}`)
       return
     }
 
-    console.log('노트 작성 화면 데이터 조회 실패', error)
     router.replace('/404')
   }
 }
 
-//수정 기초정보 
 async function fetchEditForm() {
   if (!noteId.value || Number.isNaN(noteId.value)) {
     router.replace('/404')
@@ -324,7 +414,6 @@ async function fetchEditForm() {
 
   try {
     const res = await getNoteUpdateForm(noteId.value)
-    console.log(res.data)
 
     if (!res.data || !res.data.note || !res.data.drink) {
       router.replace('/404')
@@ -353,29 +442,26 @@ async function fetchEditForm() {
     selectedStar.value = Number(noteData.rating ?? 1)
     memo.value = noteData.content || ''
     scores.value = normalizeMetricList(metricList)
+    syncTextCounts()
   } catch (error) {
-
     const status = error.response?.status
 
     if (status === 403) {
-      alert(error.response?.data?.message || '자신의 노트만 수정 할 수 있습니다.')
+      alert(extractErrorMessage(error, '자신의 노트만 수정 할 수 있습니다.'))
       router.replace(`/notes/${noteId.value}`)
       return
     }
 
-    console.log('노트 수정 화면 데이터 조회 실패', error)
     router.replace('/404')
   }
 }
 
-//주류 이미지 없을때 기본 이모티콘 표시
 const drinkEmoji = computed(() => {
   const code = drink.value?.categoryCode
   const emojiData = categories.find(e => e.name === code)
   return emojiData ? emojiData.emoji : '🍹'
 })
 
-//페이지 표시
 async function fetchPageData() {
   resetForm()
 
@@ -402,7 +488,55 @@ async function validateLoginSession() {
   return true
 }
 
-//저장하기 버튼
+function validateImageFile(file) {
+  const fileName = file?.name || ''
+  const extension = fileName.includes('.') ? fileName.split('.').pop().toLowerCase() : ''
+
+  const isValidType = ALLOWED_IMAGE_TYPES.includes(file.type)
+  const isValidExtension = ALLOWED_IMAGE_EXTENSIONS.includes(extension)
+
+  if (!isValidType || !isValidExtension) {
+    return '이미지는 PNG, JPG, JPEG, WEBP 파일만 업로드할 수 있습니다.'
+  }
+
+  if (file.size > MAX_IMAGE_SIZE) {
+    return '파일 크기는 5MB 이하만 업로드할 수 있습니다.'
+  }
+
+  return ''
+}
+
+async function validateImageSignature(file) {
+  const buffer = await file.slice(0, 12).arrayBuffer()
+  const bytes = new Uint8Array(buffer)
+
+  const isPng =
+    bytes.length >= 4 &&
+    bytes[0] === 0x89 &&
+    bytes[1] === 0x50 &&
+    bytes[2] === 0x4E &&
+    bytes[3] === 0x47
+
+  const isJpeg =
+    bytes.length >= 3 &&
+    bytes[0] === 0xFF &&
+    bytes[1] === 0xD8 &&
+    bytes[2] === 0xFF
+
+  const isWebp =
+    bytes.length >= 12 &&
+    bytes[0] === 0x52 &&
+    bytes[1] === 0x49 &&
+    bytes[2] === 0x46 &&
+    bytes[3] === 0x46 &&
+    bytes[8] === 0x57 &&
+    bytes[9] === 0x45 &&
+    bytes[10] === 0x42 &&
+    bytes[11] === 0x50
+
+  return isPng || isJpeg || isWebp
+}
+
 const saveNote = async () => {
   if (isSaving.value) return
 
@@ -412,48 +546,68 @@ const saveNote = async () => {
     return
   }
 
-  if(!title.value){
-    alert("제목을 입력해주세요")
+  if (!title.value.trim()) {
+    alert('제목을 입력해주세요')
     return
   }
 
-  if(!memo.value){
-    alert("내용을 입력해주세요")
+  if (!memo.value.trim()) {
+    alert('내용을 입력해주세요')
     return
   }
 
   if (!imagePreview.value) {
-    alert("이미지를 추가해주세요")
+    alert('이미지를 추가해주세요')
     return
   }
 
   errorMsg.value = ''
+  uploadedFileKey = ''
+  uploadedFileUrl = ''
 
   try {
     isSaving.value = true
 
-    if(selectedImageFile.value){
+    if (selectedImageFile.value) {
+      const invalidImageMessage = validateImageFile(selectedImageFile.value)
+
+      if (invalidImageMessage) {
+        alert(invalidImageMessage)
+        return
+      }
+
+      const isRealImage = await validateImageSignature(selectedImageFile.value)
+
+      if (!isRealImage) {
+        alert('실제 이미지 파일만 업로드할 수 있습니다.')
+        clearSelectedImage()
+        return
+      }
+
       const formData = new FormData()
       formData.append('file', selectedImageFile.value)
       formData.append('dirName', 'NOTE')
 
-      const uploadRes = await uploadImage(formData)
-
-      uploadedFileKey = uploadRes.data.fileKey
-      uploadedFileUrl = uploadRes.data.fileUrl
+      try {
+        const uploadRes = await uploadImage(formData)
+        uploadedFileKey = uploadRes.data.fileKey
+        uploadedFileUrl = uploadRes.data.fileUrl
+      } catch (uploadError) {
+        uploadError.message = extractErrorMessage(uploadError, '이미지 업로드 중 오류가 발생했습니다.')
+        throw uploadError
+      }
     }
-
 
     const payload = {
       drinkId: drink.value.drinkId,
-      title: title.value,
-      content: memo.value,
+      title: title.value.trim(),
+      content: memo.value.trim(),
       rating: selectedStar.value,
       metricList: scores.value.map(m => ({
         metricCode: m.code,
         score: m.value
       })),
-      image:{
+      image: {
         fileUrl: uploadedFileUrl || noteImage.value?.fileUrl || '',
         fileKey: uploadedFileKey || noteImage.value?.fileKey || ''
       }
@@ -461,14 +615,10 @@ const saveNote = async () => {
 
     if (isEditMode.value) {
       await updateNote(noteId.value, payload)
-      console.log("payload",payload)
-      
-      // 새 이미지 업로드했으면 기존 이미지 삭제
+
       if (uploadedFileKey && noteImage.value?.fileKey) {
         try {
-          console.log("filekey : ",noteImage.value?.fileKey)
-          console.log("uploadedFileKey : ",uploadedFileKey)
-          await deleteImage(noteImage.value?.fileKey)
+          await deleteImage(noteImage.value.fileKey)
         } catch (error) {
           console.log('기존 이미지 삭제 실패', error)
         }
@@ -495,15 +645,14 @@ const saveNote = async () => {
         console.log('업로드 이미지 삭제 실패', deleteError)
       }
     }
-    
-    errorMsg.value = e.response?.data?.message || '노트 저장 중 오류가 발생했습니다.'
+
+    errorMsg.value = extractErrorMessage(e, '노트 저장 중 오류가 발생했습니다.')
     alert(errorMsg.value)
   } finally {
     isSaving.value = false
   }
 }
 
-//노트 취소
 function goBack() {
   if (isEditMode.value && noteId.value) {
     router.push(`/notes/${noteId.value}`)
@@ -518,20 +667,33 @@ function goBack() {
   router.back()
 }
 
-//이미지 업로드 창
 function openImageUpload() {
   fileInput.value.click()
 }
 
-//이미지 업로드 처리
-function handleImageUpload(e) {
-  const file = e.target.files[0]  //여러개 선택하더라도 첫번째 것만 선택
-  console.log("file : ",file)
+async function handleImageUpload(e) {
+  const file = e.target.files[0]
 
   if (!file) return
 
+  const invalidImageMessage = validateImageFile(file)
+
+  if (invalidImageMessage) {
+    alert(invalidImageMessage)
+    clearSelectedImage()
+    return
+  }
+
+  const isRealImage = await validateImageSignature(file)
+
+  if (!isRealImage) {
+    alert('실제 이미지 파일만 업로드할 수 있습니다.')
+    clearSelectedImage()
+    return
+  }
+
+  resetPreviewUrl()
   selectedImageFile.value = file
-  //미리보기 url 생성
   imagePreview.value = URL.createObjectURL(file)
   uploaded.value = true
 }
@@ -550,6 +712,10 @@ onMounted(async () => {
   }
 
   await fetchPageData()
+})
+
+onBeforeUnmount(() => {
+  resetPreviewUrl()
 })
 
 watch(
@@ -936,5 +1102,17 @@ watch(
   color: var(--muted);
   line-height: 1.5;
   padding-left: 2px;
+}
+
+.text-count {
+  margin-top: 6px;
+  text-align: right;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.text-count.danger {
+  color: #e74c3c;
+  font-weight: 600;
 }
 </style>

@@ -18,7 +18,7 @@
           <input
             v-model="editContent"
             type="text"
-            maxlength="500"
+            maxlength="100"
             placeholder="댓글을 수정하세요"
           />
           <button class="cm-send" :disabled="editSubmitting" @click="submitEdit">

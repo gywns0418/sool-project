@@ -530,7 +530,7 @@ watch(
 
 .nd-wrap {
   display: grid;
-  grid-template-columns: 1fr 400px;
+  grid-template-columns: 1fr 460px;
   min-height: 1000px;
 }
 
@@ -702,7 +702,7 @@ watch(
 
 .nd-side {
   background: var(--surface);
-  padding: 32px 26px;
+  padding: 32px 30px;
 }
 
 .nd-flavor-title,
