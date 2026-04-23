@@ -16,7 +16,7 @@ public class AuthService {
     private static final Duration COOLDOWN_TTL = Duration.ofSeconds(10);
     private static final Duration VERIFIED_TTL = Duration.ofMinutes(5);
 
-    private static final Duration LOGIN_FAIL_TTL = Duration.ofMinutes(4);
+    private static final Duration LOGIN_FAIL_TTL = Duration.ofMinutes(5);
     private static final Duration LOGIN_LOCK_TTL = Duration.ofMinutes(5);
     private static final int MAX_LOGIN_FAIL_COUNT = 5;
 
@@ -78,7 +78,19 @@ public class AuthService {
         validateLoginId(loginId);
 
         if (Boolean.TRUE.equals(redisTemplate.hasKey(getLoginLockKey(loginId)))) {
-            throw new IllegalArgumentException("로그인 실패 횟수를 초과했습니다. 5분 후 다시 시도해주세요.");
+            long remainSeconds = getLoginLockRemainingSeconds(loginId);
+            long minutes = remainSeconds / 60;
+            long seconds = remainSeconds % 60;
+
+            if (minutes > 0) {
+                throw new IllegalArgumentException(
+                    "로그인 실패 횟수를 초과했습니다. \n" + minutes + "분 " + seconds + "초 후 다시 시도해주세요."
+                );
+            }
+
+            throw new IllegalArgumentException(
+                "로그인 실패 횟수를 초과했습니다. \n" + seconds + "초 후 다시 시도해주세요."
+            );
         }
     }
 
@@ -113,6 +125,18 @@ public class AuthService {
         long remaining = MAX_LOGIN_FAIL_COUNT - failCount;
 
         return Math.max(remaining, 0);
+    }
+
+    public long getLoginLockRemainingSeconds(String loginId) {
+        validateLoginId(loginId);
+
+        Long seconds = redisTemplate.getExpire(getLoginLockKey(loginId));
+
+        if (seconds == null || seconds < 0) {
+            return 0;
+        }
+
+        return seconds;
     }
 
     //이메일 인증코드 설정 및 보내기
