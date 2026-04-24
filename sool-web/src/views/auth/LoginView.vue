@@ -292,5 +292,6 @@ const login = async () => {
   margin-top: -4px;
   font-size: 13px;
   color: #d93025;
+  white-space: pre-line;
 }
 </style>

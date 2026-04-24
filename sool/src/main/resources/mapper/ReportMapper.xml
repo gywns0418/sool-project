@@ -81,4 +81,14 @@
       ORDER BY r.created_at DESC
     </select>
 
+  <!-- 신고 처리 완료된 노트 확인 -->
+  <select id="existsCompletedReportByNoteId" parameterType="int" resultType="int">
+      SELECT COUNT(*)
+        FROM report           /* 신고 테이블 */
+       WHERE obj_type = 'NOTE'
+         AND obj_id = #{noteId}
+         AND status_code = 'COMPLETED'
+         AND is_deleted = 'N'
+  </select>
+
 </mapper>

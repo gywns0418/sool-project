@@ -96,7 +96,8 @@ public class SecurityConfig {
 
         // 비밀번호 비교 시 BCrypt 사용
         provider.setPasswordEncoder(bCryptPasswordEncoder());
-
+        //아이디 에러 숨김 X
+        provider.setHideUserNotFoundExceptions(false);
         return provider;
     }
 

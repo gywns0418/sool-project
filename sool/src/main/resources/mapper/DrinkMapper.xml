@@ -154,7 +154,7 @@
 
         <!-- 정렬 -->
         <choose>
-            <!-- 좋아요 순서 -->
+            <!-- 좋아요 수 높은 순서 -->
             <when test="sort == 'like'">
               ORDER BY IFNULL(lc.likeCount, 0) DESC
                     , d.drink_id DESC
@@ -163,6 +163,12 @@
             <!-- 이름 순서 -->
             <when test="sort == 'name'">
               ORDER BY d.drink_name ASC
+                    , d.drink_id DESC
+            </when>
+
+            <!-- 별점 평균 높은 순서 -->
+            <when test="sort == 'ratingHigh'">
+              ORDER BY IFNULL(ar.avgRating, 0) DESC
                     , d.drink_id DESC
             </when>
 

@@ -236,7 +236,7 @@ const errorMsg = ref('')
 const drink = ref({})
 const title = ref('')
 const titleCount = ref(0)
-const selectedStar = ref(1)
+const selectedStar = ref(3)
 const memo = ref('')
 const memoCount = ref(0)
 const scores = ref([])
@@ -355,7 +355,7 @@ function resetForm() {
   drink.value = {}
   title.value = ''
   titleCount.value = 0
-  selectedStar.value = 1
+  selectedStar.value = 3
   memo.value = ''
   memoCount.value = 0
   scores.value = []
@@ -439,7 +439,7 @@ async function fetchEditForm() {
     }
 
     title.value = noteData.title || ''
-    selectedStar.value = Number(noteData.rating ?? 1)
+    selectedStar.value = Number(noteData.rating ?? 3)
     memo.value = noteData.content || ''
     scores.value = normalizeMetricList(metricList)
     syncTextCounts()
@@ -447,7 +447,7 @@ async function fetchEditForm() {
     const status = error.response?.status
 
     if (status === 403) {
-      alert(extractErrorMessage(error, '자신의 노트만 수정 할 수 있습니다.'))
+      alert(extractErrorMessage(error, '수정할 수 없습니다.'))
       router.replace(`/notes/${noteId.value}`)
       return
     }

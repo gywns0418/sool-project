@@ -21,9 +21,9 @@
               </span>
               <span
                 class="badge status-badge"
-                :class="getStatusClass(report.reportStatus)"
+                :class="getStatusClass(report.statusCode)"
               >
-                {{ report.reportStatus }}
+                {{ formatStatus(report.reportStatus) }}
               </span>
             </div>
 
@@ -33,17 +33,17 @@
           </div>
 
           <div class="report-body">
-            <p class="report-target"> 
+            <p class="report-target">
               <span v-if="report.objType === 'NOTE'">
-                  테이스팅 노트 : {{ report.noteTitle }}
+                테이스팅 노트 : {{ report.noteTitle }}
               </span>
               <span v-else>
-                  댓글 : {{ report.commentContent }}
+                댓글 : {{ report.commentContent }}
               </span>
             </p>
 
             <p class="report-reason">
-              신고 사유 : {{ report.reportReason  || '신고 사유 없음' }}
+              신고 사유 : {{ report.reportReason || '신고 사유 없음' }}
             </p>
           </div>
         </article>
@@ -78,14 +78,21 @@ onMounted(() => {
 function formatObjType(objType) {
   if (objType === 'NOTE') return '노트'
   if (objType === 'COMMENT') return '댓글'
+  return ''
 }
 
 function getStatusClass(statusCode) {
-  if (statusCode === 'REPORTED') return 'is-reported'
-  if (statusCode === 'PENDING') return 'is-pending'
-  if (statusCode === 'DONE') return 'is-done'
+  if (statusCode === 'RECEIVED') return 'is-received'
+  if (statusCode === 'COMPLETED') return 'is-completed'
   if (statusCode === 'REJECTED') return 'is-rejected'
   return ''
+}
+
+function formatStatus(status) {
+  if (status === 'RECEIVED') return '신고접수'
+  if (status === 'COMPLETED') return '처리완료'
+  if (status === 'REJECTED') return '반려'
+  return status
 }
 
 function formatDate(value) {
@@ -190,24 +197,22 @@ function formatDate(value) {
   color: #7a5c45;
 }
 
-.status-badge.is-reported {
-  background: #fdf3d6;
-  color: #9a6b00;
+.status-badge.is-received {
+  background: #fff4cc;
+  color: #b78103;
+  border: 1px solid #f1d27a;
 }
 
-.status-badge.is-pending {
-  background: #eaf2ff;
-  color: #345ea8;
-}
-
-.status-badge.is-done {
-  background: #e9f7ee;
-  color: #2d7a46;
+.status-badge.is-completed {
+  background: #e7f8ec;
+  color: #1f8a45;
+  border: 1px solid #8dd3a2;
 }
 
 .status-badge.is-rejected {
   background: #fdeaea;
-  color: #b44444;
+  color: #d04545;
+  border: 1px solid #f5aaaa;
 }
 
 .report-date {
