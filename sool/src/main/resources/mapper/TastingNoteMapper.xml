@@ -149,7 +149,7 @@
              , d.category_code AS categoryCode      /* 카테고리 대분류 */
              , cc.code_name AS typeName             /* 카테고리 소분류 */
              , IFNULL(l.likeCount, 0) AS likeCount  /* 좋아요 수 */
-             , (r.obj_id IS NOT NULL) AS reported
+             , (r.obj_id IS NOT NULL) AS reported   /* 신고 */
              , 'NOTE' AS objType
 
           FROM tasting_note tn          /* 테이스팅 노트 테이블 */
@@ -249,8 +249,10 @@
              , tn.updated_at AS updatedAt           /* 수정 일시 */
              , tn.is_deleted AS isDeleted           /* 삭제 여부 */
              , d.drink_name AS drinkName            /* 주류 이름 */
-             , d.category_code AS categoryCode      /* 카테고리 */
-             , cc.code_name AS typeName             /* 소분류 */
+             , d.category_code AS categoryCode      /* 카테고리 대분류 코드*/
+             , cc.code_name AS typeName             /* 카테고리 소분류 */
+             , (r.obj_id IS NOT NULL) AS reported   /* 신고 */
+             , 'NOTE' AS objType
 
           FROM tasting_note tn              /* 테이스팅 노트 테이블 */
 
@@ -261,6 +263,15 @@
             ON d.type_code = cc.code
            AND cc.group_code = 'DRINK_TYPE'
            AND cc.use_yn = 'Y'
+
+     LEFT JOIN (
+                SELECT DISTINCT obj_id
+                  FROM report           /* 신고 테이블 */
+                 WHERE obj_type = 'NOTE'
+                   AND status_code = 'COMPLETED'
+                   AND is_deleted = 'N'
+               ) r
+            ON r.obj_id = tn.note_id
 
          WHERE tn.user_id = #{userId}
            AND tn.is_deleted = 'N'

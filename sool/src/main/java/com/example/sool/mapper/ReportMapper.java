@@ -17,4 +17,7 @@ public interface ReportMapper {
 
     //마이페이지 신고 조회
     List<ReportDto> selectReportByUserid(int userId);
+
+    //신고 처리 완료된 노트 확인
+    int existsCompletedReportByNoteId(int noteId);
 }

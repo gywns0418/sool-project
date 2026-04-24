@@ -23,6 +23,7 @@ import com.example.sool.dto.NoteSearchDto;
 import com.example.sool.dto.TastingNoteDto;
 import com.example.sool.dto.TastingNoteMetricDto;
 import com.example.sool.mapper.ImageMapper;
+import com.example.sool.mapper.ReportMapper;
 import com.example.sool.security.CustomUserDetails;
 import com.example.sool.service.DrinkService;
 import com.example.sool.service.TastingNoteService;
@@ -34,11 +35,13 @@ public class TastingNoteController {
     private final TastingNoteService tastingNoteService;
     private final DrinkService drinkService;
     private final ImageMapper imageMapper;
+    private final ReportMapper reportMapper;
 
-    public TastingNoteController(TastingNoteService tastingNoteService, DrinkService drinkService,ImageMapper imageMapper){
+    public TastingNoteController(TastingNoteService tastingNoteService, DrinkService drinkService,ImageMapper imageMapper, ReportMapper reportMapper){
         this.tastingNoteService = tastingNoteService;
         this.drinkService = drinkService;
         this.imageMapper = imageMapper;
+        this.reportMapper = reportMapper;
     }
 
     //노트 목록
@@ -141,35 +144,43 @@ public class TastingNoteController {
 
     //노트 수정 기본 정보 
     @GetMapping("/notes/edit/{noteId}")
-    public ResponseEntity<Map<String, Object>> getNoteUpdateForm(@PathVariable int noteId, Authentication authentication) {
-         if (authentication == null || !authentication.isAuthenticated() || !(authentication.getPrincipal() instanceof CustomUserDetails userDetails)) {
+    public ResponseEntity<Map<String, Object>> getNoteUpdateForm(
+            @PathVariable int noteId,
+            Authentication authentication) {
+
+        if (authentication == null || !authentication.isAuthenticated()
+                || !(authentication.getPrincipal() instanceof CustomUserDetails userDetails)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
         }
-        
-        //노트수정 주류 기본 정보 
-        DrinkDto drink = drinkService.findDrinkByNoteId(noteId);
-        
-        //노트 수정 노트 기본 정보
+
         TastingNoteDto note = tastingNoteService.findByNoteId(noteId);
 
-        //저장된 카테고리별 맛 프로파일 항목
-        List<TastingNoteMetricDto> metricList = tastingNoteService.findMetricByNoteId(noteId);
+        if (note == null || "Y".equals(note.getIsDeleted())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 테이스팅 노트입니다.");
+        }
 
         if (!Objects.equals(note.getUserId(), userDetails.getUserId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인 노트만 수정할 수 있습니다.");
         }
-        
+
+        if (reportMapper.existsCompletedReportByNoteId(noteId) > 0) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "신고 처리된 노트는 수정할 수 없습니다.");
+        }
+
+        DrinkDto drink = drinkService.findDrinkByNoteId(noteId);
+
+        List<TastingNoteMetricDto> metricList = tastingNoteService.findMetricByNoteId(noteId);
+
         ImageDto image = new ImageDto();
         image.setObjId(note.getNoteId());
         image.setObjType("NOTE");
-
         image = imageMapper.selectImage(image);
 
         Map<String, Object> result = new HashMap<>();
         result.put("drink", drink);
         result.put("note", note);
         result.put("metricList", metricList);
-        result.put("image",image);
+        result.put("image", image);
 
         return ResponseEntity.ok(result);
     }

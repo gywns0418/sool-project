@@ -447,7 +447,7 @@ async function fetchEditForm() {
     const status = error.response?.status
 
     if (status === 403) {
-      alert(extractErrorMessage(error, '자신의 노트만 수정 할 수 있습니다.'))
+      alert(extractErrorMessage(error, '수정할 수 없습니다.'))
       router.replace(`/notes/${noteId.value}`)
       return
     }

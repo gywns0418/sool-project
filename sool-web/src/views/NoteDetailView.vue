@@ -85,61 +85,86 @@
       </main>
 
       <aside class="nd-side">
-        <section class="flavor-section">
-          <div class="nd-flavor-title">맛 프로파일</div>
+        <template v-if="isReportedNote">
+          <section class="flavor-section">
+            <div class="nd-flavor-title">맛 프로파일</div>
 
-          <template v-if="metricList.length > 0">
-            <div v-for="item in metricList" :key="item.metricCode" class="nd-flavor-row">
-              <span class="nfl">{{ item.metricName }}</span>
-              <div class="nfb">
-                <div class="nff" :style="{ width: (Number(item.score || 0) / 5) * 100 + '%' }"></div>
+            <div class="comment-reported-box">
+              <div class="reported-title">🚫 신고 처리된 노트입니다</div>
+              <div class="reported-meta">
+                신고 처리된 노트의 맛 프로파일은 표시되지 않습니다.
               </div>
-              <span class="nfv">{{ item.score }}</span>
             </div>
-          </template>
+          </section>
 
-          <div v-else class="nd-flavor-empty">
-            등록된 맛 프로파일이 없습니다.
+          <div class="nd-comments">
+            <h4>댓글</h4>
+
+            <div class="comment-reported-box">
+              <div class="reported-title">🚫 신고 처리된 노트입니다</div>
+              <div class="reported-meta">
+                신고 처리된 노트의 댓글은 표시되지 않습니다.
+              </div>
+            </div>
           </div>
-        </section>
+        </template>
 
-        <div class="nd-comments">
-          <h4>댓글</h4>
+        <template v-else>
+          <section class="flavor-section">
+            <div class="nd-flavor-title">맛 프로파일</div>
 
-          <div class="comment-list">
-            <div v-if="commentTree.length === 0" class="nd-comment-empty">
-              아직 댓글이 없습니다.
-            </div>
-
-            <template v-else>
-              <div
-                v-for="comment in commentTree"
-                :key="comment.commentId"
-                class="comment-block"
-              >
-              <CommentItem
-                :item="comment"
-                :noteId="Number(route.params.id)"
-                @refresh="fetchComments"
-                @report="openReportModal"
-              />
+            <template v-if="metricList.length > 0">
+              <div v-for="item in metricList" :key="item.metricCode" class="nd-flavor-row">
+                <span class="nfl">{{ item.metricName }}</span>
+                <div class="nfb">
+                  <div class="nff" :style="{ width: (Number(item.score || 0) / 5) * 100 + '%' }"></div>
+                </div>
+                <span class="nfv">{{ item.score }}</span>
               </div>
             </template>
-          </div>
 
-          <form class="comment-inp" @submit.prevent="submitComment">
-            <input
-              v-model="newComment"
-              type="text"
-              maxlength="100"
-              placeholder="댓글을 입력하세요"
-              :disabled="isReportedNote"
-            />
-            <button class="cm-send" :disabled="commentSubmitting || isReportedNote">
-              등록
-            </button>
-          </form>
-        </div>
+            <div v-else class="nd-flavor-empty">
+              등록된 맛 프로파일이 없습니다.
+            </div>
+          </section>
+
+          <div class="nd-comments">
+            <h4>댓글</h4>
+
+            <div class="comment-list">
+              <div v-if="commentTree.length === 0" class="nd-comment-empty">
+                아직 댓글이 없습니다.
+              </div>
+
+              <template v-else>
+                <div
+                  v-for="comment in commentTree"
+                  :key="comment.commentId"
+                  class="comment-block"
+                >
+                  <CommentItem
+                    :item="comment"
+                    :noteId="Number(route.params.id)"
+                    @refresh="fetchComments"
+                    @report="openReportModal"
+                  />
+                </div>
+              </template>
+            </div>
+
+            <form class="comment-inp" @submit.prevent="submitComment">
+              <input
+                v-model="newComment"
+                type="text"
+                maxlength="100"
+                placeholder="댓글을 입력하세요"
+              />
+              <button class="cm-send" :disabled="commentSubmitting">
+                등록
+              </button>
+            </form>
+          </div>
+        </template>
       </aside>
     </div>
   </div>

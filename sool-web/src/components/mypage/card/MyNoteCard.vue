@@ -1,22 +1,41 @@
 <template>
-  <div class="my-note-card">
-    <router-link class="my-note-link" :to="`/notes/${displayItem.noteId}`">
-      <div class="mn-thumb">
+  <div
+    class="my-note-card"
+    :class="{ reported: displayItem.reported }"
+  >
+    <component
+      :is="displayItem.reported ? 'div' : 'router-link'"
+      class="my-note-link"
+      v-bind="displayItem.reported ? {} : { to: `/notes/${displayItem.noteId}` }"
+    >
+      <div class="mn-thumb" :class="{ reported: displayItem.reported }">
         <img
-          v-if="displayItem.image?.fileUrl"
+          v-if="displayItem.image?.fileUrl && !displayItem.reported"
           :src="displayItem.image?.fileUrl"
           :alt="displayItem.drinkName"
           class="mn-thumb-img"
         />
-        <span v-else>{{ displayItem.emoji }}</span>
+        <span v-else>{{ displayItem.reported ? '🚫' : displayItem.emoji }}</span>
       </div>
+
       <div class="mn-content">
-        <div class="mn-drink">{{ displayItem.typeName }} - {{ displayItem.drinkName }}</div>
-        <div class="mn-title">{{ displayItem.title }}</div>
-        <div class="mn-date">{{ formatDate(displayItem.createdAt) }}</div>
+        <template v-if="displayItem.reported">
+          <div class="reported-box">
+            <div class="reported-title">신고 처리된 노트입니다</div>
+            <div class="reported-meta">{{ displayItem.typeName }} - {{ displayItem.drinkName }}</div>
+            <div class="reported-meta">작성일: {{ formatDate(displayItem.createdAt) }}</div>
+          </div>
+        </template>
+
+        <template v-else>
+          <div class="mn-drink">{{ displayItem.typeName }} - {{ displayItem.drinkName }}</div>
+          <div class="mn-title">{{ displayItem.title }}</div>
+          <div class="mn-date">{{ formatDate(displayItem.createdAt) }}</div>
+        </template>
       </div>
-    </router-link>
-    <div class="mn-actions">
+    </component>
+
+    <div v-if="!displayItem.reported" class="mn-actions">
       <button class="mn-btn" @click="$emit('edit', displayItem.noteId)">수정</button>
       <button class="mn-btn del" @click="$emit('delete', displayItem.noteId)">삭제</button>
     </div>
@@ -42,6 +61,7 @@ const displayItem = computed(() => {
 
   return {
     ...props.item,
+    reported: props.item.reported === true || props.item.reported === 1,
     emoji: categoryData ? categoryData.emoji : '🍹'
   }
 })
@@ -71,6 +91,11 @@ function formatDate(value) {
   padding: 16px 18px;
 }
 
+.my-note-card.reported {
+  background: #f3f3f3;
+  border-color: #d9d9d9;
+}
+
 .my-note-link {
   display: flex;
   gap: 14px;
@@ -90,11 +115,20 @@ function formatDate(value) {
   border: 1px solid var(--border);
 }
 
-.mn-thumb-img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  border-radius:8px;
+.mn-thumb.reported {
+  background: #e3e3e3;
+  color: #8a8a8a;
+}
+
+.mn-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.mn-content {
+  flex: 1;
 }
 
 .mn-drink {
@@ -143,5 +177,25 @@ function formatDate(value) {
 .mn-btn.del {
   border-color: #fbc;
   color: #c0392b;
+}
+
+.reported-box {
+  background: #e7e7e7;
+  border: 1px solid #d6d6d6;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.reported-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.reported-meta {
+  font-size: 11px;
+  color: #7b7b7b;
+  line-height: 1.6;
 }
 </style>

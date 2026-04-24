@@ -99,9 +99,9 @@
 
             <select v-model="sortBy" class="sort-select" @change="changeSort">
               <option value="latest">최신순</option>
-              <option value="like">좋아요순</option>
+              <option value="like">좋아요 높은순</option>
               <option value="name">이름순</option>
-              <!-- <option value="rating">별점순</option> -->
+              <option value="ratingHigh">별점 높은순</option>
             </select>
           </div>
         </div>
@@ -157,7 +157,7 @@ const PRICE_MAX = 10000000
 const PRICE_DEFAULT_LOW = "0"
 const PRICE_DEFAULT_HIGH = "10000000"
 
-const ALLOWED_SORTS = ["latest", "like", "name"]
+const ALLOWED_SORTS = ["latest", "like", "name","ratingHigh"]
 
 const navLinks = [
   { label: "홈", to: "/" },

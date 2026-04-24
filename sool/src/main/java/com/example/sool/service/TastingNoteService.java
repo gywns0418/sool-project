@@ -19,6 +19,7 @@ import com.example.sool.mapper.CommentMapper;
 import com.example.sool.mapper.CommonCodeMapper;
 import com.example.sool.mapper.ImageMapper;
 import com.example.sool.mapper.LikeMapper;
+import com.example.sool.mapper.ReportMapper;
 import com.example.sool.mapper.TastingNoteMapper;
 import com.example.sool.mapper.TastingNoteMetricMapper;
 
@@ -32,9 +33,10 @@ public class TastingNoteService {
     private final CommentMapper commentMapper;
     private final ImageMapper imageMapper;
     private final S3Service s3Service;
+    private final ReportMapper reportMapper;
 
     public TastingNoteService(TastingNoteMapper tastingNoteMapper,TastingNoteMetricMapper tastingNoteMetricMapper,CommonCodeMapper commonCodeMapper,
-            DrinkService drinkService, LikeMapper likeMapper, CommentMapper commentMapper,ImageMapper imageMapper,S3Service s3Service){
+            DrinkService drinkService, LikeMapper likeMapper, CommentMapper commentMapper,ImageMapper imageMapper,S3Service s3Service, ReportMapper reportMapper){
         this.tastingNoteMapper = tastingNoteMapper;
         this.tastingNoteMetricMapper = tastingNoteMetricMapper;
         this.commonCodeMapper = commonCodeMapper;
@@ -43,6 +45,7 @@ public class TastingNoteService {
         this.commentMapper = commentMapper;
         this.imageMapper = imageMapper;
         this.s3Service = s3Service;
+        this.reportMapper = reportMapper;
     }
 
     //테이스팅 노트
@@ -183,9 +186,8 @@ public class TastingNoteService {
     //노트 수정
     @Transactional
     public int updateNote(TastingNoteDto dto) {
-        validateCreateNote(dto);
-
         TastingNoteDto savedNote = tastingNoteMapper.findByNoteId(dto.getNoteId());
+
         if (savedNote == null || "Y".equals(savedNote.getIsDeleted())) {
             throw new IllegalArgumentException("존재하지 않는 테이스팅 노트입니다.");
         }
@@ -193,6 +195,12 @@ public class TastingNoteService {
         if (!Objects.equals(savedNote.getUserId(), dto.getUserId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "자신의 노트만 수정할 수 있습니다.");
         }
+
+        if (reportMapper.existsCompletedReportByNoteId(dto.getNoteId()) > 0) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "신고 처리된 노트는 수정할 수 없습니다.");
+        }
+
+        validateCreateNote(dto);
 
         dto.setTitle(dto.getTitle().trim());
         dto.setContent(dto.getContent().trim());
@@ -213,11 +221,12 @@ public class TastingNoteService {
             ImageDto image = dto.getImage();
             image.setObjId(dto.getNoteId());
             image.setObjType("NOTE");
-            if(imageMapper.selectImage(image)==null){
+
+            if (imageMapper.selectImage(image) == null) {
                 imageMapper.insertImage(image);
-            }else{
+            } else {
                 imageMapper.updateImage(image);
-            }   
+            }
         }
 
         return dto.getNoteId();
