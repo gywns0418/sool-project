@@ -171,6 +171,8 @@ public class TastingNoteController {
 
         List<TastingNoteMetricDto> metricList = tastingNoteService.findMetricByNoteId(noteId);
 
+        List<CommonCodeDto> defaultMetricList = tastingNoteService.getMetricCode(note.getDrinkId());
+
         ImageDto image = new ImageDto();
         image.setObjId(note.getNoteId());
         image.setObjType("NOTE");
@@ -180,6 +182,7 @@ public class TastingNoteController {
         result.put("drink", drink);
         result.put("note", note);
         result.put("metricList", metricList);
+        result.put("defaultMetricList", defaultMetricList);
         result.put("image", image);
 
         return ResponseEntity.ok(result);

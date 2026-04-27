@@ -79,7 +79,7 @@ public class SecurityConfig {
                     "/api/drinks/*/like",
                     "/api/report/**",
                     "/api/image/**"
-                ).hasRole("USER")
+                ).hasAnyRole("USER", "ADMIN")
 
                 // 그 외 요청은 인증 필요
                 .anyRequest().authenticated()

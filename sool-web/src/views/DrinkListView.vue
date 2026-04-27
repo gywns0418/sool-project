@@ -29,6 +29,7 @@
             type="number"
             min="0"
             :max="ABV_MAX"
+            step="0.1"
             :placeholder="ABV_DEFAULT_LOW"
             class="range-inp"
             @keydown="preventMinusInput"
@@ -43,6 +44,7 @@
             type="number"
             min="0"
             :max="ABV_MAX"
+            step="0.1"
             :placeholder="ABV_DEFAULT_HIGH"
             class="range-inp"
             @keydown="preventMinusInput"
@@ -63,6 +65,7 @@
             class="range-inp"
             @keydown="preventMinusInput"
             @input="sanitizePriceInput('priceLow')"
+            @blur="formatPriceInput('priceLow')"
             @keydown.enter="applyFilter"
           />
           <span class="range-sep">—</span>
@@ -76,6 +79,7 @@
             class="range-inp"
             @keydown="preventMinusInput"
             @input="sanitizePriceInput('priceHigh')"
+            @blur="formatPriceInput('priceHigh')"
             @keydown.enter="applyFilter"
           />
         </div>
@@ -101,7 +105,7 @@
               <option value="latest">최신순</option>
               <option value="like">좋아요 높은순</option>
               <option value="name">이름순</option>
-              <option value="ratingHigh">별점 높은순</option>
+              <option value="ratingHigh">별점 평균 높은순</option>
             </select>
           </div>
         </div>
@@ -232,18 +236,17 @@ const sanitizeAbvInput = (field) => {
 
   if (target.value === "" || target.value == null) return
 
-  let value = Number(target.value)
-
-  if (isNaN(value)) {
-    target.value = ""
+  if (!/^\d*\.?\d?$/.test(target.value)) {
+    target.value = target.value.slice(0, -1)
     return
   }
 
-  if (value < ABV_MIN) value = ABV_MIN
-  if (value > ABV_MAX) value = ABV_MAX
+  let value = Number(target.value)
 
-  value = Math.floor(value * 10) / 10
-  target.value = String(value)
+  if (!isNaN(value)) {
+    if (value < ABV_MIN) target.value = String(ABV_MIN)
+    if (value > ABV_MAX) target.value = String(ABV_MAX)
+  }
 }
 
 const sanitizePriceInput = (field) => {
@@ -262,6 +265,24 @@ const sanitizePriceInput = (field) => {
   if (value > PRICE_MAX) value = PRICE_MAX
 
   target.value = String(Math.floor(value))
+}
+
+const formatPriceInput = (field) => {
+  const target = field === "priceLow" ? priceLow : priceHigh
+
+  if (target.value === "" || target.value == null) return
+
+  let value = Number(target.value)
+
+  if (isNaN(value)) {
+    target.value = ""
+    return
+  }
+
+  if (value < PRICE_MIN) value = PRICE_MIN
+  if (value > PRICE_MAX) value = PRICE_MAX
+
+  target.value = String(Math.floor(value / 1000) * 1000)
 }
 
 const normalizeAbv = (value, defaultValue) => {
@@ -285,7 +306,7 @@ const normalizePrice = (value, defaultValue) => {
   if (num < PRICE_MIN) return PRICE_DEFAULT_LOW
   if (num > PRICE_MAX) return PRICE_DEFAULT_HIGH
 
-  return String(Math.floor(num))
+  return String(Math.floor(num / 1000) * 1000)
 }
 
 const normalizeSort = (value) => {
@@ -496,6 +517,9 @@ const applySearch = () => {
 }
 
 const applyFilter = () => {
+  formatPriceInput("priceLow")
+  formatPriceInput("priceHigh")
+
   page.value = 1
   updateRoute()
 }

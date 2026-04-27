@@ -49,6 +49,7 @@
              , cc1.code_name AS reportStatus        /* 신고 상태 이름 */
              , cc2.code_name AS reportReason        /* 신고 사유 이름 */
              , tn.title AS noteTitle                /* 노트 제목 */
+             , c.note_id AS commentNoteId            /* 댓글의 노트 ID */
              , c.content AS commentContent          /* 댓글 내용 */
 
           FROM report r                 /* 신고 테이블 */

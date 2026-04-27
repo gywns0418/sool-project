@@ -144,6 +144,9 @@ function formatDate(value) {
   margin: 0 0 6px;
   font-size: 13px;
   color: #9a8f84;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .card-title {
@@ -152,7 +155,9 @@ function formatDate(value) {
   font-weight: 600;
   color: var(--ink);
   line-height: 1.4;
-  word-break: keep-all;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .info-list {

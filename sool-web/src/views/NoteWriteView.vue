@@ -423,6 +423,7 @@ async function fetchEditForm() {
     const drinkData = res.data.drink || {}
     const noteData = res.data.note || {}
     const metricList = res.data.metricList || []
+    const defaultMetricList = res.data.defaultMetricList || []
 
     noteImage.value = res.data.image || null
     imagePreview.value = res.data.image?.fileUrl || ''
@@ -441,7 +442,11 @@ async function fetchEditForm() {
     title.value = noteData.title || ''
     selectedStar.value = Number(noteData.rating ?? 3)
     memo.value = noteData.content || ''
-    scores.value = normalizeMetricList(metricList)
+
+    scores.value = normalizeMetricList(
+      metricList.length > 0 ? metricList : defaultMetricList
+    )
+
     syncTextCounts()
   } catch (error) {
     const status = error.response?.status

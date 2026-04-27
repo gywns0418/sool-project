@@ -80,14 +80,21 @@
              ) lc
           ON d.drink_id = lc.obj_id
 
-        <!-- 평균 평점 집계 -->
-   LEFT JOIN (
-              SELECT drink_id
-                   , ROUND(AVG(rating), 1) AS avgRating
-                FROM tasting_note                      /* 테이스팅 노트 테이블 */
-               WHERE is_deleted = 'N'
-            GROUP BY drink_id
-             ) ar
+
+      <!-- 평균 평점 집계 -->
+    LEFT JOIN (
+              SELECT tn.drink_id
+                   , ROUND(AVG(tn.rating), 1) AS avgRating
+                FROM tasting_note tn                     /* 테이스팅 노트 테이블 */
+           LEFT JOIN report r                            /* 신고 테이블 */
+                  ON r.obj_id = tn.note_id
+                 AND r.obj_type = 'NOTE'
+                 AND r.status_code = 'COMPLETED'
+                 AND r.is_deleted = 'N'
+               WHERE tn.is_deleted = 'N'
+                 AND r.report_id IS NULL
+            GROUP BY tn.drink_id
+            ) ar
           ON d.drink_id = ar.drink_id
 
         <!-- 로그인 했을 경우 -->
@@ -147,9 +154,12 @@
 
         <!-- 필터 -->
         <if test="categoryCode != null and categoryCode != ''">
+          <!-- 카테고리 -->
           AND d.category_code = #{categoryCode}
         </if>
+        <!-- 도수 -->
           AND d.abv   BETWEEN #{abvLow}   AND #{abvHigh}
+        <!-- 가격 -->  
           AND d.price BETWEEN #{priceLow} AND #{priceHigh}
 
         <!-- 정렬 -->

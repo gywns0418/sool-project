@@ -637,6 +637,8 @@ watch(
   color: var(--ink);
   margin-bottom: 12px;
   line-height: 1.4;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .nd-stars {
@@ -686,6 +688,8 @@ watch(
   line-height: 1.8;
   font-weight: 300;
   margin-bottom: 24px;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .nd-like-row {

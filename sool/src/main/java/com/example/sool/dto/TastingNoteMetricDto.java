@@ -9,5 +9,6 @@ public class TastingNoteMetricDto {
     private Integer score;
 
     private String metricName;
+    private String codeDesc;
     private Double avgScore;
 }

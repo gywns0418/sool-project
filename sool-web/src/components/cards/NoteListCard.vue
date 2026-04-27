@@ -279,6 +279,8 @@ onMounted(() => {
   color: var(--sub);
   line-height: 1.65;
   font-weight: 300;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .note-side {

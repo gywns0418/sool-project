@@ -23,6 +23,7 @@ public class ReportDto {
     private String reportStatus;
     private String reportReason;
     private String noteTitle;
+    private Integer commentNoteId;
     private String commentContent;
 
 }
