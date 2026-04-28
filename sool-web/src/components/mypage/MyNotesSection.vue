@@ -22,13 +22,22 @@ import MyNoteCard from './card/MyNoteCard.vue'
 import { getMyTastingNote, deleteMyTastingNote } from '@/api/mypageApi'
 import { useAuthStore } from '@/stores/authStore'
 
-const emit = defineEmits(['refreshSidebar'])
+const emit = defineEmits(['refreshSidebar', 'authError'])
 
 const router = useRouter()
-const route = useRoute()
-const authStore = useAuthStore()
 
 const noteList = ref([])
+
+const handleAuthError = (error) => {
+  const status = error?.response?.status
+
+  if (status === 401 || status === 403) {
+    emit('authError', error)
+    return true
+  }
+
+  return false
+}
 
 const fetchMyTastingNote = async () => {
   try {
@@ -37,7 +46,7 @@ const fetchMyTastingNote = async () => {
 
     noteList.value = res.data?.noteList || []
   } catch (error) {
-    const handled = await handleForbidden(error)
+    const handled = handleAuthError(error)
     if (handled) return
 
     console.log('테이스팅 노트 목록 조회 실패', error)
@@ -68,7 +77,7 @@ async function handleDeleteNote(noteId) {
 
     emit('refreshSidebar')
   } catch (error) {
-    const handled = await handleForbidden(error)
+    const handled = handleAuthError(error)
     if (handled) return
 
     console.log('테이스팅 노트 삭제 실패', error)

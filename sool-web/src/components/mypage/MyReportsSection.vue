@@ -64,9 +64,22 @@ import { ref, onMounted } from 'vue'
 import { getMyReports } from '@/api/mypageApi'
 import { useRouter } from 'vue-router'
 
+const emit = defineEmits(['authError'])
+
 const router = useRouter()
 
 const reportList = ref([])
+
+const handleAuthError = (error) => {
+  const status = error?.response?.status
+
+  if (status === 401 || status === 403) {
+    emit('authError', error)
+    return true
+  }
+
+  return false
+}
 
 const fetchMyReports = async () => {
   try {
@@ -74,6 +87,8 @@ const fetchMyReports = async () => {
     console.log(res.data)
     reportList.value = res.data || []
   } catch (error) {
+    if (handleAuthError(error)) return
+
     console.log('신고 목록 조회 실패', error)
     reportList.value = []
   }
@@ -262,6 +277,8 @@ function moveReportDetail(report) {
   margin: 0;
   font-size: 14px;
   color: var(--ink);
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .report-reason {
@@ -269,6 +286,8 @@ function moveReportDetail(report) {
   font-size: 14px;
   line-height: 1.5;
   color: #6f6257;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .empty-text {

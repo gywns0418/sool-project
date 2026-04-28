@@ -45,7 +45,7 @@
         <div class="form-group full">
           <label>닉네임</label>
           <input
-            v-model.trim="profileForm.name"
+            v-model="profileForm.name"
             type="text"
             maxlength="10"
             placeholder="닉네임을 입력하세요"
@@ -178,7 +178,7 @@ import {
   checkLoginIdApi
 } from '@/api/mypageApi'
 
-const emit = defineEmits(['updateProfile'])
+const emit = defineEmits(['updateProfile', 'authError'])
 
 const props = defineProps({
   userInfo: {
@@ -231,6 +231,18 @@ const passwordMsg = ref('')
 const passwordConfirmValid = ref(true)
 const passwordConfirmMsg = ref('')
 
+const handleAuthError = (error) => {
+  const status = error?.response?.status
+
+  if (status === 401 || status === 403) {
+    emit('authError', error)
+    return true
+  }
+
+  return false
+}
+
+
 const canCheckLoginId = computed(() => {
   return !!profileForm.loginId && loginIdValid.value
 })
@@ -277,6 +289,15 @@ function validateName() {
     return
   }
 
+  if (
+    profileForm.name.includes('탈퇴한회원') ||
+    profileForm.name.includes('탈퇴한 회원')
+  ) {
+    nameValid.value = false
+    nameMsg.value = '해당 닉네임은 사용할 수 없습니다. 다른 닉네임을 입력하세요.'
+    return
+  }
+
   nameValid.value = true
   nameMsg.value = '사용 가능한 닉네임 형식입니다.'
 }
@@ -295,6 +316,13 @@ function onChangeName(event) {
     profileForm.name = rawValue.replace(/\s/g, '')
     nameValid.value = false
     nameMsg.value = '닉네임에는 띄어쓰기를 사용할 수 없습니다.'
+    return
+  }
+
+  if (rawValue.includes('탈퇴한회원') || rawValue.includes('탈퇴한 회원')) {
+    profileForm.name = rawValue
+    nameValid.value = false
+    nameMsg.value = '해당 닉네임은 사용할 수 없습니다. 다른 닉네임을 입력하세요.'
     return
   }
 
@@ -370,6 +398,7 @@ async function checkLoginIdDuplicate() {
       loginIdMsg.value = '이미 사용 중인 아이디입니다.'
     }
   } catch (e) {
+    if (handleAuthError(e)) return
 
     console.log('아이디 확인 실패', e)
     loginIdChecked.value = false
@@ -461,6 +490,7 @@ async function saveProfile() {
       email: profileForm.email
     })
   } catch (e) {
+    if (handleAuthError(e)) return
 
     console.log('기본 정보 수정 실패', e)
     alert(e?.response?.data || '기본 정보 수정에 실패했습니다.')
@@ -509,6 +539,7 @@ async function savePassword() {
     alert('비밀번호가 변경되었습니다.')
     resetPasswordForm()
   } catch (e) {
+    if (handleAuthError(e)) return
 
     console.log('비밀번호 변경 실패', e)
 

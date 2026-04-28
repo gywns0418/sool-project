@@ -162,7 +162,7 @@ public class AuthService {
         }
 
         if (userService.selectUserByEmail(email) != null) {
-            throw new IllegalArgumentException("이미 가입된 이메일입니다.");
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
 
         String cooldownKey = getCooldownKey(email);
@@ -263,7 +263,7 @@ public class AuthService {
         }
 
         if (userService.selectUserByEmail(userDto.getEmail()) != null) {
-            throw new IllegalArgumentException("이미 가입된 이메일입니다.");
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
 
         String verified = redisTemplate.opsForValue().get(getVerifiedKey(userDto.getEmail()));
@@ -305,7 +305,11 @@ public class AuthService {
 
     private void validateName(String name) {
         if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("이름을 입력하세요.");
+            throw new IllegalArgumentException("닉네임을 입력하세요.");
+        }
+
+        if ("탈퇴한회원".equals(name.trim())){
+            throw new IllegalArgumentException("해당 닉네임은 사용할 수 없습니다. 다른 닉네임을 입력하세요.");
         }
     }
 

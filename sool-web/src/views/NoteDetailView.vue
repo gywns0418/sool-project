@@ -787,13 +787,28 @@ watch(
   margin-top: 28px;
   display: flex;
   flex-direction: column;
-  height: 420px;
 }
 
 .comment-list {
-  flex: 1;
+  max-height: 340px;
   overflow-y: auto;
   padding-right: 6px;
+}
+
+.comment-list:has(.nd-comment-empty) {
+  max-height: none;
+}
+
+.nd-comment-empty {
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  background: white;
+  font-size: 13px;
+  color: var(--muted);
 }
 
 .comment-block {
@@ -845,9 +860,8 @@ watch(
   border-bottom: 3px solid var(--border);
 }
 
-.nd-flavor-empty,
-.nd-comment-empty {
-  min-height: 120px;
+.nd-flavor-empty{
+  min-height: 100px;
   display: flex;
   align-items: center;
   justify-content: center;

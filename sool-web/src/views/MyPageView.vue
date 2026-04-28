@@ -38,19 +38,29 @@
       </aside>
 
       <main class="my-main">
-        <MyNotesSection v-if="activeTab === 'notes'"
+        <MyNotesSection
+          v-if="activeTab === 'notes'"
           @refreshSidebar="fetchSidebarInfo"
+          @authError="handleAuthError"
         />
 
-        <MyLikedDrinksSection v-else-if="activeTab === 'likes'" @refreshSidebar="fetchSidebarInfo"/>
+        <MyLikedDrinksSection
+          v-else-if="activeTab === 'likes'"
+          @refreshSidebar="fetchSidebarInfo"
+          @authError="handleAuthError"
+        />
 
         <MyProfileSection
           v-else-if="activeTab === 'profile'"
           :user-info="sidebarInfo"
           @updateProfile="updateProfile"
+          @authError="handleAuthError"
         />
 
-        <MyReportsSection v-else-if="activeTab === 'reports'" />
+        <MyReportsSection
+          v-else-if="activeTab === 'reports'"
+          @authError="handleAuthError"
+        />
       </main>
     </div>
   </div>
@@ -129,7 +139,7 @@ const moveToLogin = async () => {
 const handleAuthError = async (error) => {
   const status = error?.response?.status
 
-  if (status === 403) {
+  if (status === 401 || status === 403) {
     await moveToLogin()
     return true
   }

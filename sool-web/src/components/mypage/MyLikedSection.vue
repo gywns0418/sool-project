@@ -42,21 +42,26 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
 import { getMyLikes, deleteMyLike } from '@/api/mypageApi'
-import { useAuthStore } from '@/stores/authStore'
 
 import MyLikedNoteCard from './card/MyLikedNoteCard.vue'
 import MyLikedDrinkCard from './card/MyLikedDrinkCard.vue'
 
-const emit = defineEmits(['refreshSidebar'])
-
-const router = useRouter()
-const route = useRoute()
-const authStore = useAuthStore()
+const emit = defineEmits(['refreshSidebar', 'authError'])
 
 const likedNoteList = ref([])
 const likedDrinkList = ref([])
+
+const handleAuthError = (error) => {
+  const status = error?.response?.status
+
+  if (status === 401 || status === 403) {
+    emit('authError', error)
+    return true
+  }
+
+  return false
+}
 
 const fetchMyLikes = async () => {
   try {
@@ -66,7 +71,7 @@ const fetchMyLikes = async () => {
     likedNoteList.value = res.data?.likedNoteList || []
     likedDrinkList.value = res.data?.likedDrinkList || []
   } catch (error) {
-    const handled = await handleForbidden(error)
+    const handled = handleAuthError(error)
     if (handled) return
 
     console.log('좋아요 목록 조회 실패', error)
@@ -90,7 +95,7 @@ async function handleUnlikeDrink(drinkId) {
 
     emit('refreshSidebar')
   } catch (error) {
-    const handled = await handleForbidden(error)
+    const handled = handleAuthError(error)
     if (handled) return
 
     console.log('좋아요 취소 실패', error)
@@ -112,7 +117,7 @@ async function handleUnlikeNote(noteId) {
 
     emit('refreshSidebar')
   } catch (error) {
-    const handled = await handleForbidden(error)
+    const handled = handleAuthError(error)
     if (handled) return
 
     console.log('좋아요 취소 실패', error)

@@ -86,7 +86,6 @@
 
           FROM user     /* 회원 테이블 */
          WHERE email = #{email}
-           AND is_deleted = 'N'
     </select>
 
 

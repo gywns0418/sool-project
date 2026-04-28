@@ -24,7 +24,7 @@
           </h4>
 
           <div class="info-list">
-            <span>평점 ★ {{ formatNumber(displayItem.avgRating) }}</span>
+            <span>별점 ★ {{ formatNumber(displayItem.avgRating) }}</span>
             <span v-if="displayItem.abv !== null">
               도수 {{ displayItem.abv }}%
             </span>

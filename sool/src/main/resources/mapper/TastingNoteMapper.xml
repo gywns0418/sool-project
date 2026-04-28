@@ -23,7 +23,7 @@
 
          FROM tasting_note tn   /* 테이스팅 노트 테이블 */
 
-    LEFT JOIN user u            /* 회원 테이블 */
+   INNER JOIN user u            /* 회원 테이블 */
            ON tn.user_id = u.user_id
           AND u.is_deleted = 'N'
 
@@ -47,7 +47,7 @@
                   AND r.is_deleted = 'N'
           )
 
-      ORDER BY tn.created_at DESC
+     ORDER BY tn.created_at DESC
         LIMIT 3
     </select>
 
