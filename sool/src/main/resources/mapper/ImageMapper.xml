@@ -47,7 +47,7 @@
     </update>
 
     <!-- 이미지 삭제 -->
-    <delete id="deleteImage" parameterType="int">
+    <delete id="deleteImage" parameterType="ImageDto">
         DELETE
           FROM image        /* 이미지 테이블 */
          WHERE obj_type = #{objType}

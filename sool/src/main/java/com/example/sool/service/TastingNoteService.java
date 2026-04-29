@@ -259,7 +259,7 @@ public class TastingNoteService {
         LikeDto lDto = new LikeDto();
         lDto.setObjType("NOTE");
         lDto.setObjId(noteId);
-        likeMapper.deleteLike(lDto);
+        likeMapper.deleteAllLike(lDto);
 
         commentMapper.deleteAllComment(noteId);
 

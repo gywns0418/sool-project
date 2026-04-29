@@ -207,6 +207,7 @@ public class TastingNoteController {
         return ResponseEntity.ok("수정 완료");
     }
 
+    //노트 삭제
     @PostMapping("/notes/delete/{noteId}")
     public ResponseEntity<?> deleteNote(@PathVariable int noteId, Authentication authentication) {
         if (authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails)) {
