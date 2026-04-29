@@ -13,9 +13,14 @@
           v-for="report in reportList"
           :key="report.reportId"
           class="report-card"
+          :class="{ clickable: canMoveReportDetail(report) }"
+          @click="moveReportDetail(report)"
         >
           <div class="report-top">
             <div class="report-badges">
+              <span class="badge type-badge">
+                신고번호 : {{ report.reportId }}
+              </span>
               <span class="badge type-badge">
                 {{ formatObjType(report.objType) }}
               </span>
@@ -23,7 +28,7 @@
                 class="badge status-badge"
                 :class="getStatusClass(report.statusCode)"
               >
-                {{ formatStatus(report.reportStatus) }}
+                {{ report.reportStatus || formatStatus(report.statusCode) }}
               </span>
             </div>
 
@@ -57,8 +62,24 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { getMyReports } from '@/api/mypageApi'
+import { useRouter } from 'vue-router'
+
+const emit = defineEmits(['authError'])
+
+const router = useRouter()
 
 const reportList = ref([])
+
+const handleAuthError = (error) => {
+  const status = error?.response?.status
+
+  if (status === 401 || status === 403) {
+    emit('authError', error)
+    return true
+  }
+
+  return false
+}
 
 const fetchMyReports = async () => {
   try {
@@ -66,6 +87,8 @@ const fetchMyReports = async () => {
     console.log(res.data)
     reportList.value = res.data || []
   } catch (error) {
+    if (handleAuthError(error)) return
+
     console.log('신고 목록 조회 실패', error)
     reportList.value = []
   }
@@ -106,6 +129,28 @@ function formatDate(value) {
   const day = String(date.getDate()).padStart(2, '0')
 
   return `${year}.${month}.${day}`
+}
+
+function getReportNoteId(report) {
+  if (report.objType === 'NOTE') {
+    return report.objId
+  }
+
+  if (report.objType === 'COMMENT') {
+    return report.commentNoteId
+  }
+
+  return null
+}
+
+function canMoveReportDetail(report) {
+  return report.statusCode !== 'COMPLETED' && getReportNoteId(report)
+}
+
+function moveReportDetail(report) {
+  if (!canMoveReportDetail(report)) return
+
+  router.push(`/notes/${getReportNoteId(report)}`)
 }
 </script>
 
@@ -232,6 +277,8 @@ function formatDate(value) {
   margin: 0;
   font-size: 14px;
   color: var(--ink);
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .report-reason {
@@ -239,6 +286,8 @@ function formatDate(value) {
   font-size: 14px;
   line-height: 1.5;
   color: #6f6257;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .empty-text {
@@ -249,5 +298,14 @@ function formatDate(value) {
   color: #9a8f84;
   font-size: 14px;
   background: #fcfaf7;
+}
+
+.report-card.clickable {
+  cursor: pointer;
+}
+
+.report-card.clickable:hover {
+  border-color: #d8c0aa;
+  background: #fffaf5;
 }
 </style>

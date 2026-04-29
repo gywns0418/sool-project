@@ -60,7 +60,7 @@ router.beforeEach(async (to) => {
 
   // 이미 로그인한 상태에서 로그인 관련 페이지 접근 시 홈으로 이동
   if (to.meta.guestOnly && authStore.isLogin) {
-    alert('이미 로그인 한 상태입니다')
+    alert('이미 로그인을 한 상태입니다')
     return "/"
   }
 

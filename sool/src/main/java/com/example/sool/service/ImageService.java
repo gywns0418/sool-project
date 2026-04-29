@@ -43,9 +43,7 @@ public class ImageService {
         return imageDto;
     }
 
-    public ImageDto selectImageById(int image_id) {
-        return imageMapper.selectImageById(image_id);
-    }
+
 
 
     

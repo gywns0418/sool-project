@@ -362,6 +362,9 @@ const isOwner = computed(() => {
   line-height: 1.6;
   font-weight: 300;
   margin-bottom: 6px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .cm-actions {

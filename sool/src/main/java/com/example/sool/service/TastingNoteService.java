@@ -233,7 +233,7 @@ public class TastingNoteService {
     }
 
     //노트 삭제
-   @Transactional
+    @Transactional
     public void deleteNote(int noteId, int userId) {
 
         TastingNoteDto note = tastingNoteMapper.findByNoteId(noteId);
@@ -253,13 +253,13 @@ public class TastingNoteService {
         image = imageMapper.selectImage(image);
 
         if (image != null) {
-            imageMapper.deleteImage(image.getImageId());
+            imageMapper.deleteImage(image);
         }
 
         LikeDto lDto = new LikeDto();
         lDto.setObjType("NOTE");
         lDto.setObjId(noteId);
-        likeMapper.deleteLike(lDto);
+        likeMapper.deleteAllLike(lDto);
 
         commentMapper.deleteAllComment(noteId);
 

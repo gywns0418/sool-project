@@ -128,7 +128,11 @@ function formatDate(value) {
   margin: 0 0 6px;
   font-size: 13px;
   color: #9a8f84;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
+
 
 .card-title {
   margin: 0;
@@ -137,6 +141,9 @@ function formatDate(value) {
   color: var(--ink);
   line-height: 1.4;
   min-height: 44px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .meta-row {

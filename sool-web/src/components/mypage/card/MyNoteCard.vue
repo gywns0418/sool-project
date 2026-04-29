@@ -138,6 +138,9 @@ function formatDate(value) {
   color: var(--point);
   font-weight: 600;
   margin-bottom: 2px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .mn-title {
@@ -145,6 +148,9 @@ function formatDate(value) {
   font-weight: 600;
   color: var(--ink);
   margin-bottom: 4px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .mn-date {
@@ -197,5 +203,8 @@ function formatDate(value) {
   font-size: 11px;
   color: #7b7b7b;
   line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 </style>

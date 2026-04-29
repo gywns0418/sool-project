@@ -80,14 +80,21 @@
              ) lc
           ON d.drink_id = lc.obj_id
 
-        <!-- 평균 평점 집계 -->
-   LEFT JOIN (
-              SELECT drink_id
-                   , ROUND(AVG(rating), 1) AS avgRating
-                FROM tasting_note                      /* 테이스팅 노트 테이블 */
-               WHERE is_deleted = 'N'
-            GROUP BY drink_id
-             ) ar
+
+      <!-- 평균 별점 집계 -->
+    LEFT JOIN (
+              SELECT tn.drink_id
+                   , ROUND(AVG(tn.rating), 1) AS avgRating
+                FROM tasting_note tn                     /* 테이스팅 노트 테이블 */
+           LEFT JOIN report r                            /* 신고 테이블 */
+                  ON r.obj_id = tn.note_id
+                 AND r.obj_type = 'NOTE'
+                 AND r.status_code = 'COMPLETED'
+                 AND r.is_deleted = 'N'
+               WHERE tn.is_deleted = 'N'
+                 AND r.report_id IS NULL
+            GROUP BY tn.drink_id
+            ) ar
           ON d.drink_id = ar.drink_id
 
         <!-- 로그인 했을 경우 -->
@@ -119,17 +126,6 @@
 
                       UNION ALL
 
-                      <!-- 카테고리 대분류 한글 이름 -->
-                      SELECT d3.drink_id
-                        FROM drink d3                 /* 주류 테이블 */
-                  INNER JOIN common_code c1           /* 공통 코드 테이블 */
-                          ON d3.category_code = c1.code
-                         AND c1.group_code    = 'DRINK_CATEGORY'
-                       WHERE d3.is_deleted = 'N'
-                         AND c1.code_name LIKE CONCAT(#{keyword}, '%')
-
-                      UNION ALL
-
                       <!-- 카테고리 소분류 한글 이름 -->
                       SELECT d4.drink_id
                         FROM drink d4                 /* 주류 테이블 */
@@ -147,9 +143,12 @@
 
         <!-- 필터 -->
         <if test="categoryCode != null and categoryCode != ''">
+          <!-- 카테고리 -->
           AND d.category_code = #{categoryCode}
         </if>
+        <!-- 도수 -->
           AND d.abv   BETWEEN #{abvLow}   AND #{abvHigh}
+        <!-- 가격 -->  
           AND d.price BETWEEN #{priceLow} AND #{priceHigh}
 
         <!-- 정렬 -->
@@ -206,17 +205,6 @@
                   FROM drink d2           /* 주류 테이블 */
                 WHERE d2.is_deleted = 'N'
                   AND d2.drink_name_en LIKE CONCAT('%', #{keyword}, '%')
-
-                UNION ALL
-
-                <!-- 카테고리 대분류 한글 이름 -->
-                SELECT d3.drink_id
-                  FROM drink d3           /* 주류 테이블 */
-            INNER JOIN common_code c1     /* 공통 코드 테이블 */
-                    ON d3.category_code = c1.code
-                   AND c1.group_code    = 'DRINK_CATEGORY'
-                 WHERE d3.is_deleted = 'N'
-                   AND c1.code_name LIKE CONCAT(#{keyword}, '%')
 
                 UNION ALL
 

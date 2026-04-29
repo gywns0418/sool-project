@@ -29,6 +29,7 @@
             type="number"
             min="0"
             :max="ABV_MAX"
+            step="0.1"
             :placeholder="ABV_DEFAULT_LOW"
             class="range-inp"
             @keydown="preventMinusInput"
@@ -43,6 +44,7 @@
             type="number"
             min="0"
             :max="ABV_MAX"
+            step="0.1"
             :placeholder="ABV_DEFAULT_HIGH"
             class="range-inp"
             @keydown="preventMinusInput"
@@ -63,6 +65,7 @@
             class="range-inp"
             @keydown="preventMinusInput"
             @input="sanitizePriceInput('priceLow')"
+            @blur="formatPriceInput('priceLow')"
             @keydown.enter="applyFilter"
           />
           <span class="range-sep">—</span>
@@ -76,9 +79,11 @@
             class="range-inp"
             @keydown="preventMinusInput"
             @input="sanitizePriceInput('priceHigh')"
+            @blur="formatPriceInput('priceHigh')"
             @keydown.enter="applyFilter"
           />
         </div>
+        <p v-if="priceMsg" class="input-msg">{{ priceMsg }}</p>
 
         <button class="filter-apply-btn" @click="applyFilter">필터 적용</button>
         <button class="filter-reset-btn" @click="resetFilter">초기화</button>
@@ -101,7 +106,7 @@
               <option value="latest">최신순</option>
               <option value="like">좋아요 높은순</option>
               <option value="name">이름순</option>
-              <option value="ratingHigh">별점 높은순</option>
+              <option value="ratingHigh">평균 별점 높은순</option>
             </select>
           </div>
         </div>
@@ -182,6 +187,8 @@ const abvHigh = ref(ABV_DEFAULT_HIGH)
 const priceLow = ref(PRICE_DEFAULT_LOW)
 const priceHigh = ref(PRICE_DEFAULT_HIGH)
 
+const priceMsg = ref('')
+
 const page = ref(1)
 const size = ref(12)
 
@@ -223,6 +230,7 @@ const normalizeRange = () => {
 
 const preventMinusInput = (e) => {
   if (e.key === "-" || e.key === "e" || e.key === "E") {
+    alert('음수나 지수 표기는 입력할 수 없습니다.')
     e.preventDefault()
   }
 }
@@ -232,21 +240,52 @@ const sanitizeAbvInput = (field) => {
 
   if (target.value === "" || target.value == null) return
 
+  if (!/^\d*\.?\d?$/.test(target.value)) {
+    alert('도수는 소수점 1자리까지만 입력할 수 있습니다.')
+    target.value = target.value.slice(0, -1)
+    return
+  }
+
+  let value = Number(target.value)
+
+  if (!isNaN(value)) {
+    if (value < ABV_MIN) {
+      alert(`도수는 ${ABV_MIN} 이상만 입력할 수 있습니다.`)
+      target.value = String(ABV_MIN)
+    }
+    if (value > ABV_MAX){
+      alert(`도수는 ${ABV_MAX} 이하만 입력할 수 있습니다.`)
+      target.value = String(ABV_MAX)
+    }
+  }
+}
+
+const sanitizePriceInput = (field) => {
+  const target = field === "priceLow" ? priceLow : priceHigh
+
+  if (target.value === "" || target.value == null) return
+
   let value = Number(target.value)
 
   if (isNaN(value)) {
+    alert('가격은 숫자만 입력할 수 있습니다.')
     target.value = ""
     return
   }
 
-  if (value < ABV_MIN) value = ABV_MIN
-  if (value > ABV_MAX) value = ABV_MAX
+  if (value < PRICE_MIN){
+    alert(`가격은 ${PRICE_MIN}원 이상만 입력할 수 있습니다.`)
+    value = PRICE_MIN
+  }
+  if (value > PRICE_MAX){
+    alert(`가격은 ${PRICE_MAX}원 이하만 입력할 수 있습니다.`)
+    value = PRICE_MAX
+  }
 
-  value = Math.floor(value * 10) / 10
-  target.value = String(value)
+  target.value = String(Math.floor(value))
 }
 
-const sanitizePriceInput = (field) => {
+const formatPriceInput = (field) => {
   const target = field === "priceLow" ? priceLow : priceHigh
 
   if (target.value === "" || target.value == null) return
@@ -261,7 +300,16 @@ const sanitizePriceInput = (field) => {
   if (value < PRICE_MIN) value = PRICE_MIN
   if (value > PRICE_MAX) value = PRICE_MAX
 
-  target.value = String(Math.floor(value))
+  const formattedValue = Math.floor(value / 100) * 100
+
+  if (value !== formattedValue) {
+    priceMsg.value = '100원 단위로 자동 조정되었습니다.'
+    setTimeout(() => {
+      priceMsg.value = ''
+    }, 2000)
+  }
+
+  target.value = String(formattedValue)
 }
 
 const normalizeAbv = (value, defaultValue) => {
@@ -285,7 +333,7 @@ const normalizePrice = (value, defaultValue) => {
   if (num < PRICE_MIN) return PRICE_DEFAULT_LOW
   if (num > PRICE_MAX) return PRICE_DEFAULT_HIGH
 
-  return String(Math.floor(num))
+  return String(Math.floor(num / 100) * 100)
 }
 
 const normalizeSort = (value) => {
@@ -496,6 +544,9 @@ const applySearch = () => {
 }
 
 const applyFilter = () => {
+  formatPriceInput("priceLow")
+  formatPriceInput("priceHigh")
+
   page.value = 1
   updateRoute()
 }
@@ -813,5 +864,19 @@ const goTop = () => {
     #e5ddd6 85%,
     transparent 100%
   );
+}
+
+.input-msg {
+  margin-top: 4px;
+  font-size: 11px;
+  color: #c2785c;
+  animation: fadeInOut 2s ease;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(-3px); }
+  10% { opacity: 1; transform: translateY(0); }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
 }
 </style>

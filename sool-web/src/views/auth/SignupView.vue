@@ -367,6 +367,14 @@ function onChangeName(event) {
     return
   }
 
+  if (rawValue.includes('탈퇴한회원')) {
+    name.value = rawValue
+    nameValid.value = false
+    nameChecked.value = false
+    nameMsg.value = '해당 닉네임은 사용할 수 없습니다. 다른 닉네임을 입력하세요.'
+    return
+  }
+
   if (koreanJamoRegex.test(rawValue)) {
     name.value = rawValue
     nameValid.value = false
