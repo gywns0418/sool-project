@@ -89,6 +89,14 @@ const login = async () => {
   try {
     await authStore.login(loginId.value, password.value)
 
+    const loginUser = authStore.user
+
+    if (loginUser.roleCode === "ADMIN") {
+      window.open("http://localhost:8080/pandora3/bo", "_blank")
+      router.replace("/")
+      return
+    }
+
     const redirect = route.query.redirect || "/"
     router.replace(redirect)
   } catch (error) {
