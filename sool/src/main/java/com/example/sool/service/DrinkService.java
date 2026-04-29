@@ -44,8 +44,8 @@ public class DrinkService {
         }
 
         //redis에 데이터 없을 때 주류 top4
-        List<DrinkDto> list = drinkMapper.drinkTop();
-        for (DrinkDto drink : list) {
+        List<DrinkDto> drinkList = drinkMapper.drinkTop();
+        for (DrinkDto drink : drinkList) {
             ImageDto image = new ImageDto();
             image.setObjId(drink.getDrinkId());
             image.setObjType("DRINK");
@@ -55,9 +55,9 @@ public class DrinkService {
         }
 
         //redis에 데이터 삽입
-        redisTemplate.opsForValue().set(key, list, Duration.ofMinutes(10));
+        redisTemplate.opsForValue().set(key, drinkList, Duration.ofMinutes(10));
 
-        return list;
+        return drinkList;
     }
 
     //주류 목록 조회 (검색 + 필터 + 페이지 처리)
