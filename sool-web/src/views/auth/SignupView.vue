@@ -22,7 +22,7 @@
         <div class="step-bar">
           <div class="step-item" :class="{ active: step === 1, done: step > 1 }">
             <span class="step-no">01</span>
-            <span class="step-text">기본정보</span>
+            <span class="step-text">기본정보 입력</span>
           </div>
           <div class="step-item" :class="{ active: step === 2, done: step > 2 }">
             <span class="step-no">02</span>
@@ -30,7 +30,7 @@
           </div>
           <div class="step-item" :class="{ active: step === 3 }">
             <span class="step-no">03</span>
-            <span class="step-text">비밀번호</span>
+            <span class="step-text">비밀번호 설정</span>
           </div>
         </div>
 
@@ -955,8 +955,8 @@ onBeforeUnmount(() => {
 .spinner-large {
   width: 38px;
   height: 38px;
-  border: 3px solid rgba(200, 96, 58, 0.18);
-  border-top: 3px solid var(--point);
+  border: 2px solid rgba(200, 96, 58, 0.18);
+  border-top: 2px solid var(--point);
   border-radius: 50%;
   margin: 0 auto;
   animation: spin 0.8s linear infinite;

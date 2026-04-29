@@ -81,7 +81,7 @@
           ON d.drink_id = lc.obj_id
 
 
-      <!-- 평균 별점 집계 -->
+      <!-- 평균 별점 집계(노트 신고완료 제외) -->
     LEFT JOIN (
               SELECT tn.drink_id
                    , ROUND(AVG(tn.rating), 1) AS avgRating
@@ -165,7 +165,7 @@
                     , d.drink_id DESC
             </when>
 
-            <!-- 별점 평균 높은 순서 -->
+            <!-- 평균 별점 높은 순서 -->
             <when test="sort == 'ratingHigh'">
               ORDER BY IFNULL(ar.avgRating, 0) DESC
                     , d.drink_id DESC

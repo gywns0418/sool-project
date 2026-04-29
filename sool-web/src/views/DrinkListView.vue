@@ -98,7 +98,7 @@
               <input
                 v-model="searchKeyword"
                 class="search-inp"
-                placeholder="주류 이름, 영문명, 카테고리 검색"
+                placeholder="주류 이름, 영문명, 종류 검색"
               />
             </form>
 

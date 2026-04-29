@@ -22,7 +22,7 @@
         <div class="step-bar">
           <div class="step-item" :class="{ active: step === 1, done: step > 1 }">
             <span class="step-no">01</span>
-            <span class="step-text">기본정보</span>
+            <span class="step-text">기본정보 입력</span>
           </div>
           <div class="step-item" :class="{ active: step === 2, done: step > 2 }">
             <span class="step-no">02</span>
