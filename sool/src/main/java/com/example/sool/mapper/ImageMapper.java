@@ -11,10 +11,7 @@ public interface ImageMapper {
 
     ImageDto selectImage(ImageDto dto);
 
-    ImageDto selectImageById(int imageId);
-
     int updateImage(ImageDto dto);
 
-    int deleteImage(int imageId);
-
+    int deleteImage(ImageDto dto);
 }

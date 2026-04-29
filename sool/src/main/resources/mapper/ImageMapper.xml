@@ -25,22 +25,9 @@
         )
     </insert>
 
-    <!-- 이미지 단건 조회 -->
-    <select id="selectImageById" parameterType="int" resultType="ImageDto">
-        SELECT i.image_id AS imageId            /* 이미지 키 */
-             , i.obj_id AS objId                /* 대상 ID */
-             , i.obj_type AS objType            /* 대상 타입 */
-             , i.file_key AS fileKey            /* 파일 키 */
-             , i.file_url AS fileUrl            /* 파일 URL */
-             , i.created_at AS createdAt        /* 등록 일시 */
-          FROM image i          /* 이미지 테이블 */
-         WHERE i.image_id = #{imageId}
-    </select>
-
     <!-- 이미지 조회 -->
     <select id="selectImage" parameterType="ImageDto" resultType="ImageDto">
-        SELECT i.image_id AS imageId            /* 이미지 키 */
-             , i.obj_id AS objId                /* 대상 ID */
+        SELECT i.obj_id AS objId                /* 대상 ID */
              , i.obj_type AS objType            /* 대상 타입 */
              , i.file_key AS fileKey            /* 파일 키 */
              , i.file_url AS fileUrl            /* 파일 URL */
@@ -48,7 +35,6 @@
           FROM image i              /* 이미지 테이블 */
          WHERE i.obj_id = #{objId}
            AND i.obj_type = #{objType}
-      ORDER BY i.image_id DESC
     </select>
 
     <!-- 이미지 수정 -->
@@ -64,7 +50,8 @@
     <delete id="deleteImage" parameterType="int">
         DELETE
           FROM image        /* 이미지 테이블 */
-         WHERE image_id = #{imageId}
+         WHERE obj_type = #{objType}
+           AND obj_id = #{objId}
     </delete>
 
 </mapper>
