@@ -265,14 +265,15 @@ const navLinks = computed(() => {
   if (isEditMode.value) {
     return [
       { label: '홈', to: '/' },
-      { label: drink.value.drinkName || '노트 상세', to: drink.value.drinkId ? `/drinks/${drink.value.drinkId}` : '/' },
+      { label: drink.value.drinkName || '주류', to: drink.value.drinkId ? `/drinks/${drink.value.drinkId}` : '/' },
       { label: '노트 수정', to: route.fullPath, active: true }
     ]
   }
 
   return [
     { label: '홈', to: '/' },
-    { label: drink.value.drinkName || '노트 작성', to: route.fullPath, active: true }
+    { label: drink.value.drinkName || '주류', to: drink.value.drinkId ? `/drinks/${drink.value.drinkId}` : '/'  },
+    { label: '노트 작성', to: route.fullPath, active: true }
   ]
 })
 
@@ -736,7 +737,7 @@ onMounted(async () => {
     if (wasLogin) {
       alert('로그인이 필요합니다. 다시 로그인해주세요.')
     }
-    router.replace('/login')
+    router.replace(`/login?redirect=${encodeURIComponent(route.fullPath)}`)
     return
   }
 
