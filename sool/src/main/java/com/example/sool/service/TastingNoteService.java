@@ -13,6 +13,7 @@ import com.example.sool.dto.DrinkDto;
 import com.example.sool.dto.ImageDto;
 import com.example.sool.dto.LikeDto;
 import com.example.sool.dto.NoteSearchDto;
+import com.example.sool.dto.ReportDto;
 import com.example.sool.dto.TastingNoteDto;
 import com.example.sool.dto.TastingNoteMetricDto;
 import com.example.sool.mapper.CommentMapper;
@@ -264,6 +265,11 @@ public class TastingNoteService {
         commentMapper.deleteAllComment(noteId);
 
         tastingNoteMetricMapper.deleteByNoteId(noteId);
+
+        ReportDto rDto = new ReportDto();
+        rDto.setObjType("NOTE");
+        rDto.setObjId(noteId);
+        reportMapper.deleteReport(rDto);
 
         tastingNoteMapper.deleteTastingNote(noteId);
 

@@ -20,4 +20,6 @@ public interface ReportMapper {
 
     //신고 처리 완료된 노트 확인
     int existsCompletedReportByNoteId(int noteId);
+
+    int deleteReport(ReportDto reportDto);
 }

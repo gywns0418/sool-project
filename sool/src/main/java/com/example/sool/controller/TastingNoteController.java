@@ -46,7 +46,7 @@ public class TastingNoteController {
 
     //노트 목록
     @GetMapping("/drinks/{drinkId}/notes")
-    public Map<String, Object> findNoteAll(@PathVariable Integer drinkId, NoteSearchDto dto) {
+    public Map<String, Object> findNoteAll(@PathVariable Integer drinkId, NoteSearchDto dto, Authentication authentication) {
 
         dto.setDrinkId(drinkId);
 
@@ -57,6 +57,13 @@ public class TastingNoteController {
 
         List<TastingNoteMetricDto> avgMetric = tastingNoteService.findAvgMetricByDrinkId(drinkId);
 
+        boolean hasMyNote = false;
+
+        if (authentication != null && authentication.isAuthenticated()) {
+            CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
+            hasMyNote = tastingNoteService.existsMyNoteByDrinkId(user.getUserId(), drinkId);
+        }
+
         Map<String, Object> result = new HashMap<>();
         result.put("list", list);
         result.put("totalCount", totalCount);
@@ -64,6 +71,7 @@ public class TastingNoteController {
         result.put("size", dto.getSize());
         result.put("totalPage", totalPage);
         result.put("avgMetric",avgMetric);
+        result.put("hasMyNote", hasMyNote);
 
         return result;
     }

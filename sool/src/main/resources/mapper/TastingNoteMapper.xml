@@ -266,7 +266,7 @@
 
      LEFT JOIN (
                 SELECT DISTINCT obj_id
-                  FROM report           /* 신고 테이블 */
+                  FROM report               /* 신고 테이블 */
                  WHERE obj_type = 'NOTE'
                    AND status_code = 'COMPLETED'
                    AND is_deleted = 'N'
