@@ -3,7 +3,21 @@
     <router-link to="/" class="nav-logo">SoolNote</router-link>
     <ul class="nav-links">
       <li v-for="link in links" :key="link.label">
-        <router-link :to="link.to" :class="{ 'active-link': isActive(link) }">{{ link.label }}</router-link>
+        <router-link
+          v-if="link.to"
+          :to="link.to"
+          :class="{ 'active-link': isActive(link) }"
+        >
+          {{ link.label }}
+        </router-link>
+
+        <span
+          v-else
+          class="nav-disabled"
+          :class="{ 'active-link': isActive(link) }"
+        >
+          {{ link.label }}
+        </span>
       </li>
     </ul>
     <div class="nav-right">
@@ -85,18 +99,6 @@ const logout = async () => {
   flex: 1;
 }
 
-.nav-links a {
-  font-size: 13.5px;
-  color: var(--sub);
-  font-weight: 400;
-  letter-spacing: 0.1px;
-}
-
-.nav-links a.active-link {
-  color: var(--ink);
-  font-weight: 600;
-}
-
 .nav-right {
   display: flex;
   align-items: center;
@@ -133,5 +135,22 @@ const logout = async () => {
 
 .nav-name{
   font-size:12.5px;color:var(--sub);
+}
+
+.nav-links a,
+.nav-disabled {
+  font-size: 13.5px;
+  color: var(--sub);
+  font-weight: 400;
+  letter-spacing: 0.1px;
+}
+
+.nav-disabled {
+  cursor: default;
+}
+
+.nav-disabled.active-link {
+  color: var(--ink);
+  font-weight: 600;
 }
 </style>

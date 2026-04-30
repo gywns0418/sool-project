@@ -146,6 +146,7 @@
                  ELSE u.name
                END AS userName                      /* 회원 이름 */
              , d.drink_name AS drinkName            /* 주류 이름 */
+             , d.is_deleted AS drinkIsDeleted       /* 주류 삭제여부 */
              , d.category_code AS categoryCode      /* 카테고리 대분류 */
              , cc.code_name AS typeName             /* 카테고리 소분류 */
              , IFNULL(l.likeCount, 0) AS likeCount  /* 좋아요 수 */
