@@ -226,7 +226,7 @@ const moveToLogin = async (message) => {
 
   authRedirecting.value = true
 
-  alert(message || '로그인 세션이 만료되었습니다. 다시 로그인해주세요.')
+  alert(message || '로그인이 필요합니다. 다시 로그인해주세요.')
 
   clearAuthState()
 
@@ -242,7 +242,7 @@ const handleAuthError = async (error) => {
   const status = error?.response?.status
 
   if (status === 401 || status === 403) {
-    await moveToLogin(getErrorMessage(error, '로그인 세션이 만료되었습니다. 다시 로그인해주세요.'))
+    await moveToLogin(getErrorMessage(error, '로그인이 필요합니다. 다시 로그인해주세요.'))
     return true
   }
 

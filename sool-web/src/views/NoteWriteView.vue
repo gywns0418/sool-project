@@ -363,13 +363,39 @@ function resetForm() {
   clearSelectedImage()
 }
 
-function normalizeMetricList(metricList) {
-  return (metricList || []).map(item => ({
-    code: item.code || item.metricCode,
-    codeName: item.codeName || item.metricName,
-    codeDesc: item.codeDesc || '',
-    value: Number(item.value ?? item.score ?? 1)
-  }))
+
+function mergeMetricList(metricList, defaultMetricList) {
+  const map = new Map()
+
+  metricList.forEach(m => {
+    const code = m.code || m.metricCode
+
+    map.set(code, {
+      code,
+      codeName: m.codeName || m.metricName,
+      codeDesc: m.codeDesc || '',
+      value: Number(m.value ?? m.score ?? 1),
+      sortSeq: Number(m.sortSeq ?? 9999)
+    })
+  })
+
+  defaultMetricList.forEach(d => {
+    const code = d.code || d.metricCode
+
+    if (!map.has(code)) {
+      map.set(code, {
+        code,
+        codeName: d.codeName || d.metricName,
+        codeDesc: d.codeDesc || '',
+        value: 1,
+        sortSeq: Number(d.sortSeq ?? 9999)
+      })
+    }
+  })
+
+  return Array.from(map.values()).sort((a, b) => {
+    return Number(a.sortSeq ?? 9999) - Number(b.sortSeq ?? 9999)
+  })
 }
 
 function toggleScoreDesc(code) {
@@ -391,7 +417,7 @@ async function fetchWriteForm() {
     }
 
     drink.value = res.data.drink
-    scores.value = normalizeMetricList(res.data.metricList)
+    scores.value = mergeMetricList([], res.data.metricList || [])
     syncTextCounts()
   } catch (error) {
     const status = error.response?.status
@@ -443,9 +469,7 @@ async function fetchEditForm() {
     selectedStar.value = Number(noteData.rating ?? 3)
     memo.value = noteData.content || ''
 
-    scores.value = normalizeMetricList(
-      metricList.length > 0 ? metricList : defaultMetricList
-    )
+    scores.value = mergeMetricList(metricList, defaultMetricList)
 
     syncTextCounts()
   } catch (error) {
@@ -482,7 +506,7 @@ async function validateLoginSession() {
   await authStore.fetchMe()
 
   if (!authStore.isLogin) {
-    alert('세션이 만료되었습니다. 다시 로그인해주세요.')
+    alert('로그인이 필요합니다. 다시 로그인해주세요.')
     router.replace({
       path: '/login',
       query: { redirect: route.fullPath }
@@ -710,7 +734,7 @@ onMounted(async () => {
 
   if (!authStore.isLogin) {
     if (wasLogin) {
-      alert('세션이 만료되었습니다. 다시 로그인해주세요.')
+      alert('로그인이 필요합니다. 다시 로그인해주세요.')
     }
     router.replace('/login')
     return

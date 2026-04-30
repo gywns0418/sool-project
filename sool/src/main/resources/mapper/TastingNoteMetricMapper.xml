@@ -29,6 +29,7 @@
              , tnm.score                            /* 점수 */
              , cc.code_name AS metricName           /* 공통 코드 맛 프로파일 이름 */
              , cc.code_desc AS codeDesc             /* 맛 프로파일 설명 */
+             , cc.sort_seq AS sortSeq               /* 맛프로파일 순서 */
 
           FROM tasting_note_metric tnm         /* 맛 프로파일 테이블 */
 
