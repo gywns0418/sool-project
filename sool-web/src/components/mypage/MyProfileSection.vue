@@ -14,7 +14,7 @@
 
           <div class="inline-field">
             <input
-              v-model.trim="profileForm.loginId"
+              v-model="profileForm.loginId"
               type="text"
               maxlength="20"
               placeholder="아이디를 입력하세요"
@@ -261,7 +261,7 @@ function validateLoginId() {
   }
 
   loginIdValid.value = true
-  loginIdMsg.value = '형식이 올바릅니다. 아이디 확인을 진행해주세요.'
+  loginIdMsg.value = '아이디 확인을 진행해주세요.'
 }
 
 function validateName() {
@@ -367,10 +367,13 @@ function validatePasswordConfirm() {
   passwordConfirmMsg.value = '새 비밀번호가 일치합니다.'
 }
 
-function onChangeLoginId() {
-  validateLoginId()
+function onChangeLoginId(event) {
+  profileForm.loginId = event.target.value.trim()
+
   loginIdChecked.value = false
   checkedLoginIdValue.value = ''
+
+  validateLoginId()
 }
 
 async function checkLoginIdDuplicate() {

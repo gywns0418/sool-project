@@ -80,6 +80,7 @@ const logout = async () => {
   position: sticky;
   top: 0;
   z-index: 10;
+  overflow: hidden;
 }
 
 .nav-logo {
@@ -91,12 +92,32 @@ const logout = async () => {
   color: var(--point);
 }
 
-
 .nav-links {
   display: flex;
+  align-items: center;
   gap: 24px;
   list-style: none;
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.nav-links li {
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+.nav-links a,
+.nav-disabled {
+  display: block;
+  max-width: 160px;
+  font-size: 13.5px;
+  color: var(--sub);
+  font-weight: 400;
+  letter-spacing: 0.1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .nav-right {
@@ -105,7 +126,6 @@ const logout = async () => {
   gap: 10px;
   flex-shrink: 0;
 }
-
 
 .btn-ghost {
   padding: 7px 14px;
@@ -116,6 +136,7 @@ const logout = async () => {
   border: 1px solid var(--border);
   border-radius: 6px;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .btn-fill {
@@ -127,29 +148,28 @@ const logout = async () => {
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  white-space: nowrap;
 }
 
-.nav-point{
-  width:8px;height:8px;border-radius:50%;background:var(--point2);
+.nav-point {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--point2);
 }
 
-.nav-name{
-  font-size:12.5px;color:var(--sub);
-}
-
-.nav-links a,
-.nav-disabled {
-  font-size: 13.5px;
+.nav-name {
+  font-size: 12.5px;
   color: var(--sub);
-  font-weight: 400;
-  letter-spacing: 0.1px;
+  white-space: nowrap;
 }
 
 .nav-disabled {
   cursor: default;
 }
 
-.nav-disabled.active-link {
+.nav-disabled.active-link,
+.nav-links a.active-link {
   color: var(--ink);
   font-weight: 600;
 }

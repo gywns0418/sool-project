@@ -9,7 +9,7 @@
         :to="{ path: '/drinks', query: { categoryCode: item.code } }"
       >
         <span class="cat-emoji">{{ item.emoji }}</span>
-        {{ item.codeName }}
+        <span class="cat-name" :title="item.codeName">{{ item.codeName }}</span>
         <span class="cat-count">{{ item.drinkCount }}종</span>
       </router-link>
     </div>
@@ -57,14 +57,17 @@ const categoryListWithEmoji = computed(() => {
 
 .cat-pills {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 10px;
 }
 
 .cat-pill {
+  min-width: 0;
+  min-height: 120px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   padding: 18px 12px 14px;
   border-radius: 12px;
@@ -75,6 +78,7 @@ const categoryListWithEmoji = computed(() => {
   background: var(--surface);
   cursor: pointer;
   text-align: center;
+  overflow: hidden;
 }
 
 .cat-pill:hover {
@@ -87,11 +91,41 @@ const categoryListWithEmoji = computed(() => {
 .cat-emoji {
   font-size: 28px;
   line-height: 1;
+  flex-shrink: 0;
+}
+
+.cat-name {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  color: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: keep-all;
 }
 
 .cat-count {
   font-size: 10px;
   color: var(--muted);
   margin-top: 2px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@media (max-width: 1200px) {
+  .cat-pills {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .cat-strip {
+    padding: 32px 20px;
+  }
+
+  .cat-pills {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 </style>

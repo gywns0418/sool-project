@@ -961,6 +961,7 @@ watch(
   align-items: center;
   gap: 8px;
   margin-bottom: 8px;
+  flex-wrap: nowrap;
 }
 
 .score-label {
@@ -973,6 +974,7 @@ watch(
   font-size: 12px;
   color: var(--muted);
   margin-left: auto;
+  white-space: nowrap;
 }
 
 .seg-bar {
