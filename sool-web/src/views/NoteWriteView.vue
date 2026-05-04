@@ -166,7 +166,7 @@
           <input
             ref="fileInput"
             type="file"
-            accept="image/png,image/jpeg,image/jpg,image/webp"
+            accept="image/png,image/jpeg,image/webp"
             style="display:none"
             @change="handleImageUpload"
           />
