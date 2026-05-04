@@ -94,7 +94,7 @@
                WHERE tn.is_deleted = 'N'
                  AND r.report_id IS NULL
             GROUP BY tn.drink_id
-            ) ar
+           ) ar
           ON d.drink_id = ar.drink_id
 
         <!-- 로그인 했을 경우 -->
