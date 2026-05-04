@@ -63,7 +63,7 @@
             step="1000"
             :placeholder="PRICE_DEFAULT_LOW"
             class="range-inp"
-            @keydown="preventMinusInput"
+            @keydown="preventInput"
             @input="sanitizePriceInput('priceLow')"
             @blur="formatPriceInput('priceLow')"
             @keydown.enter="applyFilter"
@@ -77,7 +77,7 @@
             step="1000"
             :placeholder="PRICE_DEFAULT_HIGH"
             class="range-inp"
-            @keydown="preventMinusInput"
+            @keydown="preventInput"
             @input="sanitizePriceInput('priceHigh')"
             @blur="formatPriceInput('priceHigh')"
             @keydown.enter="applyFilter"
@@ -98,7 +98,7 @@
               <input
                 v-model="searchKeyword"
                 class="search-inp"
-                placeholder="주류 이름, 영문명, 종류 검색"
+                placeholder="주류 한글명, 영문명, 종류 검색"
               />
             </form>
 
@@ -233,6 +233,13 @@ const normalizeRange = () => {
 const preventMinusInput = (e) => {
   if (e.key === "-" || e.key === "e" || e.key === "E") {
     alert('음수나 지수 표기는 입력할 수 없습니다.')
+    e.preventDefault()
+  }
+}
+
+const preventInput = (e) => {
+  if (e.key === "-" || e.key === "e" || e.key === "E" || e.key === ".") {
+    alert('가격은 정수만 입력할 수 있습니다.')
     e.preventDefault()
   }
 }
