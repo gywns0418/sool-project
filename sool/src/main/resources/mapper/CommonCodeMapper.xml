@@ -27,13 +27,19 @@
     <select id="selectCategoryList" resultType="CommonCodeDto">
         SELECT cc.code                              /* 상세 코드 값 */
              , cc.code_name AS codeName             /* 상세 코드 이름 */
-             , COUNT(d.drink_id) AS drinkCount      /* 주류 수 집계 */
+             , COUNT(tc.code) AS drinkCount      /* 주류 수 집계 */
 
           FROM common_code cc       /* 공통 코드 테이블 */
 
      LEFT JOIN drink d              /* 주류 테이블 */
             ON cc.code = d.category_code
            AND d.is_deleted = 'N'
+
+     LEFT JOIN common_code tc                       /* 공통 코드 테이블 */
+            ON tc.group_code = 'DRINK_TYPE'
+           AND tc.code = d.type_code
+           AND tc.use_yn = 'Y'
+           AND tc.is_deleted = 'N'
 
          WHERE cc.group_code = 'DRINK_CATEGORY'
            AND cc.use_yn = 'Y'
