@@ -26,7 +26,7 @@ api.interceptors.response.use(
       }
 
       if (router.currentRoute.value.path !== "/login") {
-        alert("세션이 만료되었습니다. 다시 로그인해주세요.")
+        alert("로그인이 필요합니다. 다시 로그인해주세요.")
         router.push("/login")
       }
     }

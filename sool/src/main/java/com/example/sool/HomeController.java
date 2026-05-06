@@ -33,7 +33,7 @@ public class HomeController {
     @GetMapping("/api/home")
     public Map<String,Object> home() {
         // BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        // String encoded = encoder.encode("1234");
+        // String encoded = encoder.encode("111111");
         // System.out.println(encoded);
 
         Map<String,Object> map = new HashMap<>();

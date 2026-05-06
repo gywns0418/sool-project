@@ -6,7 +6,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.sool.dto.CommentDto;
+import com.example.sool.dto.ReportDto;
 import com.example.sool.mapper.CommentMapper;
+import com.example.sool.mapper.ReportMapper;
 import com.example.sool.mapper.TastingNoteMapper;
 
 @Service
@@ -14,10 +16,12 @@ public class CommentService {
 
     private final CommentMapper commentMapper;
     private final TastingNoteMapper tastingNoteMapper;
+    private final ReportMapper reportMapper;
 
-    public CommentService(CommentMapper commentMapper, TastingNoteMapper tastingNoteMapper) {
+    public CommentService(CommentMapper commentMapper, TastingNoteMapper tastingNoteMapper, ReportMapper reportMapper) {
         this.commentMapper = commentMapper;
         this.tastingNoteMapper = tastingNoteMapper;
+        this.reportMapper = reportMapper;
     }
 
     @Transactional
@@ -74,6 +78,7 @@ public class CommentService {
         return commentMapper.updateComment(commentDto);
     }
 
+    //댓글 삭제
     @Transactional
     public int deleteComment(Integer commentId) {
         validateCommentId(commentId);
@@ -86,9 +91,17 @@ public class CommentService {
 
         validateNote(savedComment.getNoteId());
 
-        return commentMapper.deleteComment(commentId);
+        ReportDto rDto = new ReportDto();
+        rDto.setObjType("COMMENT");
+        rDto.setObjId(commentId);
+        reportMapper.deleteReport(rDto);
+
+        int result = commentMapper.deleteComment(commentId);
+
+        return result;
     }
 
+    //노트 정보 확인
     private void validateNote(Integer noteId) {
         if (noteId == null) {
             throw new IllegalArgumentException("노트 정보가 올바르지 않습니다.");
@@ -101,12 +114,14 @@ public class CommentService {
         }
     }
 
+    //부모 댓글 정보 확인
     private void validateParentCommentId(Integer parentCommentId) {
         if (parentCommentId == null) {
             throw new IllegalArgumentException("부모 댓글 정보가 올바르지 않습니다.");
         }
     }
 
+    //댓글 정보 확인
     private void validateCommentId(Integer commentId) {
         if (commentId == null) {
             throw new IllegalArgumentException("댓글 정보가 올바르지 않습니다.");

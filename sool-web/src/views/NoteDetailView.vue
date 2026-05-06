@@ -208,11 +208,30 @@ const reportModalOpen = ref(false)
 const reportObjType = ref('')
 const reportObjId = ref(null)
 
-const navLinks = computed(() => [
-  { label: '홈', to: '/' },
-  { label: `${noteDetail.value?.drinkName || ''}`, to: `/drinks/${noteDetail.value?.drinkId}` },
-  { label: `${noteDetail.value?.drinkName || ''} 테이스팅 노트`, to: route.fullPath, active: true }
-])
+const navLinks = computed(() => {
+  const links = [
+    { label: '홈', to: '/' }
+  ]
+
+  if (noteDetail.value?.drinkId && noteDetail.value?.drinkIsDeleted !== 'Y') {
+    links.push({
+      label: noteDetail.value?.drinkName || '',
+      to: `/drinks/${noteDetail.value.drinkId}`
+    })
+  } else {
+    links.push({
+      label: '삭제된 주류'
+    })
+  }
+
+  links.push({
+    label: `${noteDetail.value?.drinkName || ''} 테이스팅 노트`,
+    to: route.fullPath,
+    active: true
+  })
+
+  return links
+})
 
 const isReportedNote = computed(() => {
   return !!noteDetail.value?.reported
@@ -314,25 +333,8 @@ const getReportedMessage = (objType) => {
     : '🚫 신고 처리된 노트입니다'
 }
 
-const getCommentAuthorName = (comment) => {
-  return comment?.userName || comment?.loginId || '작성자 미상'
-}
-
-const formatCommentDate = (value) => {
-  if (!value) return '날짜 정보 없음'
-
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return '날짜 정보 없음'
-
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-
-  return `${year}. ${month}. ${day}`
-}
-
 const moveToLogin = async () => {
-  alert('세션이 만료되었습니다. 다시 로그인해주세요.')
+  alert('로그인이 필요합니다. 다시 로그인해주세요.')
 
   authStore.user = null
   authStore.initialized = true
@@ -434,6 +436,7 @@ const fetchNoteDetail = async () => {
     }
 
     noteDetail.value = res.data
+    console.log(noteDetail.value)
     metricList.value = res.data?.metricList || []
 
     likeCount.value = Number(

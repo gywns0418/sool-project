@@ -29,6 +29,7 @@ public class TastingNoteDto {
     private String userName;
     
     private String drinkName;
+    private String drinkIsDeleted;
     private String categoryCode;
     private String typeName;
 

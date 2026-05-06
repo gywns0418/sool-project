@@ -160,6 +160,7 @@ const size = ref(5)
 const totalPage = ref(0)
 const sortBy = ref('latest')
 const avgMetric = ref([])
+const hasMyNote = ref(false)
 
 const authRedirecting = ref(false)
 
@@ -201,15 +202,6 @@ const visiblePages = computed(() => {
   return pages
 })
 
-const hasMyNote = computed(() => {
-  if (!authStore.isLogin) return false
-  if (!Array.isArray(noteList.value)) return false
-
-  const loginUserId = Number(authStore.user?.userId)
-  if (!loginUserId) return false
-
-  return noteList.value.some(note => Number(note.userId) === loginUserId)
-})
 
 const clearAuthState = () => {
   authStore.user = null
@@ -234,7 +226,7 @@ const moveToLogin = async (message) => {
 
   authRedirecting.value = true
 
-  alert(message || '로그인 세션이 만료되었습니다. 다시 로그인해주세요.')
+  alert(message || '로그인이 필요합니다. 다시 로그인해주세요.')
 
   clearAuthState()
 
@@ -250,7 +242,7 @@ const handleAuthError = async (error) => {
   const status = error?.response?.status
 
   if (status === 401 || status === 403) {
-    await moveToLogin(getErrorMessage(error, '로그인 세션이 만료되었습니다. 다시 로그인해주세요.'))
+    await moveToLogin(getErrorMessage(error, '로그인이 필요합니다. 다시 로그인해주세요.'))
     return true
   }
 
@@ -313,6 +305,7 @@ const fetchTastingNote = async () => {
     page.value = Number(res.data?.page ?? 1)
     size.value = Number(res.data?.size ?? 5)
     avgMetric.value = Array.isArray(res.data?.avgMetric) ? res.data.avgMetric : []
+    hasMyNote.value = !!res.data?.hasMyNote
   } catch (e) {
     noteList.value = []
     totalCount.value = 0

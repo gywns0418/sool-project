@@ -92,4 +92,13 @@
          AND is_deleted = 'N'
   </select>
 
+  <!-- 신고 삭제 -->
+  <update id="deleteReport" parameterType="ReportDto">
+      UPDATE report         /* 신고 테이블 */
+         SET is_deleted = 'Y'
+           , updated_at = NOW()
+       WHERE obj_type = #{objType}
+         AND obj_id = #{objId}
+  </update>
+
 </mapper>

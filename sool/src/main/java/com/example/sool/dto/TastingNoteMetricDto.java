@@ -10,5 +10,6 @@ public class TastingNoteMetricDto {
 
     private String metricName;
     private String codeDesc;
+    private int sortSeq;
     private Double avgScore;
 }

@@ -64,10 +64,10 @@ router.beforeEach(async (to) => {
     return "/"
   }
 
-  //로그인이 필요한 페이지 이동 시 로그인으로 이동
+  // 로그인이 필요한 페이지 이동 시
   if (to.meta.requiresAuth && !authStore.isLogin) {
-    alert('로그인이 필요한 페이지입니다 로그인 페이지로 이동합니다')
-    return "/login"
+    alert('로그인이 필요한 페이지입니다. 로그인 페이지로 이동합니다.')
+    return `/login?redirect=${encodeURIComponent(to.fullPath)}`
   }
 })
 

@@ -63,7 +63,7 @@
             step="1000"
             :placeholder="PRICE_DEFAULT_LOW"
             class="range-inp"
-            @keydown="preventMinusInput"
+            @keydown="preventInput"
             @input="sanitizePriceInput('priceLow')"
             @blur="formatPriceInput('priceLow')"
             @keydown.enter="applyFilter"
@@ -77,7 +77,7 @@
             step="1000"
             :placeholder="PRICE_DEFAULT_HIGH"
             class="range-inp"
-            @keydown="preventMinusInput"
+            @keydown="preventInput"
             @input="sanitizePriceInput('priceHigh')"
             @blur="formatPriceInput('priceHigh')"
             @keydown.enter="applyFilter"
@@ -98,7 +98,7 @@
               <input
                 v-model="searchKeyword"
                 class="search-inp"
-                placeholder="주류 이름, 영문명, 카테고리 검색"
+                placeholder="주류 한글명, 영문명, 종류 검색"
               />
             </form>
 
@@ -111,33 +111,35 @@
           </div>
         </div>
 
-        <div class="drinks-grid" v-if="drinkList.length > 0">
-          <DrinkGridCard
-            v-for="drink in drinkList"
-            :key="drink.drinkId || drink.drink_id"
-            :item="drink"
-            @refresh="loadDrinkList"
-          />
-        </div>
+        <div class="list-scroll">
+          <div class="drinks-grid" v-if="drinkList.length > 0">
+            <DrinkGridCard
+              v-for="drink in drinkList"
+              :key="drink.drinkId || drink.drink_id"
+              :item="drink"
+              @refresh="loadDrinkList"
+            />
+          </div>
 
-        <div v-else class="empty-box">
-          검색 결과가 없습니다.
-        </div>
+          <div v-else class="empty-box">
+            검색 결과가 없습니다.
+          </div>
 
-        <div class="pagination" v-if="totalPage > 1">
-          <button class="page-btn" :disabled="page === 1" @click="movePage(page - 1)">이전</button>
+          <div class="pagination" v-if="totalPage > 1">
+            <button class="page-btn" :disabled="page === 1" @click="movePage(page - 1)">이전</button>
 
-          <button
-            v-for="pageNum in visiblePages"
-            :key="pageNum"
-            class="page-btn"
-            :class="{ active: page === pageNum }"
-            @click="movePage(pageNum)"
-          >
-            {{ pageNum }}
-          </button>
+            <button
+              v-for="pageNum in visiblePages"
+              :key="pageNum"
+              class="page-btn"
+              :class="{ active: page === pageNum }"
+              @click="movePage(pageNum)"
+            >
+              {{ pageNum }}
+            </button>
 
-          <button class="page-btn" :disabled="page === totalPage" @click="movePage(page + 1)">다음</button>
+            <button class="page-btn" :disabled="page === totalPage" @click="movePage(page + 1)">다음</button>
+          </div>
         </div>
       </section>
     </div>
@@ -155,7 +157,7 @@ import { categories } from "@/mock/soolData"
 const ABV_MIN = 0
 const ABV_MAX = 99.9
 const ABV_DEFAULT_LOW = "0"
-const ABV_DEFAULT_HIGH = "60"
+const ABV_DEFAULT_HIGH = "99.9"
 
 const PRICE_MIN = 0
 const PRICE_MAX = 10000000
@@ -231,6 +233,13 @@ const normalizeRange = () => {
 const preventMinusInput = (e) => {
   if (e.key === "-" || e.key === "e" || e.key === "E") {
     alert('음수나 지수 표기는 입력할 수 없습니다.')
+    e.preventDefault()
+  }
+}
+
+const preventInput = (e) => {
+  if (e.key === "-" || e.key === "e" || e.key === "E" || e.key === ".") {
+    alert('가격은 정수만 입력할 수 있습니다.')
     e.preventDefault()
   }
 }
@@ -624,7 +633,7 @@ const visiblePages = computed(() => {
 })
 
 const goTop = () => {
-  const el = document.querySelector(".list-main")
+  const el = document.querySelector(".list-scroll")
 
   if (el) {
     el.scrollTop = 0
@@ -750,7 +759,9 @@ const goTop = () => {
 
 .list-main {
   flex: 1;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   padding: 28px 32px;
   background: var(--bg);
 }
@@ -838,11 +849,11 @@ const goTop = () => {
   opacity: 0.5;
 }
 
-.list-main::-webkit-scrollbar {
+.list-scroll::-webkit-scrollbar {
   width: 6px;
 }
 
-.list-main::-webkit-scrollbar-thumb {
+.list-scroll::-webkit-scrollbar-thumb {
   background: #ddd;
   border-radius: 3px;
 }
@@ -878,5 +889,11 @@ const goTop = () => {
   10% { opacity: 1; transform: translateY(0); }
   80% { opacity: 1; }
   100% { opacity: 0; }
+}
+
+.list-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 6px;
 }
 </style>
