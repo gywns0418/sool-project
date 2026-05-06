@@ -143,17 +143,19 @@
         </if>
 
         WHERE d.is_deleted = 'N'
+          <!-- 카테고리 대분류 사용여부 및 삭제여부 확인 -->
           AND EXISTS (
                 SELECT 1
-                  FROM common_code cc
+                  FROM common_code cc           /* 공통코드 테이블 */
                  WHERE cc.group_code = 'DRINK_CATEGORY'
                    AND cc.code = d.category_code
                    AND cc.use_yn = 'Y'
                    AND cc.is_deleted = 'N'
               )
+          <!-- 카테고리 소분류 사용여부 및 삭제여부 확인 -->
           AND EXISTS (
                 SELECT 1
-                  FROM common_code cc
+                  FROM common_code cc         /* 공통코드 테이블 */
                  WHERE cc.group_code = 'DRINK_TYPE'
                    AND cc.code = d.type_code
                    AND cc.use_yn = 'Y'
