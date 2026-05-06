@@ -64,11 +64,13 @@
    LEFT JOIN common_code cc1                           /* 공통 코드 테이블 */
           ON d.category_code = cc1.code
          AND cc1.group_code  = 'DRINK_CATEGORY'
+         AND cc1.use_yn = 'Y'
 
         <!-- 카테고리 소분류 한글 이름 -->
    LEFT JOIN common_code cc2                           /* 공통 코드 테이블 */
           ON d.type_code     = cc2.code
          AND cc2.group_code  = 'DRINK_TYPE'
+         AND cc2.use_yn = 'Y'
 
         <!-- 좋아요 수 집계 -->
    LEFT JOIN (
@@ -129,17 +131,34 @@
                       <!-- 카테고리 소분류 한글 이름 -->
                       SELECT d4.drink_id
                         FROM drink d4                 /* 주류 테이블 */
-                  INNER JOIN common_code c2           /* 공통 코드 테이블 */
-                          ON d4.type_code  = c2.code
-                         AND c2.group_code = 'DRINK_TYPE'
+                  INNER JOIN common_code c1           /* 공통 코드 테이블 */
+                          ON d4.type_code  = c1.code
+                         AND c1.group_code = 'DRINK_TYPE'
+                         AND c1.use_yn = 'Y'
                        WHERE d4.is_deleted = 'N'
-                         AND c2.code_name LIKE CONCAT(#{keyword}, '%')
+                         AND c1.code_name LIKE CONCAT(#{keyword}, '%')
                      ) k
              ) s
           ON d.drink_id = s.drink_id
         </if>
 
         WHERE d.is_deleted = 'N'
+          AND EXISTS (
+                SELECT 1
+                  FROM common_code cc
+                 WHERE cc.group_code = 'DRINK_CATEGORY'
+                   AND cc.code = d.category_code
+                   AND cc.use_yn = 'Y'
+                   AND cc.is_deleted = 'N'
+              )
+          AND EXISTS (
+                SELECT 1
+                  FROM common_code cc
+                 WHERE cc.group_code = 'DRINK_TYPE'
+                   AND cc.code = d.type_code
+                   AND cc.use_yn = 'Y'
+                   AND cc.is_deleted = 'N'
+              )
 
         <!-- 필터 -->
         <if test="categoryCode != null and categoryCode != ''">
@@ -211,17 +230,34 @@
                 <!-- 카테고리 소분류 한글 이름 -->
                 SELECT d4.drink_id
                   FROM drink d4           /* 주류 테이블 */
-            INNER JOIN common_code c2     /* 공통 코드 테이블 */
-                    ON d4.type_code  = c2.code
-                  AND c2.group_code = 'DRINK_TYPE'
+            INNER JOIN common_code c1     /* 공통 코드 테이블 */
+                    ON d4.type_code  = c1.code
+                  AND c1.group_code = 'DRINK_TYPE'
+                  AND c1.use_yn = 'Y'
                 WHERE d4.is_deleted = 'N'
-                  AND c2.code_name LIKE CONCAT(#{keyword}, '%')
+                  AND c1.code_name LIKE CONCAT(#{keyword}, '%')
               ) k
           ) s
          ON d.drink_id = s.drink_id
         </if>
 
          WHERE d.is_deleted = 'N'
+          AND EXISTS (
+                SELECT 1
+                  FROM common_code cc
+                WHERE cc.group_code = 'DRINK_CATEGORY'
+                  AND cc.code = d.category_code
+                  AND cc.use_yn = 'Y'
+                  AND cc.is_deleted = 'N'
+              )
+          AND EXISTS (
+                SELECT 1
+                  FROM common_code cc
+                WHERE cc.group_code = 'DRINK_TYPE'
+                  AND cc.code = d.type_code
+                  AND cc.use_yn = 'Y'
+                  AND cc.is_deleted = 'N'
+              )
 
          <if test="categoryCode != null and categoryCode != ''">
           AND d.category_code = #{categoryCode}
@@ -255,10 +291,12 @@
      LEFT JOIN common_code cc1          /* 공통 코드 테이블 */
             ON d.category_code = cc1.code
            AND cc1.group_code  = 'DRINK_CATEGORY'
+           AND cc1.use_yn = 'Y'
 
      LEFT JOIN common_code cc2          /* 공통 코드 테이블 */
             ON d.type_code     = cc2.code
            AND cc2.group_code  = 'DRINK_TYPE'
+           AND cc2.use_yn = 'Y'
 
     <!-- 노트 집계 -->
  LEFT JOIN (

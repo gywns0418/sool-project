@@ -19,9 +19,6 @@
           <div class="report-top">
             <div class="report-badges">
               <span class="badge type-badge">
-                신고번호 : {{ report.reportId }}
-              </span>
-              <span class="badge type-badge">
                 {{ formatObjType(report.objType) }}
               </span>
               <span

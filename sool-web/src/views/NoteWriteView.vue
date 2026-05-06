@@ -58,7 +58,7 @@
           <div class="form-card-header">
             <div class="form-card-icon">★</div>
             <div>
-              <div class="form-card-title required">별점</div>
+              <div class="form-card-title">별점</div>
               <div class="form-card-sub">전체적인 만족도를 남겨보세요</div>
             </div>
           </div>
@@ -85,7 +85,7 @@
           <div class="form-card-header">
             <div class="form-card-icon green">◎</div>
             <div>
-              <div class="form-card-title required">맛 프로파일</div>
+              <div class="form-card-title">맛 프로파일</div>
               <div class="form-card-sub">항목별로 1점부터 5점까지 선택하세요</div>
             </div>
           </div>

@@ -379,7 +379,7 @@ function onChangeName(event) {
     name.value = rawValue
     nameValid.value = false
     nameChecked.value = false
-    nameMsg.value = '닉네임은 완성된 한글과 숫자 1~10자만 입력 가능합니다.'
+    nameMsg.value = '닉네임은 완성된 한글과 숫자로 최대 10자만 입력 가능합니다.'
     return
   }
 
@@ -387,7 +387,7 @@ function onChangeName(event) {
     name.value = rawValue
     nameValid.value = false
     nameChecked.value = false
-    nameMsg.value = '닉네임은 완성된 한글과 숫자 1~10자만 입력 가능합니다.'
+    nameMsg.value = '닉네임은 완성된 한글과 숫자로 최대 10자만 입력 가능합니다.'
     return
   }
 
