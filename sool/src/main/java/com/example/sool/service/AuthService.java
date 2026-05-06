@@ -135,18 +135,23 @@ public class AuthService {
 
         if (Boolean.TRUE.equals(redisTemplate.hasKey(getLoginLockKey(loginId)))) {
             long remainSeconds = getLoginLockRemainingSeconds(loginId);
+
+            if (remainSeconds <= 0) {
+                return;
+            }
+
             long minutes = remainSeconds / 60;
             long seconds = remainSeconds % 60;
 
+            String message = "로그인 실패 횟수를 초과했습니다. \n";
+
             if (minutes > 0) {
-                throw new IllegalArgumentException(
-                    "로그인 실패 횟수를 초과했습니다. \n" + minutes + "분 " + seconds + "초 후 다시 시도해주세요."
-                );
+                message += minutes + "분 " + seconds + "초 후 다시 시도해주세요.";
+            } else {
+                message += seconds + "초 후 다시 시도해주세요.";
             }
 
-            throw new IllegalArgumentException(
-                "로그인 실패 횟수를 초과했습니다. \n" + seconds + "초 후 다시 시도해주세요."
-            );
+            throw new IllegalArgumentException(message);
         }
     }
 

@@ -62,7 +62,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue"
+import { ref, computed, onBeforeUnmount } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import { useAuthStore } from "@/stores/authStore"
 import PageNav from "@/components/common/PageNav.vue"
@@ -100,12 +100,67 @@ const login = async () => {
     const redirect = route.query.redirect || "/"
     router.replace(redirect)
   } catch (error) {
-    errorMessage.value =
+
+    const message =
       error.response?.data || "로그인에 실패했습니다."
+
+    errorMessage.value = message
+
+    const match = message.match(/(\d+)분\s*(\d+)초|(\d+)초/)
+
+    if (match) {
+
+      if (match[1] && match[2]) {
+        remainSeconds.value =
+          Number(match[1]) * 60 + Number(match[2])
+      } else if (match[3]) {
+        remainSeconds.value = Number(match[3])
+      }
+
+      startLoginLockTimer()
+    }
+
   } finally {
     loading.value = false
   }
 }
+
+const remainSeconds = ref(0)
+let loginLockTimer = null
+
+const lockTimeText = computed(() => {
+  const minutes = Math.floor(remainSeconds.value / 60)
+  const seconds = remainSeconds.value % 60
+
+  if (minutes > 0) {
+    return `${minutes}분 ${seconds}초`
+  }
+
+  return `${seconds}초`
+})
+
+const startLoginLockTimer = () => {
+  clearInterval(loginLockTimer)
+
+  loginLockTimer = setInterval(() => {
+    if (remainSeconds.value > 0) {
+      remainSeconds.value--
+
+      errorMessage.value =
+        `로그인 실패 횟수를 초과했습니다.\n${lockTimeText.value} 후 다시 시도해주세요.`
+
+      return
+    }
+
+    clearInterval(loginLockTimer)
+    loginLockTimer = null
+    errorMessage.value = ""
+  }, 1000)
+}
+
+onBeforeUnmount(() => {
+  clearInterval(loginLockTimer)
+})
 </script>
 
 <style scoped>
