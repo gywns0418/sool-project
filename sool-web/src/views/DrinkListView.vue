@@ -157,7 +157,7 @@ import { categories } from "@/mock/soolData"
 const ABV_MIN = 0
 const ABV_MAX = 99.9
 const ABV_DEFAULT_LOW = "0"
-const ABV_DEFAULT_HIGH = "60"
+const ABV_DEFAULT_HIGH = "99.9"
 
 const PRICE_MIN = 0
 const PRICE_MAX = 10000000
