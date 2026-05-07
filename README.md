@@ -63,5 +63,5 @@
 
 ## ERD
 
-![ERD](<img width="2080" height="1092" alt="soolNoteERD" src="https://github.com/user-attachments/assets/59d217b5-9a72-4007-8c10-8d16a42e65bf" />
-)
+<img width="2080" height="1092" alt="soolNoteERD" src="https://github.com/user-attachments/assets/a881ffbd-6656-48db-a6cb-e6f2545b0784" />
+
