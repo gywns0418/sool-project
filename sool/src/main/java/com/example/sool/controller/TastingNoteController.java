@@ -46,7 +46,7 @@ public class TastingNoteController {
 
     //노트 목록
     @GetMapping("/drinks/{drinkId}/notes")
-    public Map<String, Object> findNoteAll(@PathVariable Integer drinkId, NoteSearchDto dto, Authentication authentication) {
+    public Map<String, Object> getNoteList(@PathVariable Integer drinkId, NoteSearchDto dto, Authentication authentication) {
 
         dto.setDrinkId(drinkId);
 
