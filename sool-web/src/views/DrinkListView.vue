@@ -2,6 +2,13 @@
   <div class="page-wrap">
     <PageNav :links="navLinks" />
 
+    <div class="scroll-progress">
+      <div
+        class="scroll-progress-bar"
+        :style="{ width: scrollProgress + '%' }"
+      ></div>
+    </div>
+
     <div class="list-body">
       <aside class="filter-panel">
         <h4>카테고리</h4>
@@ -147,12 +154,51 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from "vue"
+import { computed, ref, watch, onMounted, onUnmounted, nextTick  } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import PageNav from "../components/common/PageNav.vue"
 import DrinkGridCard from "../components/cards/DrinkGridCard.vue"
 import { getDrinkList, getDrinkCategoryList } from "@/api/drinkApi"
 import { categories } from "@/mock/soolData"
+
+
+const scrollProgress = ref(0)
+
+const updateScrollProgress = () => {
+  const el = document.querySelector('.list-scroll')
+
+  if (!el) return
+
+  const maxScroll = el.scrollHeight - el.clientHeight
+
+  if (maxScroll <= 0) {
+    scrollProgress.value = 0
+    return
+  }
+
+  scrollProgress.value = (el.scrollTop / maxScroll) * 100
+}
+
+onMounted(async () => {
+  await nextTick()
+
+  const el = document.querySelector('.list-scroll')
+
+  if (el) {
+    el.addEventListener('scroll', updateScrollProgress)
+  }
+
+  updateScrollProgress()
+})
+
+onUnmounted(() => {
+  const el = document.querySelector('.list-scroll')
+
+  if (el) {
+    el.removeEventListener('scroll', updateScrollProgress)
+  }
+})
+
 
 const ABV_MIN = 0
 const ABV_MAX = 99.9
@@ -895,5 +941,25 @@ const goTop = () => {
   flex: 1;
   overflow-y: auto;
   padding-right: 6px;
+}
+
+.scroll-progress {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  height: 2px;
+  background: transparent;
+}
+
+.scroll-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(
+    to right,
+    #c2785c,
+    #e0b38f
+  );
+  transition: width 0.08s linear;
+  border-radius: 999px;
 }
 </style>
