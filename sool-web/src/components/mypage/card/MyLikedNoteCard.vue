@@ -9,6 +9,7 @@
             :src="displayItem.image?.fileUrl"
             :alt="displayItem.title"
             class="thumb"
+            loading="lazy"
           />
           <div v-else class="thumb empty-thumb">
             <span class="empty-emoji">{{ displayItem.emoji }}</span>

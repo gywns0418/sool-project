@@ -14,20 +14,35 @@
       </div>
 
       <template v-else>
-        <div v-if="editing" class="comment-inp edit-inp">
+        <form
+          v-if="editing"
+          class="comment-inp edit-inp"
+          @submit.prevent="submitEdit"
+        >
           <input
             v-model="editContent"
             type="text"
             maxlength="100"
             placeholder="댓글을 수정하세요"
           />
-          <button class="cm-send" :disabled="editSubmitting" @click="submitEdit">
+
+          <button
+            type="submit"
+            class="cm-send"
+            :disabled="editSubmitting"
+          >
             저장
           </button>
-          <button class="cm-cancel" :disabled="editSubmitting" @click="cancelEdit">
+
+          <button
+            type="button"
+            class="cm-cancel"
+            :disabled="editSubmitting"
+            @click="cancelEdit"
+          >
             취소
           </button>
-        </div>
+        </form>
 
         <div v-else class="cm-text">
           {{ displayContent }}

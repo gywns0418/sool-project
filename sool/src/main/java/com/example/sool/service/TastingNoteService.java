@@ -68,14 +68,16 @@ public class TastingNoteService {
     //주류 디테일 노트 목록
     public List<TastingNoteDto> findNoteByDrinkId(NoteSearchDto noteSearchDto){ 
         List<TastingNoteDto> list = tastingNoteMapper.findNoteByDrinkId(noteSearchDto);
-        for (TastingNoteDto note : list) {
-            ImageDto image = new ImageDto();
-            image.setObjId(note.getNoteId());
-            image.setObjType("NOTE");
 
-            image = imageMapper.selectImage(image);
-            note.setImage(image);
-        }
+        // for (TastingNoteDto note : list) {
+        //     ImageDto image = new ImageDto();
+        //     image.setObjId(note.getNoteId());
+        //     image.setObjType("NOTE");
+
+        //     image = imageMapper.selectImage(image);
+        //     note.setImage(image);
+        // }
+
         return list;
     }
 
@@ -117,14 +119,14 @@ public class TastingNoteService {
 
         List<TastingNoteDto> list = tastingNoteMapper.findByUserId(userId);
         //이미지 추가
-        for (TastingNoteDto note : list) {
-            ImageDto image = new ImageDto();
-            image.setObjId(note.getNoteId());
-            image.setObjType("NOTE");
+        // for (TastingNoteDto note : list) {
+        //     ImageDto image = new ImageDto();
+        //     image.setObjId(note.getNoteId());
+        //     image.setObjType("NOTE");
 
-            image = imageMapper.selectImage(image);
-            note.setImage(image);
-        }
+        //     image = imageMapper.selectImage(image);
+        //     note.setImage(image);
+        // }
         return list;
     }
 
@@ -196,6 +198,10 @@ public class TastingNoteService {
         if (!Objects.equals(savedNote.getUserId(), dto.getUserId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "자신의 노트만 수정할 수 있습니다.");
         }
+        
+        // if ("Y".equals(savedNote.getDeleted())) {
+        //     throw new IllegalArgumentException("탈퇴한 회원의 게시물은 삭제할 수 없습니다.");
+        // }
 
         if (reportMapper.existsCompletedReportByNoteId(dto.getNoteId()) > 0) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "신고 처리된 노트는 수정할 수 없습니다.");

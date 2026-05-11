@@ -38,6 +38,14 @@
       </aside>
 
       <main class="my-main">
+
+          <div class="scroll-progress">
+            <div
+              class="scroll-progress-bar"
+              :style="{ width: scrollProgress + '%' }"
+            ></div>
+          </div>
+
         <MyNotesSection
           v-if="activeTab === 'notes'"
           @refreshSidebar="fetchSidebarInfo"
@@ -67,7 +75,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
 import { useAuthStore } from '@/stores/authStore'
@@ -79,6 +87,23 @@ import MyProfileSection from '../components/mypage/MyProfileSection.vue'
 import MyReportsSection from '../components/mypage/MyReportsSection.vue'
 
 import { getMySidebarInfo, deleteUser } from '@/api/mypageApi'
+
+const scrollProgress = ref(0)
+
+const updateScrollProgress = () => {
+  const el = document.querySelector('.my-main')
+
+  if (!el) return
+
+  const maxScroll = el.scrollHeight - el.clientHeight
+
+  if (maxScroll <= 0) {
+    scrollProgress.value = 0
+    return
+  }
+
+  scrollProgress.value = (el.scrollTop / maxScroll) * 100
+}
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -206,7 +231,26 @@ onMounted(async () => {
   }
 
   await fetchSidebarInfo()
+
+  await nextTick()
+
+  const el = document.querySelector('.my-main')
+
+  if (el) {
+    el.addEventListener('scroll', updateScrollProgress)
+  }
+
+  updateScrollProgress()
 })
+
+onUnmounted(() => {
+  const el = document.querySelector('.my-main')
+
+  if (el) {
+    el.removeEventListener('scroll', updateScrollProgress)
+  }
+})
+
 </script>
 
 <style scoped>
@@ -342,5 +386,25 @@ onMounted(async () => {
 .my-main::-webkit-scrollbar-thumb {
   background: #ddd;
   border-radius: 3px;
+}
+
+.scroll-progress {
+  position: sticky;
+  top: -32px;
+  margin: -32px -32px 24px;
+  height: 2px;
+  z-index: 20;
+  background: transparent;
+}
+
+.scroll-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(
+    to right,
+    #c2785c,
+    #e0b38f
+  );
+  transition: width 0.08s linear;
 }
 </style>

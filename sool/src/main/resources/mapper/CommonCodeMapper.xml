@@ -74,7 +74,7 @@
           AND cc.use_yn = 'Y'
           AND cc.is_deleted = 'N'
           AND (
-                   cc.parent_code IS NULL
+                   NULLIF(cc.parent_code, '') IS NULL
                 OR cc.parent_code =
                     (
                         SELECT d.category_code
