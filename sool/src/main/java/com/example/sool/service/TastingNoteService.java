@@ -198,6 +198,10 @@ public class TastingNoteService {
         if (!Objects.equals(savedNote.getUserId(), dto.getUserId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "자신의 노트만 수정할 수 있습니다.");
         }
+        
+        // if ("Y".equals(savedNote.getDeleted())) {
+        //     throw new IllegalArgumentException("탈퇴한 회원의 게시물은 삭제할 수 없습니다.");
+        // }
 
         if (reportMapper.existsCompletedReportByNoteId(dto.getNoteId()) > 0) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "신고 처리된 노트는 수정할 수 없습니다.");
