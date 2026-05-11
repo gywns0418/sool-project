@@ -68,14 +68,16 @@ public class TastingNoteService {
     //주류 디테일 노트 목록
     public List<TastingNoteDto> findNoteByDrinkId(NoteSearchDto noteSearchDto){ 
         List<TastingNoteDto> list = tastingNoteMapper.findNoteByDrinkId(noteSearchDto);
-        for (TastingNoteDto note : list) {
-            ImageDto image = new ImageDto();
-            image.setObjId(note.getNoteId());
-            image.setObjType("NOTE");
 
-            image = imageMapper.selectImage(image);
-            note.setImage(image);
-        }
+        // for (TastingNoteDto note : list) {
+        //     ImageDto image = new ImageDto();
+        //     image.setObjId(note.getNoteId());
+        //     image.setObjType("NOTE");
+
+        //     image = imageMapper.selectImage(image);
+        //     note.setImage(image);
+        // }
+
         return list;
     }
 
@@ -117,14 +119,14 @@ public class TastingNoteService {
 
         List<TastingNoteDto> list = tastingNoteMapper.findByUserId(userId);
         //이미지 추가
-        for (TastingNoteDto note : list) {
-            ImageDto image = new ImageDto();
-            image.setObjId(note.getNoteId());
-            image.setObjType("NOTE");
+        // for (TastingNoteDto note : list) {
+        //     ImageDto image = new ImageDto();
+        //     image.setObjId(note.getNoteId());
+        //     image.setObjType("NOTE");
 
-            image = imageMapper.selectImage(image);
-            note.setImage(image);
-        }
+        //     image = imageMapper.selectImage(image);
+        //     note.setImage(image);
+        // }
         return list;
     }
 

@@ -70,6 +70,8 @@
           , IFNULL(l.likeCount, 0) AS likeCount  /* 좋아요 수 */
           , (r.obj_id IS NOT NULL) AS reported   /* 신고 완료 여부 */
           , d.category_code AS categoryCode      /* 주류 카테고리 코드 */
+          , i.file_url AS "image.fileUrl"
+          , i.file_key AS "image.fileKey"
 
        FROM tasting_note tn      /* 테이스팅 노트 테이블 */
 
@@ -78,6 +80,10 @@
 
        JOIN drink d              /* 주류 테이블 */
          ON tn.drink_id = d.drink_id
+
+  LEFT JOIN image i                      /* 이미지 테이블 */
+         ON i.obj_id = tn.note_id
+        AND i.obj_type = 'NOTE'
 
       <!-- 노트 좋아요 수 집계 -->
   LEFT JOIN (
@@ -242,18 +248,17 @@
     <select id="findByUserId" resultType="TastingNoteDto">
         SELECT tn.note_id AS noteId                 /* 노트 키 */
              , tn.user_id AS userId                 /* 회원 키 */
-             , tn.drink_id AS drinkId               /* 주류 키 */
              , tn.title                             /* 노트 제목 */
              , tn.content                           /* 노트 내용 */
              , tn.rating                            /* 노트 별점 */
              , tn.created_at AS createdAt           /* 등록 일시 */
-             , tn.updated_at AS updatedAt           /* 수정 일시 */
-             , tn.is_deleted AS isDeleted           /* 삭제 여부 */
              , d.drink_name AS drinkName            /* 주류 이름 */
              , d.category_code AS categoryCode      /* 카테고리 대분류 코드*/
              , cc.code_name AS typeName             /* 카테고리 소분류 */
              , (r.obj_id IS NOT NULL) AS reported   /* 신고 */
              , 'NOTE' AS objType
+             , i.file_url AS "image.fileUrl"
+             , i.file_key AS "image.fileKey"
 
           FROM tasting_note tn              /* 테이스팅 노트 테이블 */
 
@@ -273,6 +278,10 @@
                    AND is_deleted = 'N'
                ) r
             ON r.obj_id = tn.note_id
+    
+     LEFT JOIN image i                      /* 이미지 테이블 */
+            ON i.obj_id = tn.note_id
+           AND i.obj_type = 'NOTE'
 
          WHERE tn.user_id = #{userId}
            AND tn.is_deleted = 'N'
