@@ -42,12 +42,12 @@
             , d.drink_name_en AS drinkNameEn           /* 주류 영문 이름 */
             , d.abv                                    /* 주류 도수 */
             , d.price                                  /* 주류 가격 */
-            , d.country                                /* 주류 생산 국가 */
-            , d.created_at AS createdAt                /* 주류 등록 일시 */
             , cc1.code_name AS categoryName            /* 공통코드 카테고리 대분류 한글 이름 */
             , cc2.code_name AS typeName                /* 공통코드 카테고리 소분류 한글 이름 */
             , IFNULL(lc.likeCount, 0) AS likeCount     /* 주류 좋아요 수 집계 */
             , IFNULL(ar.avgRating, 0) AS avgRating     /* 평균 별점 집계 */
+            , i.file_url AS "image.fileUrl"
+            , i.file_key AS "image.fileKey"
 
         <choose>
             <when test="userId != null and userId != ''">
@@ -96,6 +96,10 @@
             GROUP BY tn.drink_id
            ) ar
           ON d.drink_id = ar.drink_id
+
+   LEFT JOIN image i                                    /* 이미지 테이블 */
+          ON i.obj_id = d.drink_id
+         AND i.obj_type = 'DRINK'
 
         <!-- 로그인 했을 경우 -->
         <if test="userId != null and userId != ''">

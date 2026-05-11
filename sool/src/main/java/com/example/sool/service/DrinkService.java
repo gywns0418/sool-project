@@ -70,14 +70,14 @@ public class DrinkService {
         int totalCount = drinkMapper.searchDrinkCount(dto);
 
         //주류별 대표 이미지 조회 후 세팅
-        for (DrinkDto drink : list) {
-            ImageDto image = new ImageDto();
-            image.setObjId(drink.getDrinkId());
-            image.setObjType("DRINK");
+        // for (DrinkDto drink : list) {
+        //     ImageDto image = new ImageDto();
+        //     image.setObjId(drink.getDrinkId());
+        //     image.setObjType("DRINK");
 
-            image = imageMapper.selectImage(image);
-            drink.setImage(image);
-        }
+        //     image = imageMapper.selectImage(image);
+        //     drink.setImage(image);
+        // }
 
         //총 페이지 계산
         int totalPage = (int) Math.ceil((double) totalCount / dto.getSize());

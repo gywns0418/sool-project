@@ -133,14 +133,4 @@ public class CommentService {
             throw new IllegalArgumentException("댓글 내용을 입력해주세요.");
         }
     }
-
-    private CommentDto validateActiveComment(Integer commentId) {
-        CommentDto comment = commentMapper.findActiveByCommentId(commentId);
-
-        if (comment == null) {
-            throw new IllegalArgumentException("삭제되었거나 존재하지 않는 댓글입니다.");
-        }
-
-        return comment;
-    }
 }
