@@ -78,6 +78,10 @@ public class ReportService {
             if (note == null || "Y".equals(note.getIsDeleted())) {
                 throw new IllegalArgumentException("삭제되었거나 존재하지 않는 테이스팅 노트입니다.");
             }
+
+            if (note.getUserId().equals(reportDto.getUserId())) {
+                throw new IllegalArgumentException("본인이 작성한 노트는 신고할 수 없습니다.");
+            }
         }
 
         if ("COMMENT".equals(reportDto.getObjType())) {
@@ -85,6 +89,10 @@ public class ReportService {
 
             if (comment == null || "Y".equals(comment.getIsDeleted())) {
                 throw new IllegalArgumentException("삭제되었거나 존재하지 않는 댓글입니다.");
+            }
+
+            if (comment.getUserId().equals(reportDto.getUserId())) {
+                throw new IllegalArgumentException("본인이 작성한 댓글은 신고할 수 없습니다.");
             }
         }
     }
