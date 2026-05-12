@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+
+  mysql:
+    image: mysql:8
+    container_name: sool-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: tanineojt
+      MYSQL_DATABASE: tanineojt
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  redis:
+    image: redis:7
+    container_name: sool-redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  backend:
+    image: gywns7967/soolnote-backend:latest
+    container_name: soolnote-backend
+    restart: always
+    depends_on:
+      - mysql
+      - redis
+    ports:
+      - "8081:8081"
+    volumes:
+      - /home/ubuntu/config/application-dev.properties:/app/config/application-dev.properties
+
+volumes:
+  mysql_data:
