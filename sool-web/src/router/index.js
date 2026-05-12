@@ -29,6 +29,9 @@ const routes = [
   { path: "/find-id", name: "find-id", component: FindIdView, meta: { guestOnly: true } },
   { path: "/reset-password", name: "reset-password", component: ResetPasswordView, meta: { guestOnly: true } },
 
+  { path: '/chat/rooms', component: () => import('@/views/chat/ChatRoomListView.vue') },
+  { path: '/chat/rooms/:roomId', component: () => import('@/views/chat/ChatRoomDetailView.vue') },
+
   { path: "/404", name: "not-found", component: NotFoundView },
   { path: "/:pathMatch(.*)*", redirect: "/404" }
 ]
