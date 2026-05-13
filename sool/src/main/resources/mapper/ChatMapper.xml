@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.sool.mapper.ChatMapper">
+
+    <!-- 채팅 메시지 목록 조회 -->
+    <select id="selectChatMessageList" parameterType="int" resultType="ChatMessageDto">
+
+       SELECT cm.message_id AS messageId
+            , u.user_id AS userId
+            , u.name AS senderName
+            , cm.message
+            , cm.created_at AS createdAt
+            , cm.is_deleted AS isDeleted
+         FROM chat_message cm
+    LEFT JOIN user u
+           ON cm.user_id = u.user_id
+        WHERE cm.room_id = #{roomId}
+          AND cm.is_deleted = 'N'
+        ORDER BY cm.message_id ASC
+
+    </select>
+
+    <select id="selectChatRoomList" parameterType="int" resultType="ChatRoomDto">
+
+        SELECT cr.room_id AS roomId
+             , cr.title
+             , cr.created_at AS createdAt
+             , lm.message AS lastMessage
+             , COUNT(cm.message_id) AS unreadCount
+
+          FROM chat_room cr
+
+     LEFT JOIN chat_room_user cru
+            ON cru.room_id = cr.room_id
+
+     LEFT JOIN chat_message cm
+            ON cm.room_id = cr.room_id
+           AND cm.message_id &gt; IFNULL(cru.last_read_message_id, 0)
+           AND cm.is_deleted = 'N'
+
+    LEFT JOIN chat_message lm
+           ON lm.message_id = (
+              SELECT MAX(message_id)
+                FROM chat_message
+               WHERE room_id = cr.room_id
+                 AND is_deleted = 'N'
+            )
+
+         WHERE cru.user_id = #{userId}
+
+      GROUP BY cr.room_id
+      ORDER BY cr.created_at DESC
+
+    </select>
+
+    <!-- 채팅 메시지 등록 -->
+    <insert id="insertChatMessage" parameterType="ChatMessageDto" useGeneratedKeys="true" keyProperty="messageId">
+
+        INSERT INTO chat_message 
+        (
+           room_id
+         , user_id
+         , message
+        ) 
+        VALUES 
+        (
+           #{roomId}
+         , #{userId}
+         , #{message}
+        )
+
+    </insert>
+
+    <!-- 채팅방 유저 등록 -->
+    <insert id="insertChatRoomUser" parameterType="ChatRoomUserDto">
+
+        INSERT INTO chat_room_user 
+        (
+           room_id
+         , user_id
+         , entered_at
+        ) 
+        VALUES 
+        (
+           #{roomId}
+         , #{userId}
+         , NOW()
+        )
+
+    </insert>
+
+    <!-- 채팅방 등록 -->
+    <insert id="insertChatRoom" parameterType="ChatRoomDto" useGeneratedKeys="true" keyProperty="roomId">
+
+        INSERT INTO chat_room 
+        (
+              title
+            , created_at
+        ) 
+        VALUES 
+        (
+              #{title}
+            , NOW()
+        )
+
+    </insert>
+
+</mapper>

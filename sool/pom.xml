@@ -116,6 +116,13 @@
 			<artifactId>s3</artifactId>
 			<version>2.25.53</version>
 		</dependency>
+
+		<!--WebSocket-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<build>

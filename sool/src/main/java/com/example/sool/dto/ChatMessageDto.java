@@ -9,7 +9,9 @@ public class ChatMessageDto {
     private Integer messageId;
     private Integer roomId;
     private Integer userId;
-    private String senderName;
     private String message;
     private LocalDateTime createdAt;
+    private String isDeleted;
+
+    private String senderName;
 }
