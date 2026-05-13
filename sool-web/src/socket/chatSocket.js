@@ -1,3 +1,4 @@
+import SockJS from 'sockjs-client'
 import { Client } from '@stomp/stompjs'
 
 let stompClient = null
@@ -6,7 +7,8 @@ export const connectChatSocket = (onConnect) => {
 
     stompClient = new Client({
 
-        brokerURL: 'ws://localhost:8081/ws-chat',
+        webSocketFactory: () =>
+            new SockJS('http://localhost:8081/ws-chat'),
 
         reconnectDelay: 3000,
 
@@ -34,7 +36,7 @@ export const subscribeRoom = (roomId, callback) => {
     }
 
     stompClient.subscribe(
-        `/topic/chat/rooms/${roomId}`,
+        `/topic/chat/room/${roomId}`,
         (message) => {
             callback(JSON.parse(message.body))
         }
@@ -57,5 +59,6 @@ export const disconnectChatSocket = () => {
 
     if (stompClient) {
         stompClient.deactivate()
+        stompClient = null
     }
 }

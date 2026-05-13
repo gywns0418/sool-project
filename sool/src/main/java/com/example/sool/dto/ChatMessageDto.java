@@ -8,7 +8,7 @@ import lombok.Data;
 public class ChatMessageDto {
     private Integer messageId;
     private Integer roomId;
-    private Integer userId;
+    private Integer senderId;
     private String message;
     private LocalDateTime createdAt;
     private String isDeleted;

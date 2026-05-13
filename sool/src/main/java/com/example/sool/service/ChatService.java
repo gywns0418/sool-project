@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.example.sool.dto.ChatMessageDto;
 import com.example.sool.dto.ChatRoomDto;
 import com.example.sool.mapper.ChatMapper;
 
@@ -22,4 +23,17 @@ public class ChatService {
         return chatMapper.selectChatRoomList(userId);
     }
 
+    public List<ChatMessageDto> getChatMessageList(int roomId){
+        return chatMapper.selectChatMessageList(roomId);
+    }
+
+    public ChatMessageDto getChatMessage(int messageId){
+        return chatMapper.selectChatMessage(messageId);
+    }
+
+    public int insertChatMessage(ChatMessageDto dto){
+        return chatMapper.insertChatMessage(dto);
+    }
+
+    
 }

@@ -5,10 +5,11 @@
       type="text"
       maxlength="500"
       placeholder="메시지를 입력하세요"
+      :disabled="sending"
     />
 
-    <button type="submit" :disabled="!message.trim()">
-      전송
+    <button type="submit" :disabled="sending || !message.trim()">
+      {{ sending ? '전송중' : '전송' }}
     </button>
   </form>
 </template>
@@ -19,14 +20,20 @@ import { ref } from 'vue'
 const emit = defineEmits(['send'])
 
 const message = ref('')
+const sending = ref(false)
 
-const handleSend = () => {
+const handleSend = async () => {
   const text = message.value.trim()
 
-  if (!text) return
+  if (!text || sending.value) return
 
-  emit('send', text)
-  message.value = ''
+  try {
+    sending.value = true
+    await emit('send', text)
+    message.value = ''
+  } finally {
+    sending.value = false
+  }
 }
 </script>
 

@@ -11,9 +11,11 @@ import com.example.sool.dto.ChatRoomUserDto;
 @Mapper
 public interface ChatMapper {
 
-    ChatMessageDto selectChatMessageList(int roomId);
+    List<ChatMessageDto> selectChatMessageList(int roomId);
     
     List<ChatRoomDto> selectChatRoomList(int userId);
+    
+    ChatMessageDto selectChatMessage(int messageId);
     
     int insertChatMessage(ChatMessageDto dto);
     

@@ -9,11 +9,10 @@
     <select id="selectChatMessageList" parameterType="int" resultType="ChatMessageDto">
 
        SELECT cm.message_id AS messageId
-            , u.user_id AS userId
+            , u.user_id AS senderId
             , u.name AS senderName
             , cm.message
             , cm.created_at AS createdAt
-            , cm.is_deleted AS isDeleted
          FROM chat_message cm
     LEFT JOIN user u
            ON cm.user_id = u.user_id
@@ -61,6 +60,23 @@
 
     </select>
 
+        <!-- 채팅 메시지 단건 조회 -->
+    <select id="selectChatMessage" parameterType="int" resultType="ChatMessageDto">
+
+        SELECT cm.message_id AS messageId
+             , cm.room_id AS roomId
+             , cm.user_id AS senderId
+             , u.name AS senderName
+             , cm.message
+             , cm.created_at AS createdAt
+             , cm.is_deleted AS isDeleted
+          FROM chat_message cm
+     LEFT JOIN user u
+            ON cm.user_id = u.user_id
+         WHERE cm.message_id = #{messageId}
+
+    </select>
+
     <!-- 채팅 메시지 등록 -->
     <insert id="insertChatMessage" parameterType="ChatMessageDto" useGeneratedKeys="true" keyProperty="messageId">
 
@@ -73,7 +89,7 @@
         VALUES 
         (
            #{roomId}
-         , #{userId}
+         , #{senderId}
          , #{message}
         )
 

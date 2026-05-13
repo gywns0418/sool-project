@@ -12,48 +12,39 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ChatMessageList from '@/components/chat/ChatMessageList.vue'
 import ChatMessageInput from '@/components/chat/ChatMessageInput.vue'
+import { chatMessageList } from '@/api/chatApi'
+import {
+  connectChatSocket,
+  subscribeRoom,
+  sendChatMessage,
+  disconnectChatSocket
+} from '@/socket/chatSocket'
+import { useAuthStore } from '@/stores/authStore'
 
 const route = useRoute()
 const router = useRouter()
+const authStore = useAuthStore()
 
-const roomId = route.params.roomId
-const myUserId = 1
+const roomId = Number(route.params.roomId)
+const myUserId = authStore.user?.userId
 
 const messageList = ref([])
 
 const fetchMessages = async () => {
-  messageList.value = [
-    {
-      messageId: 1,
-      roomId,
-      senderId: 1,
-      senderName: '나',
-      message: '안녕하세요',
-      createdAt: '2026-05-12 15:30'
-    },
-    {
-      messageId: 2,
-      roomId,
-      senderId: 2,
-      senderName: '상대방',
-      message: '반갑습니다',
-      createdAt: '2026-05-12 15:31'
-    }
-  ]
+  const response = await chatMessageList(roomId)
+  messageList.value = response.data
 }
 
 const sendMessage = async (message) => {
-  messageList.value.push({
-    messageId: Date.now(),
+
+  sendChatMessage({
     roomId,
     senderId: myUserId,
-    senderName: '나',
-    message,
-    createdAt: new Date().toLocaleString()
+    message
   })
 }
 
@@ -61,8 +52,22 @@ const goBack = () => {
   router.back()
 }
 
-onMounted(() => {
-  fetchMessages()
+onMounted(async () => {
+
+  await fetchMessages()
+
+  connectChatSocket(() => {
+
+    subscribeRoom(roomId, (message) => {
+
+      messageList.value.push(message)
+    })
+  })
+})
+
+onBeforeUnmount(() => {
+
+  disconnectChatSocket()
 })
 </script>
 
