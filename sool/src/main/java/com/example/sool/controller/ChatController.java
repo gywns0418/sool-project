@@ -22,8 +22,9 @@ public class ChatController {
 
     @GetMapping("")
     public List<ChatRoomDto> getChatRoomList(Authentication authentication){
-        CustomUserDetails userDetails = (CustomUserDetails)authentication.getPrincipal();
 
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        System.out.println("list"+chatService.getChatRoomList(userDetails.getUserId()));
         return chatService.getChatRoomList(userDetails.getUserId());
     }
 }

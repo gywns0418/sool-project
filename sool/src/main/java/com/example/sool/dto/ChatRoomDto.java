@@ -11,5 +11,6 @@ public class ChatRoomDto {
     private LocalDateTime createdAt;
 
     private String lastMessage;
+    private LocalDateTime lastMessageAt;
     private Integer unreadCount;
 }
