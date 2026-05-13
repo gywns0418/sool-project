@@ -67,7 +67,8 @@ public class SecurityConfig {
                     "/api/home",
                     "/api/drinks/**",
                     "/api/notes/**",
-                    "/api/comments/**"
+                    "/api/comments/**",
+                    "/api/chat/**"
                 ).permitAll()
 
                 // 로그인한 USER 권한만 가능
@@ -78,7 +79,8 @@ public class SecurityConfig {
                     "/api/mypage/**",
                     "/api/drinks/*/like",
                     "/api/report/**",
-                    "/api/image/**"
+                    "/api/image/**",
+                    "/api/chat/**"
                 ).hasAnyRole("USER", "ADMIN")
 
                 // 그 외 요청은 인증 필요

@@ -42,7 +42,11 @@
       </div>
     </section>
   </div>
+
+  <router-link to="/chat/rooms" class="btn-primary">채팅 →</router-link>
 </template>
+
+
 
 <script setup>
 import PageNav from '../components/common/PageNav.vue'
