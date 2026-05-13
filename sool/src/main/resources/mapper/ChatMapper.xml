@@ -53,6 +53,11 @@
          WHERE cru.user_id = #{userId}
 
       GROUP BY cr.room_id
+             , cr.title
+             , cr.created_at
+             , lm.message
+             , lm.created_at
+             
       ORDER BY cr.created_at DESC
 
     </select>

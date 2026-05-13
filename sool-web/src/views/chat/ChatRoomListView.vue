@@ -26,6 +26,7 @@ const roomList = ref([])
 
 const fetchRoomList = async () => {
   const response = await chatRoomList()
+  console.log(response.data)
   roomList.value = response.data
 }
 

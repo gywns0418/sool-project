@@ -2,7 +2,7 @@
   <div class="chat-room-item" @click="$emit('click')">
     <div class="room-info">
       <strong>{{ room.title }}</strong>
-      <p>{{ room.lastMessage }}</p>
+      <p>{{ room.lastMessage || '메시지가 없습니다.' }}</p>
     </div>
 
     <div class="room-meta">
