@@ -19,20 +19,14 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import ChatRoomItem from '@/components/chat/ChatRoomItem.vue'
+import { chatRoomList } from '@/api/chatApi'
 
 const router = useRouter()
 const roomList = ref([])
 
 const fetchRoomList = async () => {
-  roomList.value = [
-    {
-      roomId: 1,
-      targetName: '테스트유저',
-      lastMessage: '안녕하세요',
-      lastMessageAt: '2026-05-12 15:30',
-      unreadCount: 2
-    }
-  ]
+  const response = await chatRoomList()
+  roomList.value = response.data
 }
 
 const goRoom = (roomId) => {

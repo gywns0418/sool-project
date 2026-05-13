@@ -29,6 +29,7 @@
              , cr.title
              , cr.created_at AS createdAt
              , lm.message AS lastMessage
+             , lm.created_at AS lastMessageAt
              , COUNT(cm.message_id) AS unreadCount
 
           FROM chat_room cr

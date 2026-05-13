@@ -1,5 +1,7 @@
 package com.example.sool.mapper;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
 
 import com.example.sool.dto.ChatMessageDto;
@@ -11,7 +13,7 @@ public interface ChatMapper {
 
     ChatMessageDto selectChatMessageList(int roomId);
     
-    ChatRoomDto selectChatRoomList(int roomId);
+    List<ChatRoomDto> selectChatRoomList(int userId);
     
     int insertChatMessage(ChatMessageDto dto);
     

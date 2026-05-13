@@ -1,7 +1,7 @@
 <template>
   <div class="chat-room-item" @click="$emit('click')">
     <div class="room-info">
-      <strong>{{ room.targetName }}</strong>
+      <strong>{{ room.title }}</strong>
       <p>{{ room.lastMessage }}</p>
     </div>
 
