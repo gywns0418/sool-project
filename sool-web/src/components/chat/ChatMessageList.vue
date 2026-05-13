@@ -12,13 +12,17 @@
         </strong>
 
         <p>{{ message.message }}</p>
-        <span>{{ message.createdAt }}</span>
+        <span>{{ formatDate(message.createdAt) }}</span>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import moment from 'moment/min/moment-with-locales'
+
+moment.locale('ko')
+
 defineProps({
   messages: {
     type: Array,
@@ -29,6 +33,10 @@ defineProps({
     required: true
   }
 })
+
+const formatDate = (datetime) => {
+  return moment(datetime).fromNow()
+}
 </script>
 
 <style scoped>

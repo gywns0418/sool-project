@@ -27,6 +27,7 @@ public class ChatController {
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         System.out.println("list"+chatService.getChatRoomList(userDetails.getUserId()));
+        
         return chatService.getChatRoomList(userDetails.getUserId());
     }
 

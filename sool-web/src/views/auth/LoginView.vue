@@ -27,15 +27,27 @@
 
           <div class="field-group">
             <label class="field-label">비밀번호</label>
-            <input
-              v-model="password"
-              type="password"
-              class="field-input"
-              placeholder="비밀번호를 입력하세요"
-              required
-              :disabled="loading"
-              @keydown.enter="login"
-            />
+
+            <div class="password-wrap">
+              <input
+                v-model="password"
+                :type="showPassword ? 'text' : 'password'"
+                class="field-input password-input"
+                placeholder="비밀번호를 입력하세요"
+                required
+                :disabled="loading"
+                @keydown.enter="login"
+              />
+
+              <button
+                type="button"
+                class="password-toggle"
+                @click="togglePassword"
+              >
+                <Eye v-if="!showPassword" :size="18" />
+                <EyeOff v-else :size="18" />
+              </button>
+            </div>
           </div>
 
           <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
@@ -66,6 +78,7 @@ import { ref } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import { useAuthStore } from "@/stores/authStore"
 import PageNav from "@/components/common/PageNav.vue"
+import { Eye, EyeOff } from 'lucide-vue-next'
 
 const router = useRouter()
 const route = useRoute()
@@ -79,6 +92,12 @@ const loginId = ref("")
 const password = ref("")
 const loading = ref(false)
 const errorMessage = ref("")
+
+const showPassword = ref(false)
+
+const togglePassword = () => {
+  showPassword.value = !showPassword.value
+}
 
 const login = async () => {
   if (loading.value) return
@@ -301,5 +320,46 @@ const login = async () => {
   font-size: 13px;
   color: #d93025;
   white-space: pre-line;
+}
+
+.password-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.password-input {
+  padding-right: 52px;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+
+  border: none;
+  background: transparent;
+
+  font-size: 18px;
+  cursor: pointer;
+
+  color: var(--muted);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: color 0.18s ease,
+              transform 0.18s ease,
+              opacity 0.18s ease;
+}
+
+.password-toggle:hover {
+  color: var(--point);
+  transform: translateY(-50%) scale(1.08);
+}
+
+.password-toggle:active {
+  transform: translateY(-50%) scale(0.96);
 }
 </style>
