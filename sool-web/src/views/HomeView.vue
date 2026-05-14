@@ -43,7 +43,6 @@
     </section>
   </div>
 
-  <router-link to="/chat/rooms" class="btn-primary">채팅 →</router-link>
 </template>
 
 
@@ -56,6 +55,7 @@ import RecentNoteCard from '../components/cards/RecentNoteCard.vue'
 
 import { ref, onMounted } from "vue"
 import { getHome } from "@/api/homeApi"
+
 
 const drinks = ref([])
 const popularDrinks = ref([])

@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-SoolApplication<sool>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.example.sool.SoolApplication",
+            "projectName": "sool",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

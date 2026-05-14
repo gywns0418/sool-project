@@ -120,12 +120,13 @@
 
         <div class="list-scroll">
           <div class="drinks-grid" v-if="drinkList.length > 0">
-            <DrinkGridCard
-              v-for="drink in drinkList"
-              :key="drink.drinkId || drink.drink_id"
-              :item="drink"
-              @refresh="loadDrinkList"
-            />
+<DrinkGridCard
+  v-for="(drink, index) in drinkList"
+  :key="`${drink.drinkId || drink.drink_id}-${page}-${sortBy}-${selectedCategory}-${searchKeyword}`"
+  :item="drink"
+  class="card-animate"
+  @refresh="loadDrinkList"
+/>
           </div>
 
           <div v-else class="empty-box">
@@ -940,6 +941,7 @@ const goTop = () => {
 .list-scroll {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding-right: 6px;
 }
 
@@ -961,5 +963,37 @@ const goTop = () => {
   );
   transition: width 0.08s linear;
   border-radius: 999px;
+}
+
+.card-animate {
+  opacity: 0;
+  transform: translateY(20px);
+
+  animation: fadeUp 0.7s ease forwards;
+}
+
+.card-animate:nth-child(1) { animation-delay: 0.05s; }
+.card-animate:nth-child(2) { animation-delay: 0.1s; }
+.card-animate:nth-child(3) { animation-delay: 0.15s; }
+.card-animate:nth-child(4) { animation-delay: 0.2s; }
+.card-animate:nth-child(5) { animation-delay: 0.25s; }
+.card-animate:nth-child(6) { animation-delay: 0.3s; }
+.card-animate:nth-child(7) { animation-delay: 0.35s; }
+.card-animate:nth-child(8) { animation-delay: 0.4s; }
+.card-animate:nth-child(9) { animation-delay: 0.45s; }
+.card-animate:nth-child(10) { animation-delay: 0.5s; }
+.card-animate:nth-child(11) { animation-delay: 0.55s; }
+.card-animate:nth-child(12) { animation-delay: 0.6s; }
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

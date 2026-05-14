@@ -61,4 +61,5 @@ export const disconnectChatSocket = () => {
         stompClient.deactivate()
         stompClient = null
     }
+    console.log('채팅 소켓 분리 완료')
 }

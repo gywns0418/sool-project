@@ -59,7 +59,8 @@ public class SecurityConfig {
 
                 // 인증 없이 접근 가능
                 .requestMatchers(
-                    "/api/auth/**"
+                    "/api/auth/**",
+                    "/actuator/**"
                 ).permitAll()
 
                 // 조회는 비회원도 가능

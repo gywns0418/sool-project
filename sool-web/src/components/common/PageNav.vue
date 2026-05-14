@@ -22,6 +22,8 @@
     </ul>
     <div class="nav-right">
       <template v-if="authStore.isLogin">
+        <router-link to="/chat/rooms" class="btn-fill">"채팅"</router-link>
+
         <div class="nav-point"></div>
         <span class="nav-name">{{ authStore.user?.name }}님</span>
         <button class="btn-ghost" @click="router.push('/mypage')">마이페이지</button>
