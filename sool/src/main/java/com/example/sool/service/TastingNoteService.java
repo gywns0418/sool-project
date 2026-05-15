@@ -1,6 +1,8 @@
 package com.example.sool.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.http.HttpStatus;
@@ -66,19 +68,35 @@ public class TastingNoteService {
     }
 
     //주류 디테일 노트 목록
-    public List<TastingNoteDto> findNoteByDrinkId(NoteSearchDto noteSearchDto){ 
-        List<TastingNoteDto> list = tastingNoteMapper.findNoteByDrinkId(noteSearchDto);
+    public  Map<String, Object> getDrinkNoteList(Integer drinkId, NoteSearchDto dto, Integer userId){ 
+        dto.setDrinkId(drinkId);
 
-        // for (TastingNoteDto note : list) {
-        //     ImageDto image = new ImageDto();
-        //     image.setObjId(note.getNoteId());
-        //     image.setObjType("NOTE");
+        List<TastingNoteDto> list = tastingNoteMapper.findNoteByDrinkId(dto);
 
-        //     image = imageMapper.selectImage(image);
-        //     note.setImage(image);
-        // }
+        int totalCount = tastingNoteMapper.countNoteByDrinkId(dto);
 
-        return list;
+        int totalPage =
+            (int) Math.ceil((double) totalCount / dto.getSize());
+
+        List<TastingNoteMetricDto> avgMetric = tastingNoteMetricMapper.findAvgMetricByDrinkId(drinkId);
+
+        int hasMyNote = 0;
+
+        if (userId != null) {
+            hasMyNote = tastingNoteMapper.existsMyNoteByDrinkId(userId, drinkId);
+        }
+
+        Map<String, Object> result = new HashMap<>();
+
+        result.put("list", list);
+        result.put("totalCount", totalCount);
+        result.put("page", dto.getPage());
+        result.put("size", dto.getSize());
+        result.put("totalPage", totalPage);
+        result.put("avgMetric", avgMetric);
+        result.put("hasMyNote", hasMyNote);
+
+        return result;
     }
 
     //페이지네이션 용 노트 수
@@ -112,6 +130,31 @@ public class TastingNoteService {
     //노트 기본 정보
     public TastingNoteDto findByNoteId(Integer noteId){
         return tastingNoteMapper.findByNoteId(noteId);
+    }
+
+    //노트 작성 정보
+    public Map<String, Object> getNoteWriteForm(int drinkId, int userId) {
+
+        DrinkDto drink = drinkService.findByDrinkId(drinkId);
+
+        if (drink == null) {
+            throw new IllegalArgumentException("존재하지 않는 주류입니다.");
+        }
+
+        if (existsMyNoteByDrinkId(userId, drinkId)) {
+            throw new ResponseStatusException(
+                HttpStatus.CONFLICT,
+                "이미 해당 주류에 대한 테이스팅 노트를 작성했습니다."
+            );
+        }
+
+        List<CommonCodeDto> metricList = getMetricCode(drinkId);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("drink", drink);
+        result.put("metricList", metricList);
+
+        return result;
     }
 
     //마이페이지 테이스팅 노트

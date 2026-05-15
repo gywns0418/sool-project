@@ -42,34 +42,18 @@ public class TastingNoteController {
 
     //노트 목록
     @GetMapping("/drinks/{drinkId}/notes")
-    public Map<String, Object> findNoteAll(@PathVariable Integer drinkId, NoteSearchDto dto, Authentication authentication) {
+    public ResponseEntity<?> findNoteAll(@PathVariable Integer drinkId, NoteSearchDto dto, Authentication authentication) {
 
-        dto.setDrinkId(drinkId);
-
-        List<TastingNoteDto> list = tastingNoteService.findNoteByDrinkId(dto);
-        int totalCount = tastingNoteService.countNoteByDrinkId(dto);
-
-        int totalPage = (int) Math.ceil((double) totalCount / dto.getSize());
-
-        List<TastingNoteMetricDto> avgMetric = tastingNoteService.findAvgMetricByDrinkId(drinkId);
-
-        boolean hasMyNote = false;
+        Integer userId = null;
 
         if (authentication != null && authentication.isAuthenticated()) {
             CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
-            hasMyNote = tastingNoteService.existsMyNoteByDrinkId(user.getUserId(), drinkId);
+            userId = user.getUserId();
         }
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("list", list);
-        result.put("totalCount", totalCount);
-        result.put("page", dto.getPage());
-        result.put("size", dto.getSize());
-        result.put("totalPage", totalPage);
-        result.put("avgMetric",avgMetric);
-        result.put("hasMyNote", hasMyNote);
-
-        return result;
+        return ResponseEntity.ok(
+            tastingNoteService.getDrinkNoteList(drinkId, dto, userId)
+        );
     }
 
     //노트 디테일
@@ -88,33 +72,17 @@ public class TastingNoteController {
 
     //노트 작성 정보
     @GetMapping("/notes/write/{drinkId}")
-    public ResponseEntity<Map<String, Object>> getNoteWriteForm(@PathVariable int drinkId, Authentication authentication) {
-
-         if (authentication == null || !authentication.isAuthenticated() || !(authentication.getPrincipal() instanceof CustomUserDetails userDetails)) {
+    public ResponseEntity<?> getNoteWriteForm(@PathVariable int drinkId, Authentication authentication
+    ) {
+        if (authentication == null 
+                || !authentication.isAuthenticated()
+                || !(authentication.getPrincipal() instanceof CustomUserDetails userDetails)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
         }
 
-
-        //주류 정보
-        DrinkDto drink = drinkService.findByDrinkId(drinkId);
-
-        if (drink == null) {
-            throw new IllegalArgumentException("존재하지 않는 주류입니다.");
-        }
-
-        boolean exists = tastingNoteService.existsMyNoteByDrinkId(userDetails.getUserId(), drinkId);
-        if (exists) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 해당 주류에 대한 테이스팅 노트를 작성했습니다.");
-        }
-
-        //카테고리별 맛 프로파일 항목
-        List<CommonCodeDto> metricList = tastingNoteService.getMetricCode(drinkId);
-
-        Map<String, Object> result = new HashMap<>();
-        result.put("drink", drink);
-        result.put("metricList", metricList);
-
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(
+                tastingNoteService.getNoteWriteForm(drinkId, userDetails.getUserId())
+        );
     }
 
     //노트 작성
