@@ -28,21 +28,17 @@ import com.example.sool.security.CustomUserDetails;
 import com.example.sool.service.DrinkService;
 import com.example.sool.service.TastingNoteService;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/api")
+@RequiredArgsConstructor
 public class TastingNoteController {
 
     private final TastingNoteService tastingNoteService;
     private final DrinkService drinkService;
     private final ImageMapper imageMapper;
     private final ReportMapper reportMapper;
-
-    public TastingNoteController(TastingNoteService tastingNoteService, DrinkService drinkService,ImageMapper imageMapper, ReportMapper reportMapper){
-        this.tastingNoteService = tastingNoteService;
-        this.drinkService = drinkService;
-        this.imageMapper = imageMapper;
-        this.reportMapper = reportMapper;
-    }
 
     //노트 목록
     @GetMapping("/drinks/{drinkId}/notes")

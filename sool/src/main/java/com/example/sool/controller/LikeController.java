@@ -19,15 +19,14 @@ import com.example.sool.dto.LikeDto;
 import com.example.sool.security.CustomUserDetails;
 import com.example.sool.service.LikeService;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api")
 public class LikeController {
 
     private final LikeService likeService;
-
-    public LikeController(LikeService likeService) {
-        this.likeService = likeService;
-    }
 
     //주류 좋아요
 

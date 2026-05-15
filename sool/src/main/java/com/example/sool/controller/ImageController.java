@@ -14,15 +14,15 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.sool.dto.S3UploadResultDto;
 import com.example.sool.service.S3Service;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/image")
 public class ImageController {
 
     private final S3Service s3Service;
 
-    public ImageController(S3Service s3Service) {
-        this.s3Service = s3Service;
-    }
 
     @PostMapping("/upload")
     public ResponseEntity<S3UploadResultDto> uploadImage( 

@@ -17,15 +17,14 @@ import com.example.sool.dto.CommentDto;
 import com.example.sool.security.CustomUserDetails;
 import com.example.sool.service.CommentService;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api")
 public class CommentController {
 
     private final CommentService commentService;
-
-    public CommentController(CommentService commentService){
-        this.commentService = commentService;
-    }
 
     //댓글 정보
     @GetMapping("/notes/{noteId}/comments")

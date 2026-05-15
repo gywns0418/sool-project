@@ -8,16 +8,14 @@ import org.springframework.stereotype.Controller;
 import com.example.sool.dto.ChatMessageDto;
 import com.example.sool.service.ChatService;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 @Controller
 public class ChatSocketController {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatService chatService;
-
-    public ChatSocketController(SimpMessagingTemplate messagingTemplate, ChatService chatService) {
-        this.messagingTemplate = messagingTemplate;
-        this.chatService = chatService;
-    }
 
     @MessageMapping("/chat/message")
     public void sendMessage(@Payload ChatMessageDto dto) {

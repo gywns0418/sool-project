@@ -13,14 +13,13 @@ import com.example.sool.dto.ChatRoomDto;
 import com.example.sool.security.CustomUserDetails;
 import com.example.sool.service.ChatService;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/chat")
 public class ChatController {
     private final ChatService chatService;
-
-    public ChatController(ChatService chatService){
-        this.chatService = chatService;
-    }
 
     @GetMapping("")
     public List<ChatRoomDto> getChatRoomList(Authentication authentication){

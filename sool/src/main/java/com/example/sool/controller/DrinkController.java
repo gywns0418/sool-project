@@ -17,17 +17,16 @@ import com.example.sool.security.CustomUserDetails;
 import com.example.sool.service.CommonCodeService;
 import com.example.sool.service.DrinkService;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/drinks")
 public class DrinkController {
 
     private final DrinkService drinkService;
     private final CommonCodeService commonCodeService;
 
-    public DrinkController(DrinkService drinkService, CommonCodeService commonCodeService) {
-        this.drinkService = drinkService;
-        this.commonCodeService = commonCodeService;
-    }
 
     //주류 목록 조회
     @GetMapping("")

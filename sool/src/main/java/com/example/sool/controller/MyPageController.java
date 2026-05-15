@@ -23,21 +23,16 @@ import com.example.sool.service.TastingNoteService;
 import com.example.sool.service.UserService;
 
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/mypage")
 public class MyPageController {
 
     private final UserService userService;
     private final LikeService likeService;
     private final TastingNoteService tastingNoteService;
-
-    public MyPageController(UserService userService, LikeService likeService, 
-                            TastingNoteService tastingNoteService) {
-        this.userService = userService;
-        this.likeService = likeService;
-        this.tastingNoteService = tastingNoteService;
-    }
 
     //사이드바 정보
     @GetMapping("/sidebar")
